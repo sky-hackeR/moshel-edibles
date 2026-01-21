@@ -29,19 +29,21 @@ class Unit extends Model
      * Scopes (very useful for dropdowns)
      */
 
-    public function scopeActive($query)
-    {
+    public function scopeActive($query){
         return $query->where('is_active', true);
     }
 
-    public function scopeForPurchase($query)
-    {
+    public function scopeForPurchase($query){
         return $query->where('use_for_purchase', true);
     }
 
-    public function scopeForRecipe($query)
-    {
+    public function scopeForRecipe($query){
         return $query->where('use_for_recipe', true);
     }
+
+    public function scopeBase($query){
+        return $query->whereColumn('symbol', 'base_unit');
+    }
+
 }
 

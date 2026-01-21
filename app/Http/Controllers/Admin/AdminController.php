@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Mail;
 
 use App\Models\SiteInfo as Setting;
 use App\Models\Staff;
+use App\Models\Unit;
+use App\Models\Ingredient;
 
 use SweetAlert;
 use Alert;
@@ -45,6 +47,24 @@ class AdminController extends Controller
             'setting' => $setting,
         ]);
     }
+
+    public function unitManagement(){
+        $units = Unit::all();
+        return view('admin.unitManagement', [
+            'units' => $units
+        ]);
+    }
+
+    public function ingredients(){
+        $ingredients = Ingredient::with('baseUnit')->get();
+        $units = Unit::active()->whereColumn('symbol', 'base_unit')->get();
+
+        return view('admin.ingredients', [
+            'ingredients' => $ingredients,
+            'units' => $units,
+        ]);
+    }
+
 
     public function updateSiteInfo(Request $request){
         $validator = Validator::make($request->all(), [
@@ -97,6 +117,172 @@ class AdminController extends Controller
         alert()->error('Oops!', 'Something went wrong')->persistent('Close');
         return redirect()->back();
     }
+
+    public function newUnit(Request $request){
+        $validator = Validator::make($request->all(), [
+            'name'      => 'required|string|max:50',
+            'symbol'    => 'required|string|max:10',
+            'unit_type' => 'required|in:mass,volume,count',
+            'base_unit' => 'required|string|max:10',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        Unit::create([
+            'name'             => $request->name,
+            'symbol'           => strtolower($request->symbol),
+            'unit_type'        => $request->unit_type,
+            'base_unit'        => $request->base_unit,
+            'use_for_purchase' => $request->has('use_for_purchase'),
+            'use_for_recipe'   => $request->has('use_for_recipe'),
+            'is_active'        => true,
+        ]);
+
+        alert()->success('Success', 'Unit added successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+    public function updateUnit(Request $request){
+        $validator = Validator::make($request->all(), [
+            'unit_id'   => 'required|exists:units,id',
+            'name'      => 'required|string|max:50',
+            'symbol'    => 'required|string|max:10',
+            'unit_type' => 'required|in:mass,volume,count',
+            'base_unit' => 'required|string|max:10',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $unit = Unit::findOrFail($request->unit_id);
+
+        $unit->fill([
+            'name'             => $request->name,
+            'symbol'           => strtolower($request->symbol),
+            'unit_type'        => $request->unit_type,
+            'base_unit'        => $request->base_unit,
+            'use_for_purchase' => $request->has('use_for_purchase'),
+            'use_for_recipe'   => $request->has('use_for_recipe'),
+            'is_active'        => $request->has('is_active'),
+        ]);
+
+        if ($unit->isDirty()) {
+            $unit->save();
+            alert()->success('Updated', 'Unit updated successfully')->persistent('Close');
+        } else {
+            alert()->info('No Changes', 'No changes were made')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
+
+    public function deleteUnit(Request $request){
+        $validator = Validator::make($request->all(), [
+            'unit_id' => 'required|exists:units,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $unit = Unit::findOrFail($request->unit_id);
+
+        // Protect base units
+        if (in_array($unit->symbol, ['g', 'ml', 'piece'])) {
+            alert()->error('Forbidden', 'Base units cannot be deleted')->persistent('Close');
+            return redirect()->back();
+        }
+
+        $unit->delete();
+
+        alert()->success('Deleted', 'Unit deleted successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+    public function newIngredient(Request $request){
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:ingredients,name',
+            'base_unit_id' => 'required|exists:units,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        Ingredient::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'base_unit_id' => $request->base_unit_id,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        alert()->success('Success', 'Ingredient added successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+
+    public function updateIngredient(Request $request){
+        $ingredient = Ingredient::findOrFail($request->ingredient_id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:ingredients,name,' . $ingredient->id,
+            'base_unit_id' => 'required|exists:units,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        $ingredient->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'base_unit_id' => $request->base_unit_id,
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        alert()->success('Updated', 'Ingredient updated successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+    public function deleteIngredient(Request $request){
+        $validator = Validator::make($request->all(), [
+            'ingredient_id' => 'required|exists:ingredients,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $ingredient = Ingredient::findOrFail($request->ingredient_id);
+
+        // 🔒 Safety checks
+        if ($ingredient->inventory()->exists()) {
+            alert()->error('Forbidden', 'Ingredient has inventory records and cannot be deleted')->persistent('Close');
+            return redirect()->back();
+        }
+
+        if ($ingredient->recipeItems()->exists()) {
+            alert()->error('Forbidden', 'Ingredient is used in recipes and cannot be deleted')->persistent('Close');
+            return redirect()->back();
+        }
+
+        $ingredient->delete();
+
+        alert()->success('Deleted', 'Ingredient deleted successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+
+
 
     
 }
