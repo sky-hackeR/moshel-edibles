@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Unit;
 use App\Models\Ingredient;
+use App\Models\Inventory;
 use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,7 @@ class IngredientSeeder extends Seeder
     public function run()
     {
         $categories = [
+
             // --- BAKERY & PASTRY STATION ---
             'bakery' => [
                 ['name' => 'All-Purpose Flour', 'unit' => 'g', 'type' => 'mass'],
@@ -78,7 +80,7 @@ class IngredientSeeder extends Seeder
                 ['name' => 'Peanut Butter', 'unit' => 'g', 'type' => 'mass'],
                 ['name' => 'Canola Oil', 'unit' => 'ml', 'type' => 'volume'],
             ],
-            
+
             // --- GENERAL PANTRY ---
             'pantry' => [
                 ['name' => 'Kosher Salt', 'unit' => 'g', 'type' => 'mass'],
@@ -86,25 +88,34 @@ class IngredientSeeder extends Seeder
                 ['name' => 'Extra Virgin Olive Oil', 'unit' => 'ml', 'type' => 'volume'],
                 ['name' => 'Lemon Juice', 'unit' => 'ml', 'type' => 'volume'],
                 ['name' => 'White Vinegar', 'unit' => 'ml', 'type' => 'volume'],
-            ]
+            ],
         ];
 
         foreach ($categories as $station => $ingredients) {
             foreach ($ingredients as $item) {
+
                 $unit = Unit::where('symbol', $item['unit'])
                             ->where('unit_type', $item['type'])
                             ->first();
 
-                if ($unit) {
-                    Ingredient::updateOrCreate(
-                        ['slug' => Str::slug($item['name'])],
-                        [
-                            'name' => $item['name'],
-                            'base_unit_id' => $unit->id,
-                            'is_active' => true,
-                        ]
-                    );
+                if (!$unit) {
+                    continue;
                 }
+
+                $ingredient = Ingredient::updateOrCreate(
+                    ['slug' => Str::slug($item['name'])],
+                    [
+                        'name' => $item['name'],
+                        'base_unit_id' => $unit->id,
+                        'is_active' => true,
+                    ]
+                );
+
+                // 🔥 ALWAYS ENSURE INVENTORY EXISTS
+                Inventory::firstOrCreate(
+                    ['ingredient_id' => $ingredient->id],
+                    ['quantity' => 0]
+                );
             }
         }
     }

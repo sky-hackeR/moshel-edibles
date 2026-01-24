@@ -19,6 +19,7 @@ use App\Models\SiteInfo as Setting;
 use App\Models\Staff;
 use App\Models\Unit;
 use App\Models\Ingredient;
+use App\Models\Inventory;
 
 use SweetAlert;
 use Alert;
@@ -64,6 +65,17 @@ class AdminController extends Controller
             'units' => $units,
         ]);
     }
+
+    public function inventory(){
+        $inventories = Inventory::with(['ingredient.baseUnit'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return view('admin.inventory', [
+            'inventories' => $inventories,
+        ]);
+    }
+
 
 
     public function updateSiteInfo(Request $request){
@@ -205,6 +217,28 @@ class AdminController extends Controller
         return redirect()->back();
     }
 
+    // public function newIngredient(Request $request){
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|unique:ingredients,name',
+    //         'base_unit_id' => 'required|exists:units,id',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+    //         return redirect()->back()->withInput();
+    //     }
+
+    //     Ingredient::create([
+    //         'name' => $request->name,
+    //         'slug' => Str::slug($request->name),
+    //         'base_unit_id' => $request->base_unit_id,
+    //         'is_active' => $request->has('is_active'),
+    //     ]);
+
+    //     alert()->success('Success', 'Ingredient added successfully')->persistent('Close');
+    //     return redirect()->back();
+    // }
+
     public function newIngredient(Request $request){
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:ingredients,name',
@@ -212,18 +246,30 @@ class AdminController extends Controller
         ]);
 
         if ($validator->fails()) {
-            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            alert()
+                ->error('Validation Error', $validator->messages()->first())
+                ->persistent('Close');
+
             return redirect()->back()->withInput();
         }
 
-        Ingredient::create([
+        $ingredient = Ingredient::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'base_unit_id' => $request->base_unit_id,
             'is_active' => $request->has('is_active'),
         ]);
 
-        alert()->success('Success', 'Ingredient added successfully')->persistent('Close');
+        // 🔥 ALWAYS CREATE INVENTORY RECORD
+        Inventory::create([
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 0,
+        ]);
+
+        alert()
+            ->success('Success', 'Ingredient added successfully')
+            ->persistent('Close');
+
         return redirect()->back();
     }
 

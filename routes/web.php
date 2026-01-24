@@ -44,6 +44,8 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/updateIngredient', [App\Http\Controllers\Admin\AdminController::class, 'updateIngredient'])->name('updateIngredient')->middleware(['auth:admin']);
   Route::post('/deleteIngredient', [App\Http\Controllers\Admin\AdminController::class, 'deleteIngredient'])->name('deleteIngredient')->middleware(['auth:admin']);
 
+  Route::get('/inventory',[App\Http\Controllers\Admin\AdminController::class, 'inventory'])->name('inventory')->middleware(['auth:admin']);
+
 });
 
 Route::group(['prefix' => 'staff'], function () {

@@ -135,7 +135,7 @@
                         <a href="#"><i class="bx bx-download"></i><span>Stock In (Purchases)</span></a>
                     </li>
                     <li>
-                        <a href="#"><i class="bx bx-bar-chart-alt-2"></i><span>Inventory Overview</span></a>
+                        <a href="{{ url('/admin/inventory') }}"><i class="bx bx-bar-chart-alt-2"></i><span>Inventory Overview</span></a>
                     </li>
 
                     <li class="menu-title">Products & Recipes</li>
