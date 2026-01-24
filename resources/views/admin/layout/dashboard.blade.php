@@ -13,11 +13,17 @@
 
     <link rel="shortcut icon" href="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->favicon) : '' }}">
 
-    <!-- DataTables -->
+    {{-- <!-- DataTables -->
     <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" /> --}}
 
+    <!-- DataTables -->
+    <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
+
+    <!-- Responsive datatable examples -->
+    <link href="{{ asset('assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />     
     <!-- Bootstrap & App CSS -->
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" />
@@ -87,12 +93,16 @@
                         <a class="dropdown-item" href="#"><i class="bx bx-user me-1"></i>Profile</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger"
-                           href="#"
-                           onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                        href="{{ url('/admin/logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form-dropdown').submit();">
                             <i class="bx bx-power-off me-1"></i>Logout
                         </a>
-                        <form id="logout-form" method="POST">@csrf</form>
+
+                        <form id="logout-form-dropdown" action="{{ url('/admin/logout') }}" method="POST" style="display:none;">
+                            @csrf
+                        </form>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -114,12 +124,12 @@
                         <a href="{{ url('/admin/siteSettings') }}"><i class="bx bx-cog"></i><span>System Settings</span></a>
                     </li>
                     <li>
-                        <a href="#"><i class="bx bx-transfer"></i><span>Unit Management</span></a>
+                        <a href="{{ url('/admin/unitManagement') }}"><i class="bx bx-transfer"></i><span>Unit Management</span></a>
                     </li>
 
                     <li class="menu-title">Inventory Management</li>
                     <li>
-                        <a href="#"><i class="bx bx-box"></i><span>Ingredients</span></a>
+                        <a href="{{ url('/admin/ingredients') }}"><i class="bx bx-box"></i><span>Ingredients</span></a>
                     </li>
                     <li>
                         <a href="#"><i class="bx bx-download"></i><span>Stock In (Purchases)</span></a>
@@ -153,9 +163,14 @@
                     </li>
 
                     <li>
-                        <a href="#" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                        <a href="{{ url('/admin/logout') }}" 
+                        onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
                             <i class="bx bx-power-off"></i><span>Logout</span>
                         </a>
+
+                        <form id="logout-form-sidebar" action="{{ url('/admin/logout') }}" method="POST" style="display:none;">
+                            @csrf
+                        </form>
                     </li>
 
                 </ul>
@@ -188,12 +203,39 @@
 
 </div>
 
-<!-- JS -->
+{{-- <!-- JS -->
 <script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('assets/libs/metismenu/metisMenu.min.js') }}"></script>
 <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
+<script src="{{ asset('assets/js/app.js') }}"></script> --}}
+
+<!-- JAVASCRIPT -->
+<script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/libs/metismenu/metisMenu.min.js') }}"></script>
+<script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
+<script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
+<!-- Required datatable js -->
+<script src="{{ asset('assets/libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('assets/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
+<!-- Buttons examples -->
+<script src="{{ asset('assets/libs/datatables.net-buttons/js/dataTables.buttons.min.js') }}"></script>
+<script src="{{ asset('assets/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('assets/libs/jszip/jszip.min.js') }}"></script>
+<script src="{{ asset('assets/libs/pdfmake/build/pdfmake.min.js') }}"></script>
+<script src="{{ asset('assets/libs/pdfmake/build/vfs_fonts.js') }}"></script>
+<script src="{{ asset('assets/libs/datatables.net-buttons/js/buttons.html5.min.js') }}"></script>
+<script src="{{ asset('assets/libs/datatables.net-buttons/js/buttons.print.min.js') }}"></script>
+<script src="{{ asset('assets/libs/datatables.net-buttons/js/buttons.colVis.min.js') }}"></script>
+<!-- Responsive examples -->
+<script src="{{ asset('assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
+<script src="{{ asset('assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
+
+<!-- Datatable init js -->
+<script src="{{ asset('assets/js/pages/datatables.init.js') }}"></script>    
+
 <script src="{{ asset('assets/js/app.js') }}"></script>
 
 </body>

@@ -33,6 +33,17 @@ Route::group(['prefix' => 'admin'], function () {
   
   Route::get('/home', [App\Http\Controllers\Admin\AdminController::class, 'index'])->name('home')->middleware(['auth:admin']);
   Route::get('/siteSettings', [App\Http\Controllers\Admin\AdminController::class, 'siteSettings'])->name('siteSettings')->middleware(['auth:admin']);
+
+  Route::get('/unitManagement', [App\Http\Controllers\Admin\AdminController::class, 'unitManagement'])->name('unitManagement')->middleware(['auth:admin']);
+  Route::post('/newUnit', [App\Http\Controllers\Admin\AdminController::class, 'newUnit'])->name('newUnit')->middleware(['auth:admin']);
+  Route::post('/updateUnit', [App\Http\Controllers\Admin\AdminController::class, 'updateUnit'])->name('updateUnit')->middleware(['auth:admin']);
+  Route::post('/deleteUnit', [App\Http\Controllers\Admin\AdminController::class, 'deleteUnit'])->name('deleteUnit')->middleware(['auth:admin']);
+
+  Route::get('/ingredients', [App\Http\Controllers\Admin\AdminController::class, 'ingredients'])->name('ingredients')->middleware(['auth:admin']);
+  Route::post('/newIngredient', [App\Http\Controllers\Admin\AdminController::class, 'newIngredient'])->name('newIngredient')->middleware(['auth:admin']);
+  Route::post('/updateIngredient', [App\Http\Controllers\Admin\AdminController::class, 'updateIngredient'])->name('updateIngredient')->middleware(['auth:admin']);
+  Route::post('/deleteIngredient', [App\Http\Controllers\Admin\AdminController::class, 'deleteIngredient'])->name('deleteIngredient')->middleware(['auth:admin']);
+
 });
 
 Route::group(['prefix' => 'staff'], function () {
