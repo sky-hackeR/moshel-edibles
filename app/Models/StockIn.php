@@ -14,10 +14,16 @@ class StockIn extends Model
         'purchase_date',
         'supplier',
         'note',
+        'created_by',
     ];
 
     public function items()
     {
         return $this->hasMany(StockInItem::class);
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'created_by');
     }
 }

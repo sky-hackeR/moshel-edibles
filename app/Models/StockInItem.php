@@ -15,6 +15,8 @@ class StockInItem extends Model
         'unit_id',
         'quantity',
         'base_quantity',
+        'unit_price',
+        'total_price',
     ];
 
     public function ingredient()

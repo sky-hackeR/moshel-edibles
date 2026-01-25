@@ -20,6 +20,7 @@ class CreateStockInsTable extends Migration
             $table->date('purchase_date');
             $table->string('supplier')->nullable();
             $table->text('note')->nullable();
+            $table->string('created_by');
             $table->softDeletes();
             $table->timestamps();
         });

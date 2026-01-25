@@ -89,23 +89,29 @@ class AdminController extends Controller
     }
 
 
-    // public function stockIn(){
-    //     return view('admin.stockIn', [
-    //         'ingredients' => Ingredient::where('is_active', true)->get(),
-    //         'units' => Unit::where('use_for_purchase', true)->get(),
-    //         'stockIns' => StockIn::latest()->get(),
-    //     ]);
-    // }
 
     public function stockIn(){
-        $stockIns = StockIn::with('items')
+        $stockIns = StockIn::with([
+                'items',
+                'items.ingredient',
+                'items.unit',
+            ])
             ->latest()
             ->get();
 
         $stats = [
-            'today' => StockIn::whereDate('created_at', Carbon::today())->count(),
-            'month' => StockIn::whereMonth('created_at', Carbon::now()->month)->count(),
-            'items' => StockInItem::whereDate('created_at', Carbon::today())->count(),
+            // Number of purchases today
+            'today' => StockIn::whereDate('created_at', today())->count(),
+
+            // Total money spent this month
+            'month' => StockInItem::whereMonth('created_at', now()->month)
+                        ->whereYear('created_at', now()->year)
+                        ->sum('total_price'),
+
+            // Items restocked today
+            'items' => StockInItem::whereDate('created_at', today())->count(),
+
+            // Last purchase date
             'last'  => StockIn::latest()->value('purchase_date'),
         ];
 
@@ -346,6 +352,77 @@ class AdminController extends Controller
     }
 
 
+    // public function newStockIn(Request $request, UnitConverter $converter){
+    //     $validator = Validator::make($request->all(), [
+    //         'purchase_date'            => 'required|date',
+    //         'supplier'                 => 'nullable|string|max:255',
+
+    //         'items'                    => 'required|array|min:1',
+    //         'items.*.ingredient_id'    => 'required|exists:ingredients,id',
+    //         'items.*.unit_id'          => 'required|exists:units,id',
+    //         'items.*.quantity'         => 'required|numeric|min:0.001',
+    //         'items.*.unit_price'       => 'required|numeric|min:0',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         alert()
+    //             ->error('Validation Error', $validator->messages()->first())
+    //             ->persistent('Close');
+
+    //         return back()->withInput();
+    //     }
+
+    //     DB::transaction(function () use ($request, $converter) {
+
+    //         $stockIn = StockIn::create([
+    //             'reference'     => 'STK-' . strtoupper(Str::random(8)),
+    //             'purchase_date' => $request->purchase_date,
+    //             'supplier'      => $request->supplier,
+    //             'note'          => $request->note,
+    //         ]);
+
+    //         foreach ($request->items as $item) {
+
+    //             $ingredient = Ingredient::findOrFail($item['ingredient_id']);
+    //             $unit       = Unit::findOrFail($item['unit_id']);
+
+    //             // Convert to base unit (g, ml, pcs)
+    //             $baseQty = $converter->toBase(
+    //                 (float) $item['quantity'],
+    //                 $unit->symbol,
+    //                 $unit->unit_type
+    //             );
+
+    //             $unitPrice  = (float) $item['unit_price'];
+    //             $totalPrice = $unitPrice * (float) $item['quantity'];
+
+    //             StockInItem::create([
+    //                 'stock_in_id'   => $stockIn->id,
+    //                 'ingredient_id' => $ingredient->id,
+    //                 'unit_id'       => $unit->id,
+
+    //                 'quantity'      => $item['quantity'],
+    //                 'base_quantity' => $baseQty,
+
+    //                 'unit_price'    => $unitPrice,
+    //                 'total_price'   => $totalPrice,
+    //             ]);
+
+    //             // Inventory update
+    //             Inventory::firstOrCreate(
+    //                 ['ingredient_id' => $ingredient->id],
+    //                 ['quantity' => 0]
+    //             )->increment('quantity', $baseQty);
+    //         }
+    //     });
+
+    //     alert()
+    //         ->success('Success', 'Stock purchase recorded successfully')
+    //         ->persistent('Close');
+
+    //     return back();
+    // }
+
     public function newStockIn(Request $request, UnitConverter $converter){
         $validator = Validator::make($request->all(), [
             'purchase_date'          => 'required|date',
@@ -353,10 +430,11 @@ class AdminController extends Controller
             'items.*.ingredient_id'  => 'required|exists:ingredients,id',
             'items.*.unit_id'        => 'required|exists:units,id',
             'items.*.quantity'       => 'required|numeric|min:0.001',
+            'items.*.total_price'    => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
-            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            alert()->error('Validation Error', $validator->messages()->first());
             return back()->withInput();
         }
 
@@ -367,6 +445,7 @@ class AdminController extends Controller
                 'purchase_date' => $request->purchase_date,
                 'supplier'      => $request->supplier,
                 'note'          => $request->note,
+                'created_by'    => auth()->id(),
             ]);
 
             foreach ($request->items as $item) {
@@ -374,22 +453,24 @@ class AdminController extends Controller
                 $ingredient = Ingredient::findOrFail($item['ingredient_id']);
                 $unit       = Unit::findOrFail($item['unit_id']);
 
-                // Convert to ingredient base unit
                 $baseQty = $converter->toBase(
                     (float) $item['quantity'],
                     $unit->symbol,
                     $unit->unit_type
                 );
 
+                $unitPrice = $item['total_price'] / $item['quantity'];
+
                 StockInItem::create([
                     'stock_in_id'   => $stockIn->id,
                     'ingredient_id' => $ingredient->id,
                     'unit_id'       => $unit->id,
                     'quantity'      => $item['quantity'],
+                    'unit_price'    => $unitPrice,
+                    'total_price'   => $item['total_price'],
                     'base_quantity' => $baseQty,
                 ]);
 
-                // Ensure inventory row exists
                 Inventory::firstOrCreate(
                     ['ingredient_id' => $ingredient->id],
                     ['quantity' => 0]
@@ -397,8 +478,11 @@ class AdminController extends Controller
             }
         });
 
-        alert()->success('Success', 'Stock added successfully')->persistent('Close');
+        alert()->success('Success', 'Stock added successfully');
         return back();
     }
+
+
+
     
 }

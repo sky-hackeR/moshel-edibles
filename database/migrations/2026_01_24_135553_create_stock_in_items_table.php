@@ -22,6 +22,10 @@ class CreateStockInItemsTable extends Migration
 
             $table->decimal('quantity', 12, 3);
             $table->decimal('base_quantity', 12, 3); 
+
+            $table->decimal('unit_price', 12, 2);
+            $table->decimal('total_price', 14, 2);
+
             $table->softDeletes();
             $table->timestamps();
         });
