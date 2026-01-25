@@ -13,6 +13,8 @@ class UnitConverter
         string $symbol,
         string $unitType
     ): float {
+        $symbol = strtolower(trim($symbol));
+
         return match ($unitType) {
             'mass'   => $this->massToGrams($value, $symbol),
             'volume' => $this->volumeToMillilitres($value, $symbol),
@@ -33,6 +35,7 @@ class UnitConverter
             return $value * CulinaryMap::VOLUME[$symbol];
         }
 
+        // fallback to library
         $volume = new Volume($value, $symbol);
         return $volume->toUnit('ml');
     }

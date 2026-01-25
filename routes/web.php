@@ -46,6 +46,9 @@ Route::group(['prefix' => 'admin'], function () {
 
   Route::get('/inventory',[App\Http\Controllers\Admin\AdminController::class, 'inventory'])->name('inventory')->middleware(['auth:admin']);
 
+  Route::get('/stockIn',[App\Http\Controllers\Admin\AdminController::class, 'stockIn'])->name('stockIn')->middleware(['auth:admin']);
+  Route::post('/newStockIn',[App\Http\Controllers\Admin\AdminController::class, 'newStockIn'])->name('newStockIn')->middleware(['auth:admin']);
+
 });
 
 Route::group(['prefix' => 'staff'], function () {

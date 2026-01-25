@@ -132,7 +132,7 @@
                         <a href="{{ url('/admin/ingredients') }}"><i class="bx bx-box"></i><span>Ingredients</span></a>
                     </li>
                     <li>
-                        <a href="#"><i class="bx bx-download"></i><span>Stock In (Purchases)</span></a>
+                        <a href="{{ url('/admin/stockIn') }}"><i class="bx bx-download"></i><span>Stock In (Purchases)</span></a>
                     </li>
                     <li>
                         <a href="{{ url('/admin/inventory') }}"><i class="bx bx-bar-chart-alt-2"></i><span>Inventory Overview</span></a>

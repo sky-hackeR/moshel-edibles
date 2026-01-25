@@ -15,6 +15,14 @@ class CreateStockInItemsTable extends Migration
     {
         Schema::create('stock_in_items', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('stock_in_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('ingredient_id')->constrained()->restrictOnDelete();
+            $table->foreignId('unit_id')->constrained('units')->restrictOnDelete();
+
+            $table->decimal('quantity', 12, 3);
+            $table->decimal('base_quantity', 12, 3); 
+            $table->softDeletes();
             $table->timestamps();
         });
     }

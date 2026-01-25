@@ -15,6 +15,12 @@ class CreateStockInsTable extends Migration
     {
         Schema::create('stock_ins', function (Blueprint $table) {
             $table->id();
+
+            $table->string('reference')->unique();
+            $table->date('purchase_date');
+            $table->string('supplier')->nullable();
+            $table->text('note')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
