@@ -26,6 +26,9 @@ use App\Models\Ingredient;
 use App\Models\Inventory;
 use App\Models\StockIn;
 use App\Models\StockInItem;
+use App\Models\Recipe;
+use App\Models\RecipeItem;
+use App\Models\Product;
 
 use SweetAlert;
 use Alert;
@@ -89,7 +92,6 @@ class AdminController extends Controller
     }
 
 
-
     public function stockIn(){
         $stockIns = StockIn::with([
                 'items',
@@ -123,6 +125,25 @@ class AdminController extends Controller
         ]);
     }
 
+    public function products(){
+        $products = Product::latest()->get();
+        return view('admin.products', [
+            'products' => $products,
+        ]);
+    }
+
+    public function recipes(){
+        $recipes = Recipe::with(['product', 'items.ingredient', 'items.unit'])->latest()->get();
+        $products = Product::where('is_active', true)->orderBy('name', 'asc')->get();
+        $ingredients = Ingredient::where('is_active', true)->orderBy('name', 'asc')->get();
+        $units = Unit::all();
+        return view('admin.recipes', [
+            'recipes'     => $recipes,
+            'products'    => $products,
+            'ingredients' => $ingredients,
+            'units'       => $units,
+        ]);
+    }    
 
 
     public function updateSiteInfo(Request $request){
@@ -297,7 +318,6 @@ class AdminController extends Controller
         return redirect()->back();
     }
 
-
     public function updateIngredient(Request $request){
         $ingredient = Ingredient::findOrFail($request->ingredient_id);
 
@@ -334,7 +354,7 @@ class AdminController extends Controller
 
         $ingredient = Ingredient::findOrFail($request->ingredient_id);
 
-        // 🔒 Safety checks
+        // Safety checks
         if ($ingredient->inventory()->exists()) {
             alert()->error('Forbidden', 'Ingredient has inventory records and cannot be deleted')->persistent('Close');
             return redirect()->back();
@@ -351,77 +371,6 @@ class AdminController extends Controller
         return redirect()->back();
     }
 
-
-    // public function newStockIn(Request $request, UnitConverter $converter){
-    //     $validator = Validator::make($request->all(), [
-    //         'purchase_date'            => 'required|date',
-    //         'supplier'                 => 'nullable|string|max:255',
-
-    //         'items'                    => 'required|array|min:1',
-    //         'items.*.ingredient_id'    => 'required|exists:ingredients,id',
-    //         'items.*.unit_id'          => 'required|exists:units,id',
-    //         'items.*.quantity'         => 'required|numeric|min:0.001',
-    //         'items.*.unit_price'       => 'required|numeric|min:0',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         alert()
-    //             ->error('Validation Error', $validator->messages()->first())
-    //             ->persistent('Close');
-
-    //         return back()->withInput();
-    //     }
-
-    //     DB::transaction(function () use ($request, $converter) {
-
-    //         $stockIn = StockIn::create([
-    //             'reference'     => 'STK-' . strtoupper(Str::random(8)),
-    //             'purchase_date' => $request->purchase_date,
-    //             'supplier'      => $request->supplier,
-    //             'note'          => $request->note,
-    //         ]);
-
-    //         foreach ($request->items as $item) {
-
-    //             $ingredient = Ingredient::findOrFail($item['ingredient_id']);
-    //             $unit       = Unit::findOrFail($item['unit_id']);
-
-    //             // Convert to base unit (g, ml, pcs)
-    //             $baseQty = $converter->toBase(
-    //                 (float) $item['quantity'],
-    //                 $unit->symbol,
-    //                 $unit->unit_type
-    //             );
-
-    //             $unitPrice  = (float) $item['unit_price'];
-    //             $totalPrice = $unitPrice * (float) $item['quantity'];
-
-    //             StockInItem::create([
-    //                 'stock_in_id'   => $stockIn->id,
-    //                 'ingredient_id' => $ingredient->id,
-    //                 'unit_id'       => $unit->id,
-
-    //                 'quantity'      => $item['quantity'],
-    //                 'base_quantity' => $baseQty,
-
-    //                 'unit_price'    => $unitPrice,
-    //                 'total_price'   => $totalPrice,
-    //             ]);
-
-    //             // Inventory update
-    //             Inventory::firstOrCreate(
-    //                 ['ingredient_id' => $ingredient->id],
-    //                 ['quantity' => 0]
-    //             )->increment('quantity', $baseQty);
-    //         }
-    //     });
-
-    //     alert()
-    //         ->success('Success', 'Stock purchase recorded successfully')
-    //         ->persistent('Close');
-
-    //     return back();
-    // }
 
     public function newStockIn(Request $request, UnitConverter $converter){
         $validator = Validator::make($request->all(), [
@@ -480,6 +429,184 @@ class AdminController extends Controller
 
         alert()->success('Success', 'Stock added successfully');
         return back();
+    }
+
+
+    public function newProduct(Request $request){
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:products,name',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        Product::create([
+            'name'      => $request->name,
+            'slug'      => Str::slug($request->name),
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        alert()->success('Success', 'Product added successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+    public function updateProduct(Request $request){
+        $product = Product::findOrFail($request->product_id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:products,name,' . $product->id,
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        $product->update([
+            'name'      => $request->name,
+            'slug'      => Str::slug($request->name),
+            'is_active' => $request->has('is_active'),
+        ]);
+
+        alert()->success('Updated', 'Product updated successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+    public function deleteProduct(Request $request){
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $product = Product::findOrFail($request->product_id);
+
+        if ($product->recipe) {
+            alert()->error(
+                'Forbidden',
+                'Product has a recipe attached and cannot be deleted'
+            )->persistent('Close');
+
+            return redirect()->back();
+        }
+
+        $product->delete();
+
+        alert()->success('Deleted', 'Product deleted successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+
+    public function newRecipe(Request $request, UnitConverter $converter){
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id|unique:recipes,product_id',
+            'name'       => 'required',
+            'items'      => 'required|array|min:1',
+            'items.*.ingredient_id' => 'required|exists:ingredients,id',
+            'items.*.unit_id'       => 'required|exists:units,id',
+            'items.*.quantity'      => 'required|numeric|min:0.001',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        DB::transaction(function () use ($request, $converter) {
+
+            $recipe = Recipe::create([
+                'product_id' => $request->product_id,
+                'name'       => $request->name,
+                'note'       => $request->note,
+                'is_active'  => true,
+            ]);
+
+            foreach ($request->items as $item) {
+                $unit = Unit::findOrFail($item['unit_id']);
+
+                $baseQty = $converter->toBase(
+                    (float) $item['quantity'],
+                    $unit->symbol,
+                    $unit->unit_type
+                );
+
+                RecipeItem::create([
+                    'recipe_id'     => $recipe->id,
+                    'ingredient_id' => $item['ingredient_id'],
+                    'unit_id'       => $item['unit_id'],
+                    'quantity'      => $item['quantity'],
+                    'base_quantity' => $baseQty,
+                ]);
+            }
+        });
+
+        alert()->success('Success', 'Recipe created successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+    public function deleteRecipe(Request $request){
+        $validator = Validator::make($request->all(), [
+            'recipe_id' => 'required|exists:recipes,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $recipe = Recipe::findOrFail($request->recipe_id);
+
+        $recipe->items()->delete();
+        $recipe->delete();
+
+        alert()->success('Deleted', 'Recipe deleted successfully')->persistent('Close');
+        return redirect()->back();
+    }
+
+
+    public function updateRecipe(Request $request){
+        $recipe = Recipe::findOrFail($request->recipe_id);
+
+        $validator = Validator::make($request->all(), [
+            'name'  => 'required',
+            'items' => 'required|array|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        DB::transaction(function () use ($request, $recipe) {
+
+            $recipe->update([
+                'name'      => $request->name,
+                'note'      => $request->note,
+                'is_active' => $request->has('is_active'),
+            ]);
+
+            $recipe->items()->delete();
+
+            foreach ($request->items as $item) {
+                $unit = Unit::findOrFail($item['unit_id']);
+
+                RecipeItem::create([
+                    'recipe_id'     => $recipe->id,
+                    'ingredient_id' => $item['ingredient_id'],
+                    'unit_id'       => $item['unit_id'],
+                    'quantity'      => $item['quantity'],
+                    'base_quantity' => $item['quantity'] * $unit->multiplier,
+                ]);
+            }
+        });
+
+        alert()->success('Updated', 'Recipe updated successfully')->persistent('Close');
+        return redirect()->back();
     }
 
 
