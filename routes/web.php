@@ -49,6 +49,19 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/stockIn',[App\Http\Controllers\Admin\AdminController::class, 'stockIn'])->name('stockIn')->middleware(['auth:admin']);
   Route::post('/newStockIn',[App\Http\Controllers\Admin\AdminController::class, 'newStockIn'])->name('newStockIn')->middleware(['auth:admin']);
 
+
+  Route::get('/products', [App\Http\Controllers\Admin\AdminController::class, 'products'])->name('products')->middleware(['auth:admin']);
+  Route::post('/newProduct', [App\Http\Controllers\Admin\AdminController::class, 'newProduct'])->name('newProduct')->middleware(['auth:admin']);
+  Route::post('/updateProduct', [App\Http\Controllers\Admin\AdminController::class, 'updateProduct'])->name('updateProduct')->middleware(['auth:admin']);
+  Route::post('/deleteProduct', [App\Http\Controllers\Admin\AdminController::class, 'deleteProduct'])->name('deleteProduct')->middleware(['auth:admin']);
+
+  Route::get('/recipes', [App\Http\Controllers\Admin\AdminController::class, 'recipes'])->name('recipes')->middleware(['auth:admin']);
+  Route::post('/newRecipe', [App\Http\Controllers\Admin\AdminController::class, 'newRecipe'])->name('newRecipe')->middleware(['auth:admin']);
+  Route::post('/updateRecipe', [App\Http\Controllers\Admin\AdminController::class, 'updateRecipe'])->name('updateRecipe')->middleware(['auth:admin']);
+  Route::post('/deleteRecipe', [App\Http\Controllers\Admin\AdminController::class, 'deleteRecipe'])->name('deleteRecipe')->middleware(['auth:admin']);
+
+  Route::post('/produce', [App\Http\Controllers\Admin\AdminController::class, 'recordProduction'])->name('produce')->middleware(['auth:admin']);
+
 });
 
 Route::group(['prefix' => 'staff'], function () {

@@ -140,10 +140,10 @@
 
                     <li class="menu-title">Products & Recipes</li>
                     <li>
-                        <a href="#"><i class="bx bx-food-menu"></i><span>Products</span></a>
+                        <a href="{{ url('/admin/products') }}"><i class="bx bx-food-menu"></i><span>Products</span></a>
                     </li>
                     <li>
-                        <a href="#"><i class="bx bx-receipt"></i><span>Recipes</span></a>
+                        <a href="{{ url('/admin/recipes') }}"><i class="bx bx-receipt"></i><span>Recipes</span></a>
                     </li>
 
                     <li class="menu-title">Production</li>
