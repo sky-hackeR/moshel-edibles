@@ -435,6 +435,7 @@ class AdminController extends Controller
     public function newProduct(Request $request){
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:products,name',
+            'selling_price' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -445,6 +446,7 @@ class AdminController extends Controller
         Product::create([
             'name'      => $request->name,
             'slug'      => Str::slug($request->name),
+            'selling_price' => $request->selling_price,
             'is_active' => $request->has('is_active'),
         ]);
 
@@ -457,6 +459,7 @@ class AdminController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:products,name,' . $product->id,
+            'selling_price' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -467,6 +470,7 @@ class AdminController extends Controller
         $product->update([
             'name'      => $request->name,
             'slug'      => Str::slug($request->name),
+            'selling_price' => $request->selling_price,
             'is_active' => $request->has('is_active'),
         ]);
 

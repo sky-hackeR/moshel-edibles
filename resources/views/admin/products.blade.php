@@ -34,6 +34,7 @@
                         <tr>
                             <th>S/N</th>
                             <th>Name</th>
+                            <th>Selling Price</th>
                             <th>Status</th>
                             <th width="140">Actions</th>
                         </tr>
@@ -44,6 +45,7 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $product->name }}</td>
+                                <td>₦{{ number_format($product->selling_price, 2) }}</td>
                                 <td>
                                     <span class="badge bg-{{ $product->is_active ? 'success' : 'danger' }}">
                                         {{ $product->is_active ? 'Active' : 'Inactive' }}
@@ -67,7 +69,7 @@
                             {{-- EDIT MODAL --}}
                             <div class="modal fade" id="editProduct{{ $product->id }}" tabindex="-1">
                                 <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <form method="POST" action="{{ route('updateProduct') }}">
+                                    <form method="POST" action="{{ url('admin/updateProduct') }}">
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -83,6 +85,14 @@
                                                     <input type="text" name="name" class="form-control"
                                                             value="{{ $product->name }}" required>
                                                 </div>
+
+                                                <div class="col-md-12">
+                                                    <label>Selling Price (₦) *</label>
+                                                    <input type="number" step="0.01" name="selling_price"
+                                                        value="{{ $product->selling_price }}"
+                                                        class="form-control" required>
+                                                </div>
+
 
                                                 <div class="col-md-12">
                                                     <label>
@@ -107,7 +117,7 @@
                             {{-- DELETE MODAL --}}
                             <div class="modal fade" id="deleteProduct{{ $product->id }}" tabindex="-1">
                                 <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <form method="POST" action="{{ route('deleteProduct') }}">
+                                    <form method="POST" action="{{ url('admin/deleteProduct') }}">
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -152,7 +162,7 @@
 {{-- ADD PRODUCT MODAL --}}
 <div class="modal fade" id="addProduct" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <form method="POST" action="{{ route('newProduct') }}">
+        <form method="POST" action="{{ url('admin/newProduct') }}">
             @csrf
 
             <div class="modal-content">
@@ -166,6 +176,12 @@
                         <label>Name *</label>
                         <input type="text" name="name" class="form-control"
                                placeholder="e.g. Bread" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label>Selling Price (₦) *</label>
+                        <input type="number" step="0.01" name="selling_price"
+                            class="form-control" required>
                     </div>
 
                     <div class="col-md-12">

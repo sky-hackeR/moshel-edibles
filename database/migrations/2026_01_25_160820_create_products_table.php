@@ -18,6 +18,7 @@ class CreateProductsTable extends Migration
             $table->string('name')->unique();
             $table->string('slug')->unique();
             $table->boolean('is_active')->default(true);
+            $table->decimal('selling_price', 12, 2)->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

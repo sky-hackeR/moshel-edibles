@@ -13,11 +13,22 @@ class Product extends Model
         'name',
         'slug',
         'is_active',
+        'selling_price',
     ];
 
+
+    protected $casts = [
+        'selling_price' => 'float',
+        'is_active'     => 'boolean',
+    ];
 
     public function recipe()
     {
         return $this->hasOne(Recipe::class);
+    }
+
+    public function productions()
+    {
+        return $this->hasMany(Production::class);
     }
 }
