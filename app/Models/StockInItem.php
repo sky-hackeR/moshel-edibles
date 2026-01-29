@@ -9,15 +9,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class StockInItem extends Model
 {
     use HasFactory, SoftDeletes;
+
     protected $fillable = [
         'stock_in_id',
         'ingredient_id',
         'unit_id',
-        'quantity',
-        'base_quantity',
-        'unit_price',
+        'quantity',      
+        'base_quantity', 
+        'unit_price',    
         'total_price',
     ];
+
+    /**
+     * NEW HELPER: Get the cost per base unit (Price per Gram/ML)
+     */
+    public function getBaseUnitPriceAttribute()
+    {
+        return $this->base_quantity > 0 
+            ? $this->total_price / $this->base_quantity 
+            : 0;
+    }
 
     public function ingredient()
     {

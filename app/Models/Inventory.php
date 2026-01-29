@@ -12,10 +12,12 @@ class Inventory extends Model
     protected $fillable = [
         'ingredient_id',
         'quantity',
+        'average_cost',
     ];
 
     protected $casts = [
         'quantity' => 'float',
+        'average_cost' => 'float',
     ];
 
     /*

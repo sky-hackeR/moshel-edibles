@@ -8,5 +8,6 @@ class CountMap
         'pcs'      => 1,
         'doz'      => 12,
         'half_doz' => 6,
+        'crate'    => 30,
     ];
 }

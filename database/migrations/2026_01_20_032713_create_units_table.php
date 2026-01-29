@@ -13,16 +13,18 @@ class CreateUnitsTable extends Migration
 
             $table->string('name');            // Gram, Kilogram, Tablespoon
             $table->string('symbol');          // g, kg, tbsp
+            
             $table->enum('unit_type', [
                 'mass',     // g, kg, oz
                 'volume',   // ml, L, tbsp, cup
                 'count'     // piece
             ]);
 
-            $table->string('base_unit');       // g, ml, piece
+            $table->decimal('base_multiplier', 15, 4)->default(1.0000);
+
+            $table->string('base_unit'); 
 
             $table->boolean('is_active')->default(true);
-
             $table->boolean('use_for_purchase')->default(true);
             $table->boolean('use_for_recipe')->default(true);
 
@@ -38,4 +40,3 @@ class CreateUnitsTable extends Migration
         Schema::dropIfExists('units');
     }
 }
-

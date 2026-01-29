@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Unit extends Model
 {
     use SoftDeletes, HasFactory;
+
     protected $fillable = [
         'name',
         'symbol',
         'unit_type',
+        'base_multiplier', // Added: The engine field
         'base_unit',
         'is_active',
         'use_for_purchase',
@@ -20,13 +22,22 @@ class Unit extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'base_multiplier'  => 'float',   
+        'is_active'        => 'boolean',
         'use_for_purchase' => 'boolean',
-        'use_for_recipe' => 'boolean',
+        'use_for_recipe'   => 'boolean',
     ];
 
     /*
-     * Scopes (very useful for dropdowns)
+     * HELPER METHOD
+     */
+    public function toBase($quantity)
+    {
+        return (float) $quantity * (float) $this->base_multiplier;
+    }
+
+    /*
+     * Scopes
      */
 
     public function scopeActive($query){
@@ -42,8 +53,6 @@ class Unit extends Model
     }
 
     public function scopeBase($query){
-        return $query->whereColumn('symbol', 'base_unit');
+        return $query->where('base_multiplier', 1.00);
     }
-
 }
-

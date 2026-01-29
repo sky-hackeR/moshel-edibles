@@ -21,6 +21,7 @@ class CreateInventoriesTable extends Migration
                 ->onDelete('cascade');
 
             $table->decimal('quantity', 12, 3)->default(0); 
+            $table->decimal('average_cost', 12, 4)->default(0);
 
             $table->timestamps();
 
