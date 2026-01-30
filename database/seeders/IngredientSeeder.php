@@ -114,7 +114,8 @@ class IngredientSeeder extends Seeder
                 // 🔥 ALWAYS ENSURE INVENTORY EXISTS
                 Inventory::firstOrCreate(
                     ['ingredient_id' => $ingredient->id],
-                    ['quantity' => 0]
+                    ['quantity' => 0, 'average_cost' => 0],
+                    
                 );
             }
         }

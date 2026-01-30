@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\UnitConversion\UnitConverter;
 
 use App\Models\SiteInfo as Setting;
+use App\Models\Admin;
 use App\Models\Staff;
 use App\Models\Unit;
 use App\Models\Ingredient;
@@ -29,6 +30,8 @@ use App\Models\StockInItem;
 use App\Models\Recipe;
 use App\Models\RecipeItem;
 use App\Models\Product;
+use App\Models\Production;
+use App\Models\ProductionItem;
 
 use SweetAlert;
 use Alert;
@@ -91,8 +94,46 @@ class AdminController extends Controller
         ]);
     }
 
+    public function production() {
+        $products = Product::with('recipe')->where('is_active', true)->get();
+        $stats = [
+            'today_production' => \App\Models\Production::whereDate('created_at', today())->count()
+        ];
+        return view('admin.production', [
+            'products' => $products,
+            'stats' => $stats,
+        ]);
+    }
 
-    public function stockIn(){
+
+    public function productionHistory() {
+        $history = Production::with(['product', 'items.ingredient'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.productionHistory', [
+            'history' => $history,
+        ]);
+    }
+
+    public function adminList() {
+        $admins = Admin::orderBy('name', 'asc')->get();
+
+        return view('admin.admins', [
+            'admins' => $admins,
+        ]);
+    }
+
+    public function staffList() {
+        $staffs = Staff::orderBy('name', 'asc')->get();
+
+        return view('admin.staffs', [
+            'staffs' => $staffs,
+        ]);
+    }
+
+
+    public function stockIn() {
         $stockIns = StockIn::with([
                 'items',
                 'items.ingredient',
@@ -119,7 +160,7 @@ class AdminController extends Controller
 
         return view('admin.stockIn', [
             'ingredients' => Ingredient::where('is_active', true)->get(),
-            'units'       => Unit::where('use_for_purchase', true)->get(),
+            'units'       => Unit::where('use_for_purchase', true)->where('is_active', true)->get(),
             'stockIns'    => $stockIns,
             'stats'       => $stats,
         ]);
@@ -200,10 +241,11 @@ class AdminController extends Controller
 
     public function newUnit(Request $request){
         $validator = Validator::make($request->all(), [
-            'name'      => 'required|string|max:50',
-            'symbol'    => 'required|string|max:10',
-            'unit_type' => 'required|in:mass,volume,count',
-            'base_unit' => 'required|string|max:10',
+            'name'            => 'required|string|max:50',
+            'symbol'          => 'required|string|max:10',
+            'unit_type'       => 'required|in:mass,volume,count',
+            'base_multiplier' => 'required|numeric|min:0.0001', 
+            'base_unit'       => 'required|string|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -215,6 +257,7 @@ class AdminController extends Controller
             'name'             => $request->name,
             'symbol'           => strtolower($request->symbol),
             'unit_type'        => $request->unit_type,
+            'base_multiplier'  => $request->base_multiplier, 
             'base_unit'        => $request->base_unit,
             'use_for_purchase' => $request->has('use_for_purchase'),
             'use_for_recipe'   => $request->has('use_for_recipe'),
@@ -227,11 +270,12 @@ class AdminController extends Controller
 
     public function updateUnit(Request $request){
         $validator = Validator::make($request->all(), [
-            'unit_id'   => 'required|exists:units,id',
-            'name'      => 'required|string|max:50',
-            'symbol'    => 'required|string|max:10',
-            'unit_type' => 'required|in:mass,volume,count',
-            'base_unit' => 'required|string|max:10',
+            'unit_id'         => 'required|exists:units,id',
+            'name'            => 'required|string|max:50',
+            'symbol'          => 'required|string|max:10',
+            'unit_type'       => 'required|in:mass,volume,count',
+            'base_multiplier' => 'required|numeric|min:0.0001',
+            'base_unit'       => 'required|string|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -241,10 +285,14 @@ class AdminController extends Controller
 
         $unit = Unit::findOrFail($request->unit_id);
 
+        $isBase = in_array($unit->symbol, ['g', 'ml', 'pcs']);
+        $newMultiplier = $isBase ? 1.0 : $request->base_multiplier;
+
         $unit->fill([
             'name'             => $request->name,
             'symbol'           => strtolower($request->symbol),
             'unit_type'        => $request->unit_type,
+            'base_multiplier'  => $newMultiplier,
             'base_unit'        => $request->base_unit,
             'use_for_purchase' => $request->has('use_for_purchase'),
             'use_for_recipe'   => $request->has('use_for_recipe'),
@@ -273,9 +321,8 @@ class AdminController extends Controller
 
         $unit = Unit::findOrFail($request->unit_id);
 
-        // Protect base units
-        if (in_array($unit->symbol, ['g', 'ml', 'piece'])) {
-            alert()->error('Forbidden', 'Base units cannot be deleted')->persistent('Close');
+        if ($unit->base_multiplier == 1.0 && in_array($unit->symbol, ['g', 'ml', 'pcs'])) {
+            alert()->error('Forbidden', 'Core base units cannot be deleted')->persistent('Close');
             return redirect()->back();
         }
 
@@ -309,6 +356,7 @@ class AdminController extends Controller
         Inventory::create([
             'ingredient_id' => $ingredient->id,
             'quantity' => 0,
+            'average_cost' => 0,
         ]);
 
         alert()
@@ -372,7 +420,7 @@ class AdminController extends Controller
     }
 
 
-    public function newStockIn(Request $request, UnitConverter $converter){
+    public function newStockIn(Request $request) {
         $validator = Validator::make($request->all(), [
             'purchase_date'          => 'required|date',
             'items'                  => 'required|array|min:1',
@@ -387,7 +435,7 @@ class AdminController extends Controller
             return back()->withInput();
         }
 
-        DB::transaction(function () use ($request, $converter) {
+        DB::transaction(function () use ($request) {
 
             $stockIn = StockIn::create([
                 'reference'     => 'STK-' . strtoupper(Str::random(8)),
@@ -398,15 +446,10 @@ class AdminController extends Controller
             ]);
 
             foreach ($request->items as $item) {
-
                 $ingredient = Ingredient::findOrFail($item['ingredient_id']);
                 $unit       = Unit::findOrFail($item['unit_id']);
 
-                $baseQty = $converter->toBase(
-                    (float) $item['quantity'],
-                    $unit->symbol,
-                    $unit->unit_type
-                );
+                $baseQty = $unit->toBase($item['quantity']);
 
                 $unitPrice = $item['total_price'] / $item['quantity'];
 
@@ -420,16 +463,37 @@ class AdminController extends Controller
                     'base_quantity' => $baseQty,
                 ]);
 
-                Inventory::firstOrCreate(
+                $inventory = Inventory::lockForUpdate()->firstOrCreate(
                     ['ingredient_id' => $ingredient->id],
-                    ['quantity' => 0]
-                )->increment('quantity', $baseQty);
+                    ['quantity' => 0, 'average_cost' => 0]
+                );
+
+                $newUnitCost = $item['total_price'] / $baseQty;
+
+                $existingQty  = $inventory->quantity;
+                $existingCost = $inventory->average_cost;
+
+                $totalQty = $existingQty + $baseQty;
+
+                // Weighted Average Cost Formula: (Old Total Value + New Total Value) / Total Qty
+                $weightedCost = $totalQty > 0
+                    ? (
+                        ($existingQty * $existingCost) +
+                        ($baseQty * $newUnitCost)
+                    ) / $totalQty
+                    : $newUnitCost;
+
+                $inventory->update([
+                    'quantity'     => $totalQty,
+                    'average_cost' => $weightedCost,
+                ]);
             }
         });
 
         alert()->success('Success', 'Stock added successfully');
         return back();
     }
+    
 
 
     public function newProduct(Request $request){
@@ -613,7 +677,156 @@ class AdminController extends Controller
         return redirect()->back();
     }
 
+    public function recordProduction(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id',
+            'quantity'   => 'required|integer|min:1',
+            'notes'      => 'nullable|string',
+            'produced_at'=> 'nullable|date',
+        ]);
 
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
 
-    
+        // Load product with recipe, items, AND the unit relationship for conversion
+        $product = Product::with(['recipe.items.ingredient', 'recipe.items.unit'])
+            ->where('is_active', true)
+            ->findOrFail($request->product_id);
+
+        if (!$product->recipe || $product->recipe->items->isEmpty()) {
+            alert()->error('Invalid Operation', 'Product has no recipe or recipe is empty')->persistent('Close');
+            return redirect()->back();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $totalCost = 0;
+            $itemsData = [];
+
+            foreach ($product->recipe->items as $item) {
+                // CONVERSION: Convert recipe quantity to Base Units (g/ml)
+                // Example: 1 Cup (250ml multiplier) * 10 cakes = 2500ml
+                $baseQtyPerUnit = $item->unit->toBase($item->quantity); 
+                $totalRequiredBaseQty = $baseQtyPerUnit * $request->quantity;
+
+                $inventory = Inventory::where('ingredient_id', $item->ingredient_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$inventory || $inventory->quantity < $totalRequiredBaseQty) {
+                    throw new \Exception(
+                        "Insufficient stock for {$item->ingredient->name}. Needed: " . 
+                        number_format($totalRequiredBaseQty, 2) . " " . ($item->unit->base_unit ?? 'units')
+                    );
+                }
+
+                // Calculations based on Base Unit average cost
+                $unitCost = $inventory->average_cost;
+                $itemCost = $totalRequiredBaseQty * $unitCost;
+
+                // Deduct from inventory (Atomic)
+                $inventory->decrement('quantity', $totalRequiredBaseQty);
+
+                $itemsData[] = [
+                    'ingredient_id' => $item->ingredient_id,
+                    'quantity_used' => $totalRequiredBaseQty,
+                    'unit_cost'     => $unitCost,
+                    'total_cost'    => $itemCost,
+                ];
+
+                $totalCost += $itemCost;
+            }
+
+            // Business Metrics
+            $unitCost       = $totalCost / $request->quantity;
+            $sellingPrice   = $product->selling_price ?? 0;
+            $expectedRevenue = $sellingPrice * $request->quantity;
+            $profit         = $expectedRevenue - $totalCost;
+
+            $production = Production::create([
+                'product_id'       => $product->id,
+                'quantity'         => $request->quantity,
+                'unit_cost'        => $unitCost,
+                'total_cost'       => $totalCost,
+                'selling_price'    => $sellingPrice,
+                'expected_revenue' => $expectedRevenue,
+                'profit'           => $profit,
+                'notes'            => $request->notes,
+                'created_at'       => $request->produced_at ?? now(),
+            ]);
+
+            foreach ($itemsData as $data) {
+                $production->items()->create($data);
+            }
+
+            DB::commit();
+            alert()->success('Success', 'Production recorded and inventory updated.')->persistent('Close');
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            alert()->error('Production Failed', $e->getMessage())->persistent('Close');
+            return redirect()->back();
+        }
+    }
+
+    public function newAdmin(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:admins,email',
+            'password' => 'required|string|min:6|confirmed', 
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        $admin = new Admin();
+        $admin->fill([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        if ($admin->save()) {
+            alert()->success('Success', 'Admin created successfully')->persistent('Close');
+        } else {
+            alert()->error('Oops!', 'Something went wrong while creating the admin')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
+
+    public function newStaff(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:staff,email',
+            'password' => 'required|string|min:6|confirmed', 
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        $staff = new Staff();
+        $staff->fill([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        if ($staff->save()) {
+            alert()->success('Success', 'Staff created successfully')->persistent('Close');
+        } else {
+            alert()->error('Oops!', 'Something went wrong while creating the staff')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
+   
 }

@@ -148,18 +148,18 @@
 
                     <li class="menu-title">Production</li>
                     <li>
-                        <a href="#"><i class="bx bx-wrench"></i><span>Record Production</span></a>
+                        <a href="{{ url('/admin/production') }}"><i class="bx bx-wrench"></i><span>Record Production</span></a>
                     </li>
                     <li>
-                        <a href="#"><i class="bx bx-history"></i><span>Production History</span></a>
+                        <a href="{{ url('/admin/productionHistory') }}"><i class="bx bx-history"></i><span>Production History</span></a>
                     </li>
 
                     <li class="menu-title">Users</li>
                     <li>
-                        <a href="#"><i class="bx bx-user"></i><span>Admins</span></a>
+                        <a href="{{ url('/admin/adminList') }}"><i class="bx bx-user"></i><span>Admins</span></a>
                     </li>
                     <li>
-                        <a href="#"><i class="bx bx-user-check"></i><span>Production Staff</span></a>
+                        <a href="{{ url('/admin/staffList') }}"><i class="bx bx-user-check"></i><span>Production Staff</span></a>
                     </li>
 
                     <li>
