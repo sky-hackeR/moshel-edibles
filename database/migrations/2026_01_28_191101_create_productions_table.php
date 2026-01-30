@@ -17,16 +17,23 @@ class CreateProductionsTable extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
 
-            $table->integer('quantity');
+            // Production Volume
+            $table->decimal('quantity', 15, 2); 
+            
+            // Financials
             $table->decimal('unit_cost', 12, 2); 
             $table->decimal('total_cost', 12, 2);
             $table->decimal('selling_price', 12, 2);
             $table->decimal('expected_revenue', 12, 2);
             $table->decimal('profit', 12, 2);
-            $table->softDeletes();
+            
+            // Metadata
+            $table->text('notes')->nullable();
+            $table->timestamp('produced_at')->nullable();
+            
             $table->timestamps();
+            $table->softDeletes();
         });
-
     }
 
     /**

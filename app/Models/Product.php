@@ -14,6 +14,8 @@ class Product extends Model
         'slug',
         'is_active',
         'selling_price',
+        'sales_unit',    
+        'stock_on_hand',
     ];
 
 

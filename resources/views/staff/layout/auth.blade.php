@@ -1,85 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-layout-mode="light">
+
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <title>{{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : "Staff Portal" }} - Authentication</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="{{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->description : 'Staff Login' }}" name="description" />
+    
+    <link rel="shortcut icon" href="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->favicon) : '' }}">
 
-    <!-- CSRF Token -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="{{ asset('assets/libs/owl.carousel/assets/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/libs/owl.carousel/assets/owl.theme.default.min.css') }}">
 
-    <title>{{ config('app.name', 'Laravel Multi Auth Guard') }}</title>
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
 
-    <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-
-    <!-- Scripts -->
-    <script>
-        window.Laravel = <?php echo json_encode([
-            'csrfToken' => csrf_token(),
-        ]); ?>
-    </script>
 </head>
-<body>
-    <nav class="navbar navbar-default navbar-static-top">
-        <div class="container">
-            <div class="navbar-header">
 
-                <!-- Collapsed Hamburger -->
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#app-navbar-collapse">
-                    <span class="sr-only">Toggle Navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
+<body class="auth-body-bg">
+    <div class="position-fixed" style="top: 20px; right: 20px; z-index: 9999;">
+        <div class="form-check form-switch mb-3">
+            <input class="form-check-input theme-choice" type="checkbox" id="dark-mode-switch-global">
+            <label class="form-check-label fw-bold text-primary" for="dark-mode-switch-global">Dark Mode</label>
+        </div>
+    </div>
 
-                <!-- Branding Image -->
-                <a class="navbar-brand" href="{{ url('/staff') }}">
-                    {{ config('app.name', 'Laravel Multi Auth Guard') }}: Staff
-                </a>
-            </div>
+    <div>
+        <div class="container-fluid p-0">
+            <div class="row g-0">
+                <div class="col-xl-9">
+                    <div class="auth-full-bg pt-lg-5 p-4">
+                        <div class="w-100">
+                            <div class="bg-overlay"></div>
+                            <div class="d-flex h-100 flex-column">
+                                <div class="p-4 mt-auto">
+                                    <div class="row justify-content-center">
+                                        <div class="col-lg-7">
+                                            <div class="text-center">
+                                                <h4 class="mb-3 text-white"><i class="bx bxs-quote-alt-left text-primary h1 align-middle me-3"></i>Staff Excellence</h4>
+                                                <div dir="ltr">
+                                                    <div class="owl-carousel owl-theme auth-review-carousel" id="auth-review-carousel">
+                                                        <div class="item">
+                                                            <div class="py-3">
+                                                                <p class="font-size-16 text-white-50 mb-4">"Service is the lifeblood of our organization. Welcome to your workstation."</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="collapse navbar-collapse" id="app-navbar-collapse">
-                <!-- Left Side Of Navbar -->
-                <ul class="nav navbar-nav">
-                    &nbsp;
-                </ul>
-
-                <!-- Right Side Of Navbar -->
-                <ul class="nav navbar-nav navbar-right">
-                    <!-- Authentication Links -->
-                    @if (Auth::guest())
-                        <li><a href="{{ url('/staff/login') }}">Login</a></li>
-                        <li><a href="{{ url('/staff/register') }}">Register</a></li>
-                    @else
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                {{ Auth::user()->name }} <span class="caret"></span>
-                            </a>
-
-                            <ul class="dropdown-menu" role="menu">
-                                <li>
-                                    <a href="{{ url('/staff/logout') }}"
-                                        onclick="event.preventDefault();
-                                                 document.getElementById('logout-form').submit();">
-                                        Logout
-                                    </a>
-
-                                    <form id="logout-form" action="{{ url('/staff/logout') }}" method="POST" style="display: none;">
-                                        {{ csrf_field() }}
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    @endif
-                </ul>
+                <div class="col-xl-3">
+                    <div class="auth-full-page-content p-md-5 p-4">
+                        <div class="w-100">
+                            <div class="d-flex flex-column h-100">
+                                @yield('content')
+                                
+                                <div class="mt-4 mt-md-5 text-center">
+                                    <p class="mb-0">© <script>document.write(new Date().getFullYear())</> {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Company' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    @yield('content')
+    <script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/metismenu/metisMenu.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
+    <script src="{{ asset('assets/libs/owl.carousel/owl.carousel.min.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/auth-2-carousel.init.js') }}"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>

@@ -74,7 +74,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($stockIns as $stock)
+                        @foreach($stockIns as $stock)
                             <tr>
                                 <td class="fw-medium text-primary">{{ $stock->reference }}</td>
                                 <td>{{ \Carbon\Carbon::parse($stock->purchase_date)->format('M d, Y') }}</td>
@@ -95,13 +95,7 @@
                                     </button>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
-                                    No stock purchases recorded yet.
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>

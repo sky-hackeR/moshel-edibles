@@ -18,6 +18,8 @@ class Production extends Model
         'selling_price',
         'expected_revenue',
         'profit',
+        'notes',       
+        'produced_at',
     ];
 
     public function product()
