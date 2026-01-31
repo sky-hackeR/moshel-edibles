@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,       
             IngredientSeeder::class, 
             ProductSeeder::class,
+            RecipeSeeder::class,
+            StockInSeeder::class,
+            ProductionSeeder::class,
         ]);
     }
 }

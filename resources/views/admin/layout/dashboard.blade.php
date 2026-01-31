@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" href="{{ asset('assets/cdn.jsdelivr.net/gh/iconoir-icons/iconoir%40main/css/iconoir.css') }}">
 
-    <!-- TinyMCE -->
+    {{-- <!-- TinyMCE -->
     <script src="https://cdn.tiny.cloud/1/ib771jqvt5joab026vosdy4bkhoad3hty1tycnv696zoka2w/tinymce/7/tinymce.min.js"></script>
     <script>
         tinymce.init({
@@ -39,7 +39,7 @@
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks | bold italic underline | align | numlist bullist | table | removeformat'
         });
-    </script>
+    </script> --}}
 </head>
 
 <body data-sidebar="dark">
@@ -152,6 +152,14 @@
                     </li>
                     <li>
                         <a href="{{ url('/admin/productionHistory') }}"><i class="bx bx-history"></i><span>Production History</span></a>
+                    </li>
+
+                    <li class="menu-title">Sales & POS</li>
+                    <li>
+                        <a href="{{ url('/admin/pos') }}"><i class="bx bx-cart"></i><span>Point of Sale (POS)</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/admin/salesHistory') }}"><i class="bx bx-list-check"></i><span>Sales History</span></a>
                     </li>
 
                     <li class="menu-title">Users</li>

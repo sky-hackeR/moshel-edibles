@@ -62,6 +62,11 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/production', [App\Http\Controllers\Admin\ProductionController::class, 'production'])->name('production')->middleware(['auth:admin']);
   Route::post('/produce', [App\Http\Controllers\Admin\ProductionController::class, 'recordProduction'])->name('produce')->middleware(['auth:admin']);
   Route::get('/productionHistory', [App\Http\Controllers\Admin\ProductionController::class, 'productionHistory'])->name('productionHistory')->middleware(['auth:admin']);
+
+  Route::get('/pos', [App\Http\Controllers\Admin\POSController::class, 'pos'])->name('pos')->middleware(['auth:admin']);
+  Route::post('/processSale', [App\Http\Controllers\Admin\POSController::class, 'processSale'])->name('processSale')->middleware(['auth:admin']);
+  Route::get('/salesHistory', [App\Http\Controllers\Admin\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:admin']);
+  Route::get('/sales/details/{id}', [App\Http\Controllers\Admin\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:admin']);
   
   Route::get('/adminList', [App\Http\Controllers\Admin\AdminController::class, 'adminList'])->name('admins')->middleware(['auth:admin']);
   Route::post('/newAdmin', [App\Http\Controllers\Admin\AdminController::class, 'newAdmin'])->name('newAdmin')->middleware(['auth:admin']);
