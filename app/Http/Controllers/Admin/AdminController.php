@@ -33,6 +33,9 @@ use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductionItem;
 
+use App\Models\Sale;
+use App\Models\SaleItem;
+
 use SweetAlert;
 use Alert;
 use Log;
@@ -40,13 +43,143 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
+    // public function index(){
+    //     $today = Carbon::today();
+    //     $yesterday = Carbon::yesterday();
 
+    //     // 1. Core Stats
+    //     $todayRevenue = Sale::whereDate('created_at', $today)->sum('payable_amount');
+    //     $yesterdayRevenue = Sale::whereDate('created_at', $yesterday)->sum('payable_amount');
+        
+    //     $todayPurchases = StockInItem::whereDate('created_at', $today)->sum('total_price');
+    //     $todayProductionCost = Production::whereDate('produced_at', $today)->sum('total_cost');
+    //     $todaySpent = $todayPurchases + $todayProductionCost;
+    //     $todayProfit = $todayRevenue - $todaySpent;
+    //     $todaySalesCount = Sale::whereDate('created_at', $today)->count();
 
+    //     // 2. Smart Insights Logic
+    //     $revenueChange = 0;
+    //     if ($yesterdayRevenue > 0) {
+    //         $revenueChange = (($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100;
+    //     }
 
-    public function index(){    
-        return view('admin.home');
+    //     $lowStockCount = Product::where('stock_on_hand', '<=', 10)->count();
+
+    //     // 3. Payment Method Distribution
+    //     $paymentData = Sale::select('payment_method', DB::raw('count(*) as count'))
+    //         ->groupBy('payment_method')
+    //         ->orderBy('count', 'desc')
+    //         ->get();
+        
+    //     $topPaymentMethod = $paymentData->first()->payment_method ?? 'N/A';
+
+    //     // 4. Forecast Logic
+    //     $lastThreeDaysAvg = Sale::whereDate('created_at', '>=', Carbon::now()->subDays(3))
+    //         ->select(DB::raw('SUM(payable_amount) as total'))
+    //         ->groupBy(DB::raw('Date(created_at)'))
+    //         ->get()
+    //         ->avg('total');
+    //     $forecastRevenue = $lastThreeDaysAvg ?? 0;
+
+    //     // 5. Charts
+    //     $chartDays = [];
+    //     $chartRevenues = [];
+    //     for ($i = 6; $i >= 0; $i--) {
+    //         $date = Carbon::now()->subDays($i);
+    //         $chartDays[] = $date->format('D, d M');
+    //         $chartRevenues[] = (float) Sale::whereDate('created_at', $date->toDateString())->sum('payable_amount');
+    //     }
+
+    //     $topProducts = SaleItem::with('product')
+    //         ->select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(quantity * unit_price) as total_revenue'))
+    //         ->groupBy('product_id')
+    //         ->orderBy('total_qty', 'desc')
+    //         ->take(5)
+    //         ->get();
+
+    //     $lowStockProducts = Product::where('stock_on_hand', '<=', 10)
+    //         ->where('is_active', true)
+    //         ->orderBy('stock_on_hand', 'asc')
+    //         ->take(5)
+    //         ->get();
+
+    //     return view('admin.home', [
+    //         'todayRevenue'     => $todayRevenue,
+    //         'todaySpent'       => $todaySpent,
+    //         'todayProfit'      => $todayProfit,
+    //         'todaySalesCount'  => $todaySalesCount,
+    //         'revenueChange'    => round($revenueChange, 1),
+    //         'lowStockCount'    => $lowStockCount,
+    //         'topPaymentMethod' => $topPaymentMethod,
+    //         'forecastRevenue'  => $forecastRevenue,
+    //         'chartDays'        => $chartDays,
+    //         'chartRevenues'    => $chartRevenues,
+    //         'topProducts'      => $topProducts,
+    //         'lowStockProducts' => $lowStockProducts,
+    //         'paymentLabels'    => $paymentData->pluck('payment_method')->toArray(),
+    //         'paymentCounts'    => $paymentData->pluck('count')->toArray(),
+    //     ]);
+    // }
+    public function index(){
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+        // 1. Core Stats
+        $todayRevenue = Sale::whereDate('created_at', $today)->sum('payable_amount');
+        
+        // Split the logic: Purchases is stock investment, Production is the actual expense
+        $todayPurchases = StockInItem::whereDate('created_at', $today)->sum('total_price');
+        $todayProductionCost = Production::whereDate('produced_at', $today)->sum('total_cost');
+        
+        // FIX: Only count Production Cost as the expense for profit calculation
+        $todaySpent = $todayProductionCost; 
+        $todayProfit = $todayRevenue - $todaySpent;
+        
+        $todaySalesCount = Sale::whereDate('created_at', $today)->count();
+
+        // 2. Charts Data (Last 7 Days)
+        $chartDays = [];
+        $chartRevenues = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $chartDays[] = $date->format('D, d M');
+            $chartRevenues[] = (float) Sale::whereDate('created_at', $date->toDateString())->sum('payable_amount');
+        }
+
+        // 3. Tables Data
+        $topProducts = SaleItem::with('product')
+            ->select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(quantity * unit_price) as total_revenue'))
+            ->groupBy('product_id')
+            ->orderBy('total_qty', 'desc')
+            ->take(5)
+            ->get();
+
+        $lowStockProducts = Product::where('stock_on_hand', '<=', 10)
+            ->where('is_active', true)
+            ->orderBy('stock_on_hand', 'asc')
+            ->take(5)
+            ->get();
+
+        // 4. Payment Method Distribution
+        $paymentData = Sale::select('payment_method', DB::raw('count(*) as count'))
+            ->groupBy('payment_method')
+            ->get();
+
+        return view('admin.home', [
+            'todayRevenue'        => $todayRevenue,
+            'todayPurchases'      => $todayPurchases,
+            'todayProductionCost' => $todayProductionCost,
+            'todaySpent'          => $todaySpent,
+            'todayProfit'         => $todayProfit,
+            'todaySalesCount'     => $todaySalesCount,
+            'chartDays'           => $chartDays,
+            'chartRevenues'       => $chartRevenues,
+            'topProducts'         => $topProducts,
+            'lowStockProducts'    => $lowStockProducts,
+            'paymentLabels'       => $paymentData->pluck('payment_method')->toArray(),
+            'paymentCounts'       => $paymentData->pluck('count')->toArray(),
+        ]);
     }
-
 
     //GLOBAL SITE SETTINGS LOGIC
     public function siteSettings(){

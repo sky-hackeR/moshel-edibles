@@ -42,7 +42,7 @@
     </script> --}}
 </head>
 
-<body data-sidebar="dark">
+<body data-sidebar="light">
 @include('sweetalert::alert')
 
 <div id="layout-wrapper">

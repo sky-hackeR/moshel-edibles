@@ -73,6 +73,14 @@
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2">
                                         <a href="javascript:void(0);" 
+                                        class="btn btn-soft-primary btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#viewProduct{{ $product->id }}" 
+                                        title="View Product Details">
+                                            <i class="mdi mdi-eye-outline font-size-16"></i>
+                                        </a>
+
+                                        <a href="javascript:void(0);" 
                                         class="btn btn-soft-info btn-sm" 
                                         data-bs-toggle="modal" 
                                         data-bs-target="#editProduct{{ $product->id }}" 
@@ -97,6 +105,77 @@
         </div>
     </div>
 </div>
+
+@foreach($products as $product)
+    {{-- VIEW MODAL --}}
+    <div class="modal fade" id="viewProduct{{ $product->id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title">Product Specifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="text-center bg-light p-4 border-bottom">
+                        <div class="avatar-md mx-auto mb-3">
+                            <span class="avatar-title rounded-circle bg-primary-subtle text-primary font-size-24">
+                                {{ substr($product->name, 0, 1) }}
+                            </span>
+                        </div>
+                        <h5 class="font-size-16 mb-1">{{ $product->name }}</h5>
+                        <p class="text-muted mb-0">System ID: #{{ str_pad($product->id, 5, '0', STR_PAD_LEFT) }}</p>
+                    </div>
+
+                    <div class="p-4">
+                        <div class="row g-3">
+                            <div class="col-6 border-end">
+                                <p class="text-muted mb-1 small uppercase fw-bold">Current Stock</p>
+                                <h5 class="font-size-15 mb-0 {{ $product->stock_on_hand > 0 ? 'text-success' : 'text-danger' }}">
+                                    {{ (float)$product->stock_on_hand }} {{ $product->sales_unit }}
+                                </h5>
+                            </div>
+                            <div class="col-6 ps-3">
+                                <p class="text-muted mb-1 small uppercase fw-bold">Selling Price</p>
+                                <h5 class="font-size-15 mb-0">₦{{ number_format($product->selling_price, 2) }}</h5>
+                            </div>
+                            
+                            <hr class="my-3">
+
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Status:</span>
+                                    @if($product->is_active)
+                                        <span class="badge bg-success-subtle text-success">Active Business Item</span>
+                                    @else
+                                        <span class="badge bg-danger-subtle text-danger">Disabled</span>
+                                    @endif
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Recipe Config:</span>
+                                    @if($product->recipe)
+                                        <span class="text-info fw-medium"><i class="mdi mdi-check-circle"></i> Configured</span>
+                                    @else
+                                        <span class="text-warning fw-medium"><i class="mdi mdi-alert"></i> Not Set</span>
+                                    @endif
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Added On:</span>
+                                    <span class="fw-medium text-dark">{{ $product->created_at->format('M d, Y') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProduct{{ $product->id }}">
+                        <i class="mdi mdi-pencil me-1"></i> Quick Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
 
 @foreach($products as $product)
     {{-- DELETE MODAL --}}
