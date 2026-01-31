@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-use App\Services\UnitConversion\UnitConverter;
+// Mailables
+use App\Mail\Recipe\RecipeUpdated;
+use App\Mail\Recipe\RecipeDeleted;
 
+use App\Services\UnitConversion\UnitConverter;
 use App\Models\SiteInfo as Setting;
 use App\Models\Admin;
 use App\Models\Staff;
@@ -31,7 +34,6 @@ use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductionItem;
 
-
 use SweetAlert;
 use Alert;
 use Log;
@@ -39,7 +41,6 @@ use Carbon\Carbon;
 
 class RecipeController extends Controller
 {
-    //
     public function recipes(){
         $recipes = Recipe::with(['product', 'items.ingredient', 'items.unit'])->latest()->get();
         $products = Product::where('is_active', true)->orderBy('name', 'asc')->get();
@@ -69,7 +70,6 @@ class RecipeController extends Controller
         }
 
         DB::transaction(function () use ($request, $converter) {
-
             $recipe = Recipe::create([
                 'product_id' => $request->product_id,
                 'name'       => $request->name,
@@ -111,14 +111,30 @@ class RecipeController extends Controller
         }
 
         $recipe = Recipe::findOrFail($request->recipe_id);
+        $user = Auth::user();
+        $recipeName = $recipe->name;
 
-        $recipe->items()->delete();
-        $recipe->delete();
+        DB::beginTransaction();
+        try {
+            $recipe->items()->delete();
+            $recipe->delete();
 
-        alert()->success('Deleted', 'Recipe deleted successfully')->persistent('Close');
+            // Notify Admins
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new RecipeDeleted($recipeName, $user));
+            }
+
+            DB::commit();
+            alert()->success('Deleted', 'Recipe deleted successfully')->persistent('Close');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Recipe Deletion Failed: " . $e->getMessage());
+            alert()->error('Error', 'Failed to delete recipe.')->persistent('Close');
+        }
+
         return redirect()->back();
     }
-
 
     public function updateRecipe(Request $request){
         $recipe = Recipe::findOrFail($request->recipe_id);
@@ -126,6 +142,9 @@ class RecipeController extends Controller
         $validator = Validator::make($request->all(), [
             'name'  => 'required',
             'items' => 'required|array|min:1',
+            'items.*.ingredient_id' => 'required|exists:ingredients,id',
+            'items.*.unit_id'       => 'required|exists:units,id',
+            'items.*.quantity'      => 'required|numeric|min:0.001',
         ]);
 
         if ($validator->fails()) {
@@ -133,8 +152,8 @@ class RecipeController extends Controller
             return redirect()->back();
         }
 
-        DB::transaction(function () use ($request, $recipe) {
-
+        DB::beginTransaction();
+        try {
             $recipe->update([
                 'name'      => $request->name,
                 'note'      => $request->note,
@@ -154,9 +173,21 @@ class RecipeController extends Controller
                     'base_quantity' => $item['quantity'] * $unit->multiplier,
                 ]);
             }
-        });
 
-        alert()->success('Updated', 'Recipe updated successfully')->persistent('Close');
+            // Notify Admins
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new RecipeUpdated($recipe, Auth::user()));
+            }
+
+            DB::commit();
+            alert()->success('Updated', 'Recipe updated successfully')->persistent('Close');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Recipe Update Failed: " . $e->getMessage());
+            alert()->error('Error', 'Update failed: ' . $e->getMessage())->persistent('Close');
+        }
+
         return redirect()->back();
     }
 }

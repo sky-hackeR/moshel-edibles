@@ -4,44 +4,31 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Requests;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
-use App\Services\UnitConversion\UnitConverter;
+// Mailables
+use App\Mail\Stock\StockInRecorded;
+use App\Mail\Stock\LowStockAlert;
 
-use App\Models\SiteInfo as Setting;
+// Models
 use App\Models\Admin;
-use App\Models\Staff;
 use App\Models\Unit;
 use App\Models\Ingredient;
 use App\Models\Inventory;
 use App\Models\StockIn;
 use App\Models\StockInItem;
-use App\Models\Recipe;
-use App\Models\RecipeItem;
-use App\Models\Product;
-use App\Models\Production;
-use App\Models\ProductionItem;
-
-
-use SweetAlert;
-use Alert;
-use Log;
-use Carbon\Carbon;
 
 class StockController extends Controller
 {
-    //
-
-     public function inventory(){
+    /**
+     * Display current inventory levels
+     */
+    public function inventory() {
         $inventories = Inventory::with(['ingredient.baseUnit'])
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -51,6 +38,9 @@ class StockController extends Controller
         ]);
     }
 
+    /**
+     * Display Stock In history and stats
+     */
     public function stockIn() {
         $stockIns = StockIn::with([
                 'items',
@@ -61,18 +51,11 @@ class StockController extends Controller
             ->get();
 
         $stats = [
-            // Number of purchases today
             'today' => StockIn::whereDate('created_at', today())->count(),
-
-            // Total money spent this month
             'month' => StockInItem::whereMonth('created_at', now()->month)
                         ->whereYear('created_at', now()->year)
                         ->sum('total_price'),
-
-            // Items restocked today
             'items' => StockInItem::whereDate('created_at', today())->count(),
-
-            // Last purchase date
             'last'  => StockIn::latest()->value('purchase_date'),
         ];
 
@@ -84,6 +67,9 @@ class StockController extends Controller
         ]);
     }
 
+    /**
+     * Record a new stock purchase and update inventory
+     */
     public function newStockIn(Request $request) {
         $validator = Validator::make($request->all(), [
             'purchase_date'          => 'required|date',
@@ -99,7 +85,10 @@ class StockController extends Controller
             return back()->withInput();
         }
 
-        DB::transaction(function () use ($request) {
+        DB::beginTransaction();
+
+        try {
+            $totalSpent = 0;
 
             $stockIn = StockIn::create([
                 'reference'     => 'STK-' . strtoupper(Str::random(8)),
@@ -113,8 +102,8 @@ class StockController extends Controller
                 $ingredient = Ingredient::findOrFail($item['ingredient_id']);
                 $unit       = Unit::findOrFail($item['unit_id']);
 
+                // Normalize to Base Truth
                 $baseQty = $unit->toBase($item['quantity']);
-
                 $unitPrice = $item['total_price'] / $item['quantity'];
 
                 StockInItem::create([
@@ -127,24 +116,22 @@ class StockController extends Controller
                     'base_quantity' => $baseQty,
                 ]);
 
+                $totalSpent += $item['total_price'];
+
                 $inventory = Inventory::lockForUpdate()->firstOrCreate(
                     ['ingredient_id' => $ingredient->id],
                     ['quantity' => 0, 'average_cost' => 0]
                 );
 
+                // Weighted Average Cost Calculation
                 $newUnitCost = $item['total_price'] / $baseQty;
-
                 $existingQty  = $inventory->quantity;
                 $existingCost = $inventory->average_cost;
 
                 $totalQty = $existingQty + $baseQty;
 
-                // Weighted Average Cost Formula: (Old Total Value + New Total Value) / Total Qty
                 $weightedCost = $totalQty > 0
-                    ? (
-                        ($existingQty * $existingCost) +
-                        ($baseQty * $newUnitCost)
-                    ) / $totalQty
+                    ? (($existingQty * $existingCost) + ($baseQty * $newUnitCost)) / $totalQty
                     : $newUnitCost;
 
                 $inventory->update([
@@ -152,9 +139,80 @@ class StockController extends Controller
                     'average_cost' => $weightedCost,
                 ]);
             }
-        });
 
-        alert()->success('Success', 'Stock added successfully');
-        return back();
+            // 1. Notify Admins of the new purchase
+            $this->notifyPurchase($stockIn, $totalSpent);
+
+            // 2. Perform low stock check across all ingredients
+            $this->checkLowStock();
+
+            DB::commit();
+            alert()->success('Success', 'Stock added successfully');
+            return back();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Stock In failed: " . $e->getMessage());
+            alert()->error('Error', 'Transaction failed: ' . $e->getMessage());
+            return back();
+        }
+    }
+
+    /**
+     * Send email notification for a completed Stock In purchase
+     */
+    private function notifyPurchase($stockIn, $totalSpent) {
+        try {
+            $adminEmails = Admin::pluck('email')->toArray();
+            if (!empty($adminEmails)) {
+                Mail::to($adminEmails)->send(new StockInRecorded($stockIn, $totalSpent, Auth::user()));
+            }
+        } catch (\Exception $e) {
+            Log::error("Stock In Mail notification failed: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Scan inventory for items below reorder levels (Base Truth aware)
+     */
+    private function checkLowStock() {
+        try {
+            // Define thresholds based on normalized units (Base Truth)
+            $thresholds = [
+                'gram' => 1000, // Warn at 1kg
+                'ml'   => 1000, // Warn at 1 Litre
+                'pcs'  => 10,   // Warn at 10 units
+            ];
+
+            $lowStockItems = Inventory::with(['ingredient.baseUnit'])
+                ->get()
+                ->filter(function($inventory) use ($thresholds) {
+                    $ingredient = $inventory->ingredient;
+                    if (!$ingredient) return false;
+                    
+                    // Priority 1: Specific reorder level in DB
+                    if ($ingredient->reorder_level > 0) {
+                        return $inventory->quantity <= $ingredient->reorder_level;
+                    }
+
+                    // Priority 2: Base Truth Global Fallback
+                    $unitName = strtolower($ingredient->baseUnit->name ?? '');
+                    if (array_key_exists($unitName, $thresholds)) {
+                        return $inventory->quantity <= $thresholds[$unitName];
+                    }
+
+                    // Priority 3: Final safety fallback
+                    return $inventory->quantity <= 0;
+                });
+
+            if ($lowStockItems->isNotEmpty()) {
+                $adminEmails = Admin::pluck('email')->toArray();
+                if (!empty($adminEmails)) {
+                    Mail::to($adminEmails)->send(new LowStockAlert($lowStockItems));
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("Low Stock Check Error: " . $e->getMessage());
+        }
     }
 }

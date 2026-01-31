@@ -38,7 +38,6 @@
                         <tr>
                             <td>{{ $sale->created_at->format('d M, Y H:i') }}</td>
                             <td><span class="fw-bold text-primary">{{ $sale->reference_no }}</span></td>
-                            {{-- This now displays the correct Admin or Staff name --}}
                             <td>{{ $sale->seller_name }}</td>
                             <td>₦{{ number_format($sale->payable_amount, 2) }}</td>
                             <td>
@@ -51,6 +50,9 @@
                                 <button class="btn btn-primary btn-sm" onclick="viewSaleDetails({{ $sale->id }})">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
+                                <button class="btn btn-danger btn-sm" onclick="confirmVoid({{ $sale->id }}, '{{ $sale->reference_no }}')">
+                                    <i class="mdi mdi-trash-can me-1"></i> Void
+                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -61,7 +63,7 @@
     </div>
 </div>
 
-{{-- MODAL --}}
+{{-- RECEIPT MODAL --}}
 <div class="modal fade" id="saleDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -70,16 +72,42 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0" id="saleDetailsContent">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
                 </div>
-            </div>
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-success" onclick="printReceipt()">
                     <i class="mdi mdi-printer me-1"></i> Print Receipt
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+{{-- VOID MODAL --}}
+<div class="modal fade" id="voidSaleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ url('admin/sales/void') }}" method="POST">
+                @csrf
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title text-white">Void Transaction</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="sale_id" id="void_sale_id">
+                    <p>Are you sure you want to void transaction <strong id="void_ref_display"></strong>?</p>
+                    <p class="text-muted small">This will restore stock levels and notify the administrator.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Voiding</label>
+                        <textarea name="reason" class="form-control" rows="3" required placeholder="e.g. Wrong item selected, payment failed..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Void</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -93,7 +121,6 @@
         modal.show();
 
         try {
-            // Updated fetch URL to use absolute path
             const response = await fetch("{{ url('admin/sales/details') }}/" + saleId);
             const data = await response.json();
 
@@ -111,7 +138,7 @@
                 });
 
                 content.innerHTML = `
-                    <div class="p-4">
+                    <div id="receipt-print-area" class="p-4">
                         <div class="text-center mb-4">
                             <h4 class="fw-bold mb-0">RECEIPT</h4>
                             <small class="text-muted">${data.sale.reference_no}</small>
@@ -143,12 +170,41 @@
         }
     }
 
+    function confirmVoid(id, ref) {
+        document.getElementById('void_sale_id').value = id;
+        document.getElementById('void_ref_display').innerText = ref;
+        const voidModal = new bootstrap.Modal(document.getElementById('voidSaleModal'));
+        voidModal.show();
+    }
+
     function printReceipt() {
-        const content = document.getElementById('saleDetailsContent').innerHTML;
-        const printWindow = window.open('', '', 'height=600,width=400');
-        printWindow.document.write('<html><head><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"></head><body onload="window.print(); window.close();">');
-        printWindow.document.write(content);
-        printWindow.document.write('</body></html>');
+        const content = document.getElementById('receipt-print-area').innerHTML;
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+        
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Receipt</title>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+                    <style>
+                        body { font-family: 'Courier New', Courier, monospace; width: 80mm; margin: 0 auto; padding: 10px; }
+                        @media print {
+                            @page { margin: 0; size: 80mm auto; }
+                            .btn, .modal-footer, .btn-close { display: none !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(() => { window.close(); }, 500);
+                        };
+                    <\/script>
+                </body>
+            </html>
+        `);
         printWindow.document.close();
     }
 </script>

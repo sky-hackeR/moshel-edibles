@@ -15,10 +15,14 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
-
+// Import your new Mailables
+use App\Mail\Admin\AccountCreated as AdminAccountMail;
+use App\Mail\Admin\AdminCreated as SecurityAlertMail;
+use App\Mail\Staff\Created as StaffWelcomeMail;
+use App\Mail\Finance\DailyPerformance;
+use App\Mail\Finance\LowStockAlert;
 
 use App\Services\UnitConversion\UnitConverter;
-
 use App\Models\SiteInfo as Setting;
 use App\Models\Admin;
 use App\Models\Staff;
@@ -32,7 +36,6 @@ use App\Models\RecipeItem;
 use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductionItem;
-
 use App\Models\Sale;
 use App\Models\SaleItem;
 
@@ -43,98 +46,16 @@ use Carbon\Carbon;
 
 class AdminController extends Controller
 {
-    // public function index(){
-    //     $today = Carbon::today();
-    //     $yesterday = Carbon::yesterday();
-
-    //     // 1. Core Stats
-    //     $todayRevenue = Sale::whereDate('created_at', $today)->sum('payable_amount');
-    //     $yesterdayRevenue = Sale::whereDate('created_at', $yesterday)->sum('payable_amount');
-        
-    //     $todayPurchases = StockInItem::whereDate('created_at', $today)->sum('total_price');
-    //     $todayProductionCost = Production::whereDate('produced_at', $today)->sum('total_cost');
-    //     $todaySpent = $todayPurchases + $todayProductionCost;
-    //     $todayProfit = $todayRevenue - $todaySpent;
-    //     $todaySalesCount = Sale::whereDate('created_at', $today)->count();
-
-    //     // 2. Smart Insights Logic
-    //     $revenueChange = 0;
-    //     if ($yesterdayRevenue > 0) {
-    //         $revenueChange = (($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100;
-    //     }
-
-    //     $lowStockCount = Product::where('stock_on_hand', '<=', 10)->count();
-
-    //     // 3. Payment Method Distribution
-    //     $paymentData = Sale::select('payment_method', DB::raw('count(*) as count'))
-    //         ->groupBy('payment_method')
-    //         ->orderBy('count', 'desc')
-    //         ->get();
-        
-    //     $topPaymentMethod = $paymentData->first()->payment_method ?? 'N/A';
-
-    //     // 4. Forecast Logic
-    //     $lastThreeDaysAvg = Sale::whereDate('created_at', '>=', Carbon::now()->subDays(3))
-    //         ->select(DB::raw('SUM(payable_amount) as total'))
-    //         ->groupBy(DB::raw('Date(created_at)'))
-    //         ->get()
-    //         ->avg('total');
-    //     $forecastRevenue = $lastThreeDaysAvg ?? 0;
-
-    //     // 5. Charts
-    //     $chartDays = [];
-    //     $chartRevenues = [];
-    //     for ($i = 6; $i >= 0; $i--) {
-    //         $date = Carbon::now()->subDays($i);
-    //         $chartDays[] = $date->format('D, d M');
-    //         $chartRevenues[] = (float) Sale::whereDate('created_at', $date->toDateString())->sum('payable_amount');
-    //     }
-
-    //     $topProducts = SaleItem::with('product')
-    //         ->select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(quantity * unit_price) as total_revenue'))
-    //         ->groupBy('product_id')
-    //         ->orderBy('total_qty', 'desc')
-    //         ->take(5)
-    //         ->get();
-
-    //     $lowStockProducts = Product::where('stock_on_hand', '<=', 10)
-    //         ->where('is_active', true)
-    //         ->orderBy('stock_on_hand', 'asc')
-    //         ->take(5)
-    //         ->get();
-
-    //     return view('admin.home', [
-    //         'todayRevenue'     => $todayRevenue,
-    //         'todaySpent'       => $todaySpent,
-    //         'todayProfit'      => $todayProfit,
-    //         'todaySalesCount'  => $todaySalesCount,
-    //         'revenueChange'    => round($revenueChange, 1),
-    //         'lowStockCount'    => $lowStockCount,
-    //         'topPaymentMethod' => $topPaymentMethod,
-    //         'forecastRevenue'  => $forecastRevenue,
-    //         'chartDays'        => $chartDays,
-    //         'chartRevenues'    => $chartRevenues,
-    //         'topProducts'      => $topProducts,
-    //         'lowStockProducts' => $lowStockProducts,
-    //         'paymentLabels'    => $paymentData->pluck('payment_method')->toArray(),
-    //         'paymentCounts'    => $paymentData->pluck('count')->toArray(),
-    //     ]);
-    // }
     public function index(){
         $today = Carbon::today();
-        $yesterday = Carbon::yesterday();
-
+        
         // 1. Core Stats
         $todayRevenue = Sale::whereDate('created_at', $today)->sum('payable_amount');
-        
-        // Split the logic: Purchases is stock investment, Production is the actual expense
         $todayPurchases = StockInItem::whereDate('created_at', $today)->sum('total_price');
         $todayProductionCost = Production::whereDate('produced_at', $today)->sum('total_cost');
         
-        // FIX: Only count Production Cost as the expense for profit calculation
         $todaySpent = $todayProductionCost; 
         $todayProfit = $todayRevenue - $todaySpent;
-        
         $todaySalesCount = Sale::whereDate('created_at', $today)->count();
 
         // 2. Charts Data (Last 7 Days)
@@ -179,6 +100,106 @@ class AdminController extends Controller
             'paymentLabels'       => $paymentData->pluck('payment_method')->toArray(),
             'paymentCounts'       => $paymentData->pluck('count')->toArray(),
         ]);
+    }
+
+    public function newAdmin(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:admins,email',
+            'password' => 'required|string|min:6|confirmed', 
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        $admin = new Admin();
+        $admin->fill([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        if ($admin->save()) {
+            try {
+                // Mail 1: To the new Admin with their credentials
+                Mail::to($admin->email)->send(new AdminAccountMail($admin, $request->password));
+                
+                // Mail 2: Security Alert to the Admin who performed the action
+                Mail::to(Auth::user()->email)->send(new SecurityAlertMail($admin, Auth::user()));
+                
+                alert()->success('Success', 'Admin created and notification emails sent')->persistent('Close');
+            } catch (\Exception $e) {
+                Log::error("Email failed: " . $e->getMessage());
+                alert()->success('Success', 'Admin created, but email notifications failed. Check logs.')->persistent('Close');
+            }
+        } else {
+            alert()->error('Oops!', 'Something went wrong while creating the admin')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
+
+    public function newStaff(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:staff,email',
+            'password' => 'required|string|min:6|confirmed', 
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back()->withInput();
+        }
+
+        $staff = new Staff();
+        $staff->fill([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        if ($staff->save()) {
+            try {
+                // Mail the new staff member
+                Mail::to($staff->email)->send(new StaffWelcomeMail($staff, $request->password));
+                alert()->success('Success', 'Staff created and welcome email sent')->persistent('Close');
+            } catch (\Exception $e) {
+                Log::error("Staff Email failed: " . $e->getMessage());
+                alert()->success('Success', 'Staff created, but welcome email failed.')->persistent('Close');
+            }
+        } else {
+            alert()->error('Oops!', 'Something went wrong while creating the staff')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Manual trigger for Daily Financial Report
+     * Can be linked to a button: /admin/send-report
+     */
+    public function sendDailyReport() {
+        $today = Carbon::today();
+        
+        $stats = [
+            'revenue' => Sale::whereDate('created_at', $today)->sum('payable_amount'),
+            'cost'    => Production::whereDate('produced_at', $today)->sum('total_cost'),
+        ];
+        $stats['profit'] = $stats['revenue'] - $stats['cost'];
+
+        // Send Report
+        Mail::to(Auth::user()->email)->send(new DailyPerformance($stats));
+
+        // Check for Low Stock and include in alert if any exist
+        $lowStock = Product::where('stock_on_hand', '<=', 10)->where('is_active', true)->get();
+        if($lowStock->count() > 0) {
+            Mail::to(Auth::user()->email)->send(new LowStockAlert($lowStock));
+        }
+
+        alert()->success('Mailed!', 'Report and alerts sent to your inbox.')->persistent('Close');
+        return redirect()->back();
     }
 
     //GLOBAL SITE SETTINGS LOGIC
@@ -256,62 +277,7 @@ class AdminController extends Controller
     
         alert()->error('Oops!', 'Something went wrong')->persistent('Close');
         return redirect()->back();
-    }  
-
-    public function newAdmin(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|max:255|unique:admins,email',
-            'password' => 'required|string|min:6|confirmed', 
-        ]);
-
-        if ($validator->fails()) {
-            alert()->error('Error', $validator->messages()->first())->persistent('Close');
-            return redirect()->back()->withInput();
-        }
-
-        $admin = new Admin();
-        $admin->fill([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-
-        if ($admin->save()) {
-            alert()->success('Success', 'Admin created successfully')->persistent('Close');
-        } else {
-            alert()->error('Oops!', 'Something went wrong while creating the admin')->persistent('Close');
-        }
-
-        return redirect()->back();
     }
-
-    public function newStaff(Request $request) {
-        $validator = Validator::make($request->all(), [
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|max:255|unique:staff,email',
-            'password' => 'required|string|min:6|confirmed', 
-        ]);
-
-        if ($validator->fails()) {
-            alert()->error('Error', $validator->messages()->first())->persistent('Close');
-            return redirect()->back()->withInput();
-        }
-
-        $staff = new Staff();
-        $staff->fill([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-
-        if ($staff->save()) {
-            alert()->success('Success', 'Staff created successfully')->persistent('Close');
-        } else {
-            alert()->error('Oops!', 'Something went wrong while creating the staff')->persistent('Close');
-        }
-
-        return redirect()->back();
-    }
-   
 }
+
+

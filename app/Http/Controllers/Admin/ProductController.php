@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-use App\Services\UnitConversion\UnitConverter;
+// Mailables
+use App\Mail\Product\PriceUpdated;
+use App\Mail\Product\DeletionAttempt as ProductDeletionMail;
 
+use App\Services\UnitConversion\UnitConverter;
 use App\Models\SiteInfo as Setting;
 use App\Models\Admin;
 use App\Models\Staff;
@@ -48,7 +51,7 @@ class ProductController extends Controller
     public function newProduct(Request $request){
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:products,name',
-            'sales_unit' => 'required|string|max:20', // Added
+            'sales_unit' => 'required|string|max:20',
             'selling_price' => 'required|numeric|min:0',
         ]);
 
@@ -60,7 +63,7 @@ class ProductController extends Controller
         Product::create([
             'name'          => $request->name,
             'slug'          => Str::slug($request->name),
-            'sales_unit'    => $request->sales_unit, // Added
+            'sales_unit'    => $request->sales_unit,
             'selling_price' => $request->selling_price,
             'is_active'     => $request->has('is_active'),
             'stock_on_hand' => 0,
@@ -72,10 +75,11 @@ class ProductController extends Controller
 
     public function updateProduct(Request $request){
         $product = Product::findOrFail($request->product_id);
+        $oldPrice = $product->selling_price;
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:products,name,' . $product->id,
-            'sales_unit' => 'required|string|max:20', // Added
+            'sales_unit' => 'required|string|max:20',
             'selling_price' => 'required|numeric|min:0',
         ]);
 
@@ -87,10 +91,22 @@ class ProductController extends Controller
         $product->update([
             'name'          => $request->name,
             'slug'          => Str::slug($request->name),
-            'sales_unit'    => $request->sales_unit, // Added
+            'sales_unit'    => $request->sales_unit,
             'selling_price' => $request->selling_price,
             'is_active'     => $request->has('is_active'),
         ]);
+
+        // Notify if price changed
+        if ($oldPrice != $request->selling_price) {
+            try {
+                $recipients = Admin::all(); // Could also include Staff/Sales managers
+                foreach($recipients as $recipient) {
+                    Mail::to($recipient->email)->send(new PriceUpdated($product, $oldPrice, Auth::user()));
+                }
+            } catch (\Exception $e) {
+                Log::error("Price update mail failed: " . $e->getMessage());
+            }
+        }
 
         alert()->success('Updated', 'Product updated successfully')->persistent('Close');
         return redirect()->back();
@@ -109,13 +125,27 @@ class ProductController extends Controller
         $product = Product::findOrFail($request->product_id);
 
         if ($product->recipe) {
-            alert()->error('Forbidden', 'Product has a recipe attached and cannot be deleted')->persistent('Close');
+            $reason = "Product has a recipe attached.";
+            $this->sendSecurityAlert($product, Auth::user(), $reason);
+
+            alert()->error('Forbidden', $reason)->persistent('Close');
             return redirect()->back();
         }
 
         $product->delete();
-
         alert()->success('Deleted', 'Product deleted successfully')->persistent('Close');
         return redirect()->back();
+    }
+
+    private function sendSecurityAlert($product, $user, $reason) {
+        try {
+            $admin = Admin::first();
+            if ($admin) {
+                // You can reuse the logic of DeletionAttempt here
+                Mail::to($admin->email)->send(new ProductDeletionMail($product, $user, $reason));
+            }
+        } catch (\Exception $e) {
+            Log::error("Security Alert Mail failed: " . $e->getMessage());
+        }
     }
 }

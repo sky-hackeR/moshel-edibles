@@ -9,10 +9,17 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
+// Models
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Models\Admin;
+
+// Mailables
+use App\Mail\POS\SaleRecorded;
+use App\Mail\POS\SaleVoided;
 
 class POSController extends Controller
 {
@@ -38,19 +45,18 @@ class POSController extends Controller
             ], 422);
         }
 
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
-            // Detect which guard is currently logged in
             if (Auth::guard('admin')->check()) {
-                $userId = Auth::guard('admin')->id();
+                $user = Auth::guard('admin')->user();
+                $userId = $user->id;
                 $userType = 'admin';
             } else {
-                $userId = Auth::guard('staff')->id();
+                $user = Auth::guard('staff')->user();
+                $userId = $user->id;
                 $userType = 'staff';
             }
 
-            // Create Sale Record
             $sale = Sale::create([
                 'reference_no'    => 'REC-' . strtoupper(Str::random(8)),
                 'user_id'         => $userId,
@@ -62,11 +68,8 @@ class POSController extends Controller
                 'notes'           => $request->notes,
             ]);
 
-            // Process Items
             foreach ($request->cart_items as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                
-                // Reduce stock using the method in your Product model
                 $product->reduceStock($item['quantity']);
 
                 SaleItem::create([
@@ -78,8 +81,9 @@ class POSController extends Controller
                 ]);
             }
 
-            DB::commit();
+            $this->notifySale($sale, $user);
 
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Sale Completed Successfully!',
@@ -89,60 +93,95 @@ class POSController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             Log::error("POS Error: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Transaction Failed: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Delete a Sale Record (Voiding)
+     * This is a high-security action.
+     */
+    public function voidSale(Request $request) {
+        $sale = Sale::findOrFail($request->sale_id);
+        $user = Auth::user();
+        $ref = $sale->reference_no;
+        $amt = $sale->payable_amount;
+        $reason = $request->reason;
+
+        DB::beginTransaction();
+        try {
+            // Restore stock before deleting
+            foreach ($sale->items as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock_on_hand', $item->quantity);
+                }
+            }
+
+            $sale->items()->delete();
+            $sale->delete();
+
+            // Send Security Alert
+            $this->notifyVoid($ref, $amt, $user, $reason);
+
+            DB::commit();
+            alert()->success('Voided', 'Transaction has been voided and stock restored.');
+            return redirect()->back();
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error("Void Sale Failed: " . $e->getMessage());
+            alert()->error('Error', 'Could not void transaction.');
+            return redirect()->back();
         }
     }
 
     public function salesHistory(){
-        // Eager load only items and products to keep it efficient
         $sales = Sale::with(['items.product'])->latest()->get();
-        
-        // Using explicit array instead of compact
-        return view('admin.salesHistory', [
-            'sales' => $sales
-        ]);
+        return view('admin.salesHistory', ['sales' => $sales]);
     }
 
     public function getSaleDetails($id){
         try {
             $sale = Sale::with(['items.product'])->find($id);
-
-            if (!$sale) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Transaction not found'
-                ], 404);
-            }
+            if (!$sale) return response()->json(['success' => false, 'message' => 'Not found'], 404);
 
             return response()->json([
                 'success' => true,
                 'sale' => [
                     'reference_no'    => $sale->reference_no,
-                    'staff_name'      => $sale->seller_name, // Uses our accessor
+                    'staff_name'      => $sale->seller_name,
                     'total_amount'    => $sale->total_amount,
                     'discount_amount' => $sale->discount_amount,
                     'payable_amount'  => $sale->payable_amount,
                     'payment_method'  => $sale->payment_method,
                     'notes'           => $sale->notes,
                     'created_at'      => $sale->created_at->format('d M, Y H:i'),
-                    'items' => $sale->items->map(function($item) {
-                        return [
-                            'product_name' => $item->product->name ?? 'Unknown Item',
-                            'quantity'     => $item->quantity,
-                            'unit_price'   => $item->unit_price
-                        ];
-                    })
+                    'items' => $sale->items->map(fn($item) => [
+                        'product_name' => $item->product->name ?? 'Unknown',
+                        'quantity'     => $item->quantity,
+                        'unit_price'   => $item->unit_price
+                    ])
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false, 
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    private function notifySale($sale, $user) {
+        try {
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new SaleRecorded($sale, $user));
+            }
+        } catch (\Exception $e) { Log::error("Sale mail failed: " . $e->getMessage()); }
+    }
+
+    private function notifyVoid($ref, $amt, $user, $reason) {
+        try {
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new SaleVoided($ref, $amt, $user, $reason));
+            }
+        } catch (\Exception $e) { Log::error("Void mail failed: " . $e->getMessage()); }
     }
 }

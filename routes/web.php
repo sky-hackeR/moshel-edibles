@@ -66,6 +66,7 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/pos', [App\Http\Controllers\Admin\POSController::class, 'pos'])->name('pos')->middleware(['auth:admin']);
   Route::post('/processSale', [App\Http\Controllers\Admin\POSController::class, 'processSale'])->name('processSale')->middleware(['auth:admin']);
   Route::get('/salesHistory', [App\Http\Controllers\Admin\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:admin']);
+  Route::post('/sales/void', [App\Http\Controllers\Admin\POSController::class, 'voidSale'])->name('sales.void')->middleware(['auth:admin']);
   Route::get('/sales/details/{id}', [App\Http\Controllers\Admin\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:admin']);
   
   Route::get('/adminList', [App\Http\Controllers\Admin\AdminController::class, 'adminList'])->name('admins')->middleware(['auth:admin']);

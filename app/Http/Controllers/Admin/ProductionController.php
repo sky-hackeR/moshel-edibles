@@ -15,8 +15,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-use App\Services\UnitConversion\UnitConverter;
+// Mailables
+use App\Mail\Production\BatchCompleted;
+use App\Mail\Production\InsufficientStock;
 
+use App\Services\UnitConversion\UnitConverter;
 use App\Models\SiteInfo as Setting;
 use App\Models\Admin;
 use App\Models\Staff;
@@ -98,9 +101,15 @@ class ProductionController extends Controller
                     ->first();
 
                 if (!$inventory || $inventory->quantity < $totalRequiredBaseQty) {
+                    $neededAmount = $totalRequiredBaseQty;
+                    $ingredientName = $item->ingredient->name;
+
+                    // Trigger the Insufficient Stock Mail
+                    $this->notifyStockFailure($product, $ingredientName, $neededAmount);
+
                     throw new \Exception(
-                        "Insufficient stock for {$item->ingredient->name}. Needed: " . 
-                        number_format($totalRequiredBaseQty, 2) . " " . ($item->unit->base_unit ?? 'units')
+                        "Insufficient stock for {$ingredientName}. Needed: " . 
+                        number_format($neededAmount, 2) . " " . ($item->unit->base_unit ?? 'units')
                     );
                 }
 
@@ -148,6 +157,10 @@ class ProductionController extends Controller
             $product->increment('stock_on_hand', $request->quantity);
 
             DB::commit();
+
+            // Trigger the Batch Success Mail
+            $this->notifyProductionSuccess($production);
+
             alert()->success('Success', "Produced {$request->quantity} {$product->sales_unit}(s). Inventory updated.")->persistent('Close');
             return redirect()->back();
 
@@ -155,6 +168,34 @@ class ProductionController extends Controller
             DB::rollBack();
             alert()->error('Production Failed', $e->getMessage())->persistent('Close');
             return redirect()->back();
+        }
+    }
+
+    /**
+     * Notify Admins of successful production completion
+     */
+    private function notifyProductionSuccess($production) {
+        try {
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new BatchCompleted($production));
+            }
+        } catch (\Exception $e) {
+            Log::error("Production Success Mail failed: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Notify Admins when production is blocked by raw material shortage
+     */
+    private function notifyStockFailure($product, $ingredientName, $needed) {
+        try {
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new InsufficientStock($product, $ingredientName, $needed));
+            }
+        } catch (\Exception $e) {
+            Log::error("Production Failure Mail failed: " . $e->getMessage());
         }
     }
 }

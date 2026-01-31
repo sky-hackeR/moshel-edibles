@@ -15,21 +15,16 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
-
+// Models
 use App\Models\SiteInfo as Setting;
 use App\Models\Admin;
-use App\Models\Staff;
 use App\Models\Unit;
 use App\Models\Ingredient;
-use App\Models\Inventory;
-use App\Models\StockIn;
-use App\Models\StockInItem;
 use App\Models\Recipe;
-use App\Models\RecipeItem;
 use App\Models\Product;
-use App\Models\Production;
-use App\Models\ProductionItem;
 
+// Mailables
+use App\Mail\Unit\UnitModified;
 
 use SweetAlert;
 use Alert;
@@ -38,7 +33,6 @@ use Carbon\Carbon;
 
 class UnitController extends Controller
 {
-    //
     public function unitManagement(){
         $units = Unit::all();
         return view('admin.unitManagement', [
@@ -62,7 +56,7 @@ class UnitController extends Controller
         $baseMapping = ['mass' => 'g', 'volume' => 'ml', 'count' => 'pcs'];
         $baseUnit = $baseMapping[$request->unit_type];
 
-        Unit::create([
+        $unit = Unit::create([
             'name'             => $request->name,
             'symbol'           => strtolower($request->symbol),
             'unit_type'        => $request->unit_type,
@@ -73,20 +67,25 @@ class UnitController extends Controller
             'is_active'        => true,
         ]);
 
+        $this->notifyUnitChange($unit, 'Created');
+
         alert()->success('Success', 'Unit added successfully');
         return redirect()->back();
     }
 
     public function updateUnit(Request $request) {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'unit_id' => 'required|exists:units,id',
             'name'    => 'required|string|max:50',
         ]);
 
-        $unit = Unit::findOrFail($request->unit_id);
-        
-        $isBaseUnit = in_array($unit->symbol, ['g', 'ml', 'pcs']);
+        if ($validator->fails()) {
+            alert()->error('Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
 
+        $unit = Unit::findOrFail($request->unit_id);
+        $isBaseUnit = in_array($unit->symbol, ['g', 'ml', 'pcs']);
         $baseMapping = ['mass' => 'g', 'volume' => 'ml', 'count' => 'pcs'];
 
         if ($isBaseUnit) {
@@ -107,22 +106,12 @@ class UnitController extends Controller
             ]);
         }
 
+        $this->notifyUnitChange($unit, 'Updated');
+
         alert()->success('Updated', 'Unit details updated');
         return redirect()->back();
     }
 
-    // public function deleteUnit(Request $request) {
-    //     $unit = Unit::findOrFail($request->unit_id);
-
-    //     if (in_array($unit->symbol, ['g', 'ml', 'pcs'])) {
-    //         alert()->error('Restricted', 'System base units cannot be deleted.')->persistent('Close');
-    //         return redirect()->back();
-    //     }
-
-    //     $unit->delete();
-    //     alert()->success('Deleted', 'Unit removed successfully');
-    //     return redirect()->back();
-    // }
 
     public function deleteUnit(Request $request){
         $validator = Validator::make($request->all(), [
@@ -141,10 +130,24 @@ class UnitController extends Controller
             return redirect()->back();
         }
 
+        $this->notifyUnitChange($unit, 'Deleted');
         $unit->delete();
 
         alert()->success('Deleted', 'Unit deleted successfully')->persistent('Close');
         return redirect()->back();
     }
 
+    /**
+     * Helper to notify admins about unit changes
+     */
+    private function notifyUnitChange($unit, $action) {
+        try {
+            $admins = Admin::all();
+            foreach ($admins as $admin) {
+                Mail::to($admin->email)->send(new UnitModified($unit, $action, Auth::user()));
+            }
+        } catch (\Exception $e) {
+            Log::error("Unit Notification Failed: " . $e->getMessage());
+        }
+    }
 }
