@@ -13,6 +13,8 @@ class Production extends Model
     protected $fillable = [
         'product_id',
         'quantity',
+        'staff_id',
+        'admin_id',
         'unit_cost',
         'total_cost',
         'selling_price',
@@ -31,4 +33,17 @@ class Production extends Model
     {
         return $this->hasMany(ProductionItem::class);
     }
+
+    public function staff()
+    {
+        return $this->belongsTo(Staff::class);
+    }
+
+    // Relationship to Admin
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
+    }
+
+    
 }

@@ -104,7 +104,8 @@ class POSController extends Controller
 
     public function getSaleDetails($id) {
         try {
-            $sale = Sale::with(['items.product'])->find($id);
+            $sale = Sale::with(['items.product', 'staff', 'admin'])->find($id);
+        
             if (!$sale) return response()->json(['success' => false, 'message' => 'Not found'], 404);
 
             return response()->json([
@@ -112,6 +113,7 @@ class POSController extends Controller
                 'sale' => [
                     'reference_no' => $sale->reference_no,
                     'total_amount' => $sale->total_amount,
+                    'staff_name'     => $sale->seller_name,
                     'payable_amount' => $sale->payable_amount,
                     'payment_method' => $sale->payment_method,
                     'created_at' => $sale->created_at->format('d M, Y H:i'),

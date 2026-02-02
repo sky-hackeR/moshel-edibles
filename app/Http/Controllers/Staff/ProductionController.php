@@ -1,69 +1,63 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Requests;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+
+// Models
+use App\Models\Admin;
+use App\Models\Product;
+use App\Models\Production;
+use App\Models\Inventory;
 
 // Mailables
 use App\Mail\Production\BatchCompleted;
 use App\Mail\Production\InsufficientStock;
 
-use App\Services\UnitConversion\UnitConverter;
-use App\Models\SiteInfo as Setting;
-use App\Models\Admin;
-use App\Models\Staff;
-use App\Models\Unit;
-use App\Models\Ingredient;
-use App\Models\Inventory;
-use App\Models\StockIn;
-use App\Models\StockInItem;
-use App\Models\Recipe;
-use App\Models\RecipeItem;
-use App\Models\Product;
-use App\Models\Production;
-use App\Models\ProductionItem;
-
-use SweetAlert;
-use Alert;
-use Log;
-use Carbon\Carbon;
-
 class ProductionController extends Controller
 {
+    /**
+     * Show the staff production form
+     */
     public function production() {
         $products = Product::with('recipe')->where('is_active', true)->get();
+        
         $stats = [
-            'today_production' => Production::where('admin_id', Auth::guard('admin')->id())
+            'today_production' => Production::where('staff_id', Auth::guard('staff')->id())
                                         ->whereDate('created_at', today())
                                         ->count()
         ];
-        return view('admin.production', [
+
+        // Passing via explicit array per your convention
+        return view('staff.production', [
             'products' => $products,
             'stats' => $stats,
         ]);
     }
 
+    /**
+     * Show production history to staff
+     */
     public function productionHistory() {
-        $history = Production::with(['product', 'items.ingredient', 'staff', 'admin'])
+        $history = Production::with(['product', 'items.ingredient'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.productionHistory', [
+        return view('staff.productionHistory', [
             'history' => $history,
         ]);
     }
 
+    /**
+     * Record new production batch (Staff Version)
+     */
     public function recordProduction(Request $request) {
         $validator = Validator::make($request->all(), [
             'product_id' => 'required|exists:products,id',
@@ -132,11 +126,11 @@ class ProductionController extends Controller
             $expectedRevenue = $sellingPrice * $request->quantity;
             $profit = $expectedRevenue - $totalCost;
 
-            // 1. Save the production log
+            // 1. Save the production log (Capturing Staff ID)
             $production = Production::create([
                 'product_id'       => $product->id,
-                'admin_id'         => Auth::guard('admin')->id(), 
-                'staff_id'         => null,
+                'staff_id'         => Auth::guard('staff')->id(), 
+                'admin_id'         => null,
                 'quantity'         => $request->quantity,
                 'unit_cost'        => $unitCost,
                 'total_cost'       => $totalCost,
@@ -158,7 +152,7 @@ class ProductionController extends Controller
 
             $this->notifyProductionSuccess($production);
 
-            alert()->success('Success', "Produced {$request->quantity} {$product->sales_unit}(s). Inventory updated.")->persistent('Close');
+            alert()->success('Success', "Produced {$request->quantity} {$product->sales_unit}(s). Stock updated.")->persistent('Close');
             return redirect()->back();
 
         } catch (\Exception $e) {
@@ -178,7 +172,7 @@ class ProductionController extends Controller
                 Mail::to($admin->email)->send(new BatchCompleted($production));
             }
         } catch (\Exception $e) {
-            Log::error("Production Success Mail failed: " . $e->getMessage());
+            Log::error("Staff Production Success Mail failed: " . $e->getMessage());
         }
     }
 
@@ -192,7 +186,7 @@ class ProductionController extends Controller
                 Mail::to($admin->email)->send(new InsufficientStock($product, $ingredientName, $needed));
             }
         } catch (\Exception $e) {
-            Log::error("Production Failure Mail failed: " . $e->getMessage());
+            Log::error("Staff Production Failure Mail failed: " . $e->getMessage());
         }
     }
 }

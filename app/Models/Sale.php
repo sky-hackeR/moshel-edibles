@@ -29,17 +29,22 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class);
     }
 
-    /**
-     * Logic to fetch the name of the Admin or Staff who made the sale
-     */
-    public function getSellerNameAttribute()
-    {
-        if ($this->user_type === 'admin') {
-            $admin = \App\Models\Admin::find($this->user_id);
-            return $admin ? $admin->name : 'Administrator';
-        }
-        
-        $staff = \App\Models\Staff::find($this->user_id);
-        return $staff ? $staff->name : 'Staff Member';
+    public function staff() {
+        // We link user_id to the staff table's id
+        return $this->belongsTo(Staff::class, 'user_id');
     }
+
+    public function admin() {
+        // We link user_id to the admin table's id
+        return $this->belongsTo(Admin::class, 'user_id');
+    }
+
+    // This is the "seller_name" logic used in your controller
+    public function getSellerNameAttribute() {
+        if ($this->user_type === 'staff') {
+            return $this->staff->name ?? 'Staff';
+        }
+        return $this->admin->name ?? 'Admin';
+    }
+
 }

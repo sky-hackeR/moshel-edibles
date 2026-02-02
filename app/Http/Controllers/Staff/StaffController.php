@@ -42,14 +42,26 @@ class StaffController extends Controller
     //
     public function index(){
         $today = Carbon::today();
+        $staffId = Auth::guard('staff')->id();
 
-        // 1. Today's Production Count (Batches)
-        $todayProductionCount = Production::whereDate('produced_at', $today)->count();
+        $myProductionCount = Production::where('staff_id', $staffId)
+            ->whereDate('produced_at', $today)
+            ->count();
 
-        // 2. Today's Sales Count (Number of Transactions)
-        $todaySalesCount = Sale::whereDate('created_at', $today)->count();
+        $mySalesCount = Sale::where('user_id', $staffId)
+            ->where('user_type', 'staff')
+            ->whereDate('created_at', $today)
+            ->count();
 
-        // 3. Low Stock Count (Using your Base Truth Logic)
+        $mySalesTotal = Sale::where('user_id', $staffId)
+            ->where('user_type', 'staff')
+            ->whereDate('created_at', $today)
+            ->sum('payable_amount');
+
+        $overallProductionCount = Production::whereDate('produced_at', $today)->count();
+        $overallSalesCount = Sale::whereDate('created_at', $today)->count();
+        $overallSalesTotal = Sale::whereDate('created_at', $today)->sum('payable_amount');
+
         $thresholds = ['gram' => 1000, 'ml' => 1000, 'pcs' => 10];
         $lowStockCount = Inventory::with(['ingredient.baseUnit'])
             ->get()
@@ -65,18 +77,68 @@ class StaffController extends Controller
                 return $inventory->quantity <= ($thresholds[$unitName] ?? 0);
             })->count();
 
-        // 4. Recent Production Activity (Last 5 batches)
         $recentProductions = Production::with('product')
+            ->where('staff_id', $staffId)
             ->whereDate('produced_at', $today)
             ->latest()
             ->take(5)
             ->get();
 
         return view('staff.home', [
-            'todayProductionCount' => $todayProductionCount,
-            'todaySalesCount'      => $todaySalesCount,
-            'lowStockCount'        => $lowStockCount,
-            'recentProductions'    => $recentProductions,
+            'myProductionCount'      => $myProductionCount,
+            'mySalesCount'           => $mySalesCount,
+            'mySalesTotal'           => $mySalesTotal,
+            'overallProductionCount' => $overallProductionCount,
+            'overallSalesCount'      => $overallSalesCount,
+            'overallSalesTotal'      => $overallSalesTotal,
+            'lowStockCount'          => $lowStockCount,
+            'recentProductions'      => $recentProductions,
         ]);
     }
+    
+    
+
+    public function profile()
+    {
+        $staff = Auth::user();
+        return view('staff.profile', [
+            'staff' => $staff
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $staff = Auth::user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:staffs,email,' . $staff->id,
+        ]);
+
+        $staff->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
+
+        return back()->with('success', 'Profile updated successfully!');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($request->current_password, Auth::user()->password)) {
+            return back()->withErrors(['current_password' => 'Current password does not match.']);
+        }
+
+        Auth::user()->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return back()->with('success', 'Password changed successfully!');
+    }
+
 }

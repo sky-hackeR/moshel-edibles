@@ -65,7 +65,7 @@
                         <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end">
-                        <a class="dropdown-item" href="#"><i class="bx bx-user font-size-16 align-middle me-1"></i> Profile</a>
+                        <a class="dropdown-item" href="{{ url('/staff/profile') }}"><i class="bx bx-user font-size-16 align-middle me-1"></i> Profile</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger" href="{{ url('/staff/logout') }}" 
                            onclick="event.preventDefault(); document.getElementById('logout-form-dropdown').submit();">
@@ -92,7 +92,7 @@
 
                     <li class="menu-title">Production</li>
                     <li>
-                        <a href="{{ url('/staff/production') }}"><i class="bx bx-wrench"></i><span>Record Production</span></a>
+                        <a href="{{ url('/staff/production') }}"><i class="bx bx-wrench"></i><span>Production</span></a>
                     </li>
 
                     <li>

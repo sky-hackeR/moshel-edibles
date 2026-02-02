@@ -17,6 +17,9 @@ class CreateProductionsTable extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
 
+            $table->foreignId('staff_id')->nullable()->constrained('staff')->nullOnDelete();
+            $table->foreignId('admin_id')->nullable()->constrained('admins')->nullOnDelete();
+
             // Production Volume
             $table->decimal('quantity', 15, 2); 
             

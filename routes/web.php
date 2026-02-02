@@ -99,6 +99,16 @@ Route::group(['prefix' => 'staff'], function () {
 
   Route::get('/home', [App\Http\Controllers\Staff\StaffController::class, 'index'])->name('home')->middleware(['auth:staff']);
 
+  Route::get('/profile', [App\Http\Controllers\Staff\StaffController::class, 'profile'])->name('profile')->middleware(['auth:staff']);
+  Route::post('/updateProfile', [App\Http\Controllers\Staff\StaffController::class, 'updateProfile'])->name('updateProfile')->middleware(['auth:staff']);
+  Route::post('/updatePassword', [App\Http\Controllers\Staff\StaffController::class, 'updatePassword'])->name('updatePassword')->middleware(['auth:staff']);
+
+  Route::get('/production', [App\Http\Controllers\Staff\ProductionController::class, 'production'])->name('production')->middleware(['auth:staff']);
+  Route::post('/produce', [App\Http\Controllers\Staff\ProductionController::class, 'recordProduction'])->name('produce')->middleware(['auth:staff']);
+  Route::get('/productionHistory', [App\Http\Controllers\Staff\ProductionController::class, 'productionHistory'])->name('productionHistory')->middleware(['auth:staff']);
+
+  Route::get('/inventory',[App\Http\Controllers\Staff\InventoryController::class, 'inventory'])->name('inventory')->middleware(['auth:staff']);
+
   Route::get('/pos', [App\Http\Controllers\Staff\POSController::class, 'pos'])->name('pos')->middleware(['auth:staff']);
   Route::post('/processSale', [App\Http\Controllers\Staff\POSController::class, 'processSale'])->name('processSale')->middleware(['auth:staff']);
   Route::get('/salesHistory', [App\Http\Controllers\Staff\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:staff']);

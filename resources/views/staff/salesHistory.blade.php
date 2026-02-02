@@ -50,9 +50,6 @@
                                 <button class="btn btn-primary btn-sm" onclick="viewSaleDetails({{ $sale->id }})">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="confirmVoid({{ $sale->id }}, '{{ $sale->reference_no }}')">
-                                    <i class="mdi mdi-trash-can me-1"></i> Void
-                                </button>
                             </td>
                         </tr>
                         @endforeach
@@ -83,36 +80,6 @@
     </div>
 </div>
 
-{{-- VOID MODAL --}}
-<div class="modal fade" id="voidSaleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            {{-- UPDATED: Pointing to staff void route --}}
-            <form action="{{ url('staff/sales/void') }}" method="POST">
-                @csrf
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title text-white">Void Transaction</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="sale_id" id="void_sale_id">
-                    <p>Are you sure you want to void transaction <strong id="void_ref_display"></strong>?</p>
-                    <p class="text-muted small">This will restore stock levels and notify the administrator.</p>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Reason for Voiding</label>
-                        <textarea name="reason" class="form-control" rows="3" required placeholder="e.g. Wrong item selected, payment failed..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Confirm Void</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
     async function viewSaleDetails(saleId) {
         const modal = new bootstrap.Modal(document.getElementById('saleDetailsModal'));
@@ -122,7 +89,6 @@
         modal.show();
 
         try {
-            {{-- UPDATED: Pointing to staff details endpoint --}}
             const response = await fetch("{{ url('staff/sales/details') }}/" + saleId);
             const data = await response.json();
 
@@ -133,11 +99,17 @@
                         <tr>
                             <td class="ps-0">
                                 <h6 class="mb-0">${item.product_name}</h6>
-                                <small class="text-muted">${item.quantity} x ₦${parseFloat(item.unit_price).toLocaleString()}</small>
+                                <small class="text-muted">${item.quantity} x ₦${parseFloat(item.unit_price || 0).toLocaleString()}</small>
                             </td>
                             <td class="text-end pe-0">₦${(item.quantity * item.unit_price).toLocaleString()}</td>
                         </tr>`;
                 });
+
+                const fullName = data.sale.staff_name || data.sale.seller_name || 'System';
+                const recordedBy = fullName.split(' ')[0];
+                const discount = parseFloat(data.sale.discount_amount || 0);
+                const subtotal = parseFloat(data.sale.total_amount || 0);
+                const payable = parseFloat(data.sale.payable_amount || 0);
 
                 content.innerHTML = `
                     <div id="receipt-print-area" class="p-4">
@@ -147,7 +119,7 @@
                         </div>
                         <div class="d-flex justify-content-between mb-3 small">
                             <span><strong>Date:</strong> ${data.sale.created_at}</span>
-                            <span><strong>Staff:</strong> ${data.sale.staff_name}</span>
+                            <span><strong>Recorded By:</strong> ${recordedBy}</span>
                         </div>
                         <table class="table table-sm table-borderless">
                             <thead class="border-bottom small text-uppercase">
@@ -156,28 +128,32 @@
                             <tbody>${itemsHtml}</tbody>
                         </table>
                         <div class="border-top pt-3 mt-2">
-                            <div class="d-flex justify-content-between small"><span>Subtotal:</span><span>₦${parseFloat(data.sale.total_amount).toLocaleString()}</span></div>
-                            <div class="d-flex justify-content-between small"><span>Discount:</span><span class="text-danger">-₦${parseFloat(data.sale.discount_amount).toLocaleString()}</span></div>
-                            <div class="d-flex justify-content-between fw-bold h5 mt-2"><span>Total:</span><span class="text-primary">₦${parseFloat(data.sale.payable_amount).toLocaleString()}</span></div>
+                            <div class="d-flex justify-content-between small">
+                                <span>Subtotal:</span>
+                                <span>₦${subtotal.toLocaleString()}</span>
+                            </div>
+                            <div class="d-flex justify-content-between small">
+                                <span>Discount:</span>
+                                <span class="text-danger">-₦${discount.toLocaleString()}</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold h5 mt-2">
+                                <span>Total:</span>
+                                <span class="text-primary">₦${payable.toLocaleString()}</span>
+                            </div>
                         </div>
                         <div class="mt-3 p-2 bg-light rounded text-center small">
-                            Payment Method: <strong>${data.sale.payment_method}</strong>
+                            Payment Method: <strong>${data.sale.payment_method || 'N/A'}</strong>
                         </div>
                     </div>`;
             } else {
                 content.innerHTML = `<div class="alert alert-danger m-3">${data.message}</div>`;
             }
         } catch (error) {
+            console.error(error);
             content.innerHTML = `<div class="alert alert-danger m-3">Error fetching transaction data.</div>`;
         }
     }
 
-    function confirmVoid(id, ref) {
-        document.getElementById('void_sale_id').value = id;
-        document.getElementById('void_ref_display').innerText = ref;
-        const voidModal = new bootstrap.Modal(document.getElementById('voidSaleModal'));
-        voidModal.show();
-    }
 
     function printReceipt() {
         const content = document.getElementById('receipt-print-area').innerHTML;
