@@ -61,6 +61,13 @@
                                 <td>{{ $staff->email }}</td>
                                 <td>{{ $staff->created_at->format('d M, Y') }}</td>
                                 <td class="text-center">
+                                    <button class="btn btn-soft-info btn-sm me-1" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#viewStaff{{ $staff->id }}"
+                                            title="View Profile">
+                                        <i class="mdi mdi-eye-outline font-size-16"></i>
+                                    </button>
+
                                     <button class="btn btn-soft-danger btn-sm" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#deleteStaff{{ $staff->id }}"
@@ -142,6 +149,106 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+
+
+    {{-- VIEW STAFF MODAL --}}
+    <div class="modal fade" id="viewStaff{{ $staff->id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title">Staff Profile Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    @php
+                        $name = trim($staff->name);
+                        $parts = preg_split('/\s+/', $name, -1, PREG_SPLIT_NO_EMPTY);
+                        $count = count($parts);
+
+                        // Nigerian Convention: Surname is usually the first part
+                        $surname = $parts[0] ?? null;
+                        $firstName = null;
+                        $middleName = null;
+
+                        if ($count === 2) {
+                            $firstName = $parts[1];
+                        } elseif ($count >= 3) {
+                            $firstName = $parts[1];
+                            // Everything after the first two parts is treated as Middle Name(s)
+                            $middleName = implode(' ', array_slice($parts, 2));
+                        }
+                    @endphp
+
+                    <div class="card mb-0 border-0">
+                        <div class="row g-0 align-items-stretch">
+                            {{-- LEFT SIDE: AVATAR & ROLE --}}
+                            <div class="col-md-4 border-end text-center p-4 bg-light-subtle d-flex flex-column justify-content-center">
+                                <div class="avatar-xl mx-auto mb-3">
+                                    <span class="avatar-title rounded-circle bg-soft-success text-success display-4 shadow-sm">
+                                        {{ $surname ? strtoupper(substr($surname, 0, 1)) : 'S' }}
+                                    </span>
+                                </div>
+                                <h5 class="font-size-16 mb-1 text-dark">{{ $staff->name }}</h5>
+                                <div>
+                                    <span class="badge rounded-pill bg-soft-success text-success px-3">Operations Staff</span>
+                                </div>
+                            </div>
+
+                            {{-- RIGHT SIDE: DETAILS --}}
+                            <div class="col-md-8">
+                                <div class="card-body p-4">
+                                    <h6 class="text-muted text-uppercase font-size-11 fw-bold mb-3" style="letter-spacing: 0.5px;">
+                                        Identity Breakdown
+                                    </h6>
+                                    
+                                    @if($surname)
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4 text-muted font-size-13">Surname:</div>
+                                        <div class="col-sm-8 fw-semibold text-dark">{{ $surname }}</div>
+                                    </div>
+                                    @endif
+
+                                    @if($firstName)
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4 text-muted font-size-13">First Name:</div>
+                                        <div class="col-sm-8 fw-semibold text-dark">{{ $firstName }}</div>
+                                    </div>
+                                    @endif
+
+                                    @if($middleName)
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4 text-muted font-size-13">Middle Name:</div>
+                                        <div class="col-sm-8 fw-semibold text-dark">{{ $middleName }}</div>
+                                    </div>
+                                    @endif
+
+                                    <hr class="my-4 opacity-50">
+
+                                    <h6 class="text-muted text-uppercase font-size-11 fw-bold mb-3" style="letter-spacing: 0.5px;">
+                                        Account Information
+                                    </h6>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-sm-4 text-muted font-size-13">Email Address:</div>
+                                        <div class="col-sm-8 fw-medium text-break text-dark">{{ $staff->email }}</div>
+                                    </div>
+                                    
+                                    <div class="row mb-0">
+                                        <div class="col-sm-4 text-muted font-size-13">Onboarded:</div>
+                                        <div class="col-sm-8 fw-medium text-dark">{{ $staff->created_at->format('d M, Y') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
     </div>
 @endforeach

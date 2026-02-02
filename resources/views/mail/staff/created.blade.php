@@ -49,7 +49,7 @@
     </div>
 
     <div style="text-align: center; margin-top: 30px;">
-        <a href="{{ url('/login') }}" class="button" style="background-color: #556ee6;">
+        <a href="{{ url('/staff/login') }}" class="button" style="background-color: #556ee6;">
             Open Dashboard
         </a>
     </div>

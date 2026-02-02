@@ -148,7 +148,7 @@ class POSController extends Controller
                 'success' => true,
                 'sale' => [
                     'reference_no'    => $sale->reference_no,
-                    'staff_name'      => $sale->seller_name,
+                    'staff_name'      => explode(' ', $sale->seller_name)[0],
                     'total_amount'    => $sale->total_amount,
                     'discount_amount' => $sale->discount_amount,
                     'payable_amount'  => $sale->payable_amount,

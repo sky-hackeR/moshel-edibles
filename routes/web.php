@@ -30,6 +30,10 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/password/reset/{token}', [App\Http\Controllers\Admin\Auth\ResetPasswordController::class, 'showResetForm']);
 
   Route::post('/updateSiteInfo', [App\Http\Controllers\Admin\AdminController::class, 'updateSiteInfo'])->name('updateSiteInfo')->middleware(['auth:admin']);
+
+  Route::get('/profile', [App\Http\Controllers\Admin\AdminController::class, 'profile'])->name('profile')->middleware(['auth:admin']);
+  Route::post('/updateProfile', [App\Http\Controllers\Admin\AdminController::class, 'updateProfile'])->name('updateProfile')->middleware(['auth:admin']);
+  Route::post('/updatePassword', [App\Http\Controllers\Admin\AdminController::class, 'updatePassword'])->name('updatePassword')->middleware(['auth:admin']);
   
   Route::get('/home', [App\Http\Controllers\Admin\AdminController::class, 'index'])->name('home')->middleware(['auth:admin']);
   Route::get('/siteSettings', [App\Http\Controllers\Admin\AdminController::class, 'siteSettings'])->name('siteSettings')->middleware(['auth:admin']);
@@ -92,5 +96,12 @@ Route::group(['prefix' => 'staff'], function () {
   Route::post('/password/reset', [App\Http\Controllers\Staff\Auth\ResetPasswordController::class, 'reset'])->name('password.email');
   Route::get('/password/reset', [App\Http\Controllers\Staff\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.reset');
   Route::get('/password/reset/{token}', [App\Http\Controllers\Staff\Auth\ResetPasswordController::class, 'showResetForm']);
+
+  Route::get('/home', [App\Http\Controllers\Staff\StaffController::class, 'index'])->name('home')->middleware(['auth:staff']);
+
+  Route::get('/pos', [App\Http\Controllers\Staff\POSController::class, 'pos'])->name('pos')->middleware(['auth:staff']);
+  Route::post('/processSale', [App\Http\Controllers\Staff\POSController::class, 'processSale'])->name('processSale')->middleware(['auth:staff']);
+  Route::get('/salesHistory', [App\Http\Controllers\Staff\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:staff']);
+  Route::get('/sales/details/{id}', [App\Http\Controllers\Staff\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:staff']);
 });
 

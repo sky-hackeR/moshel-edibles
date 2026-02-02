@@ -44,13 +44,13 @@
     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 30px;">
         <p style="margin: 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
             <strong>Pro Tip:</strong> If this action was unauthorized, log in to the 
-            <a href="{{ url('/admin/settings') }}" style="color: #556ee6; text-decoration: none;">Security Settings</a> 
+            <a href="{{ url('/admin/adminList') }}" style="color: #556ee6; text-decoration: none;">Security Settings</a> 
             immediately to deactivate the account and reset your own credentials.
         </p>
     </div>
 
     <div style="text-align: center; margin-top: 30px;">
-        <a href="{{ url('/admin/staff-management') }}" class="button" style="background-color: #2d3748;">
+        <a href="{{ url('/admin/staffList') }}" class="button" style="background-color: #2d3748;">
             Review Staff List
         </a>
     </div>

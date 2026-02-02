@@ -1,4 +1,4 @@
-@extends('admin.layout.dashboard')
+@extends('staff.layout.dashboard')
 
 @section('content')
 <style>
@@ -70,6 +70,7 @@
     .custom-scroll::-webkit-scrollbar { width: 5px; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #e2e2e2; border-radius: 10px; }
 </style>
+
 {{-- PAGE HEADER --}}
 <div class="row">
     <div class="col-12">
@@ -146,7 +147,7 @@
 
 {{-- MODAL --}}
 <div class="modal fade" id="checkoutModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-md">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow">
             <div class="modal-body p-4">
                 <h6 class="text-center text-muted fw-bold mb-3">PAYMENT METHOD</h6>
@@ -266,7 +267,8 @@
         const note = document.getElementById('saleNotes').value;
 
         try {
-            const response = await fetch('{{ route("processSale") }}', {
+            // FIXED: Using URL convention with staff prefix
+            const response = await fetch('{{ url("/staff/processSale") }}', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({

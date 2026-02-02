@@ -13,11 +13,6 @@
 
     <link rel="shortcut icon" href="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->favicon) : '' }}">
 
-    {{-- <!-- DataTables -->
-    <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css') }}" rel="stylesheet" /> --}}
-
     <!-- DataTables -->
     <link href="{{ asset('assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css') }}" rel="stylesheet" type="text/css" />
@@ -31,7 +26,7 @@
 
     <link rel="stylesheet" href="{{ asset('assets/cdn.jsdelivr.net/gh/iconoir-icons/iconoir%40main/css/iconoir.css') }}">
 
-    {{-- <!-- TinyMCE -->
+    <!-- TinyMCE -->
     <script src="https://cdn.tiny.cloud/1/ib771jqvt5joab026vosdy4bkhoad3hty1tycnv696zoka2w/tinymce/7/tinymce.min.js"></script>
     <script>
         tinymce.init({
@@ -39,7 +34,7 @@
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks | bold italic underline | align | numlist bullist | table | removeformat'
         });
-    </script> --}}
+    </script>
 </head>
 
 <body data-sidebar="light">
@@ -90,7 +85,7 @@
                     </button>
 
                     <div class="dropdown-menu dropdown-menu-end">
-                        <a class="dropdown-item" href="#"><i class="bx bx-user me-1"></i>Profile</a>
+                        <a class="dropdown-item" href="{{ url('/admin/profile') }}"><i class="bx bx-user me-1"></i>Profile</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger"
                         href="{{ url('/admin/logout') }}"
@@ -211,13 +206,6 @@
 
 </div>
 
-{{-- <!-- JS -->
-<script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('assets/libs/metismenu/metisMenu.min.js') }}"></script>
-<script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-<script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-<script src="{{ asset('assets/js/app.js') }}"></script> --}}
 
 <!-- JAVASCRIPT -->
 <script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
