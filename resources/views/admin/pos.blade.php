@@ -266,7 +266,7 @@
         const note = document.getElementById('saleNotes').value;
 
         try {
-            const response = await fetch('{{ route("processSale") }}', {
+            const response = await fetch('{{ url("/admin/processSale") }}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
