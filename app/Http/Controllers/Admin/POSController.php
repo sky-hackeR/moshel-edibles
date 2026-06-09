@@ -96,75 +96,118 @@ class POSController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
-    /**
-     * Delete a Sale Record (Voiding)
-     * This is a high-security action.
-     */
-    public function voidSale(Request $request) {
-        $sale = Sale::findOrFail($request->sale_id);
-        $user = Auth::user();
-        $ref = $sale->reference_no;
-        $amt = $sale->payable_amount;
-        $reason = $request->reason;
-
-        DB::beginTransaction();
-        try {
-            // Restore stock before deleting
-            foreach ($sale->items as $item) {
-                if ($item->product) {
-                    $item->product->increment('stock_on_hand', $item->quantity);
-                }
-            }
-
-            $sale->items()->delete();
-            $sale->delete();
-
-            // Send Security Alert
-            $this->notifyVoid($ref, $amt, $user, $reason);
-
-            DB::commit();
-            alert()->success('Voided', 'Transaction has been voided and stock restored.');
-            return redirect()->back();
-        } catch (\Exception $e) {
-            DB::rollback();
-            Log::error("Void Sale Failed: " . $e->getMessage());
-            alert()->error('Error', 'Could not void transaction.');
-            return redirect()->back();
-        }
-    }
+   
 
     public function salesHistory(){
         $sales = Sale::with(['items.product'])->latest()->get();
         return view('admin.salesHistory', ['sales' => $sales]);
     }
 
-    public function getSaleDetails($id){
+
+    /**
+     * Fetch Sale Details JSON for Modal Rendering
+     * Route: GET /admin/sales/details/{id}
+     */
+    public function getSaleDetails($id) 
+    {
         try {
-            $sale = Sale::with(['items.product'])->find($id);
-            if (!$sale) return response()->json(['success' => false, 'message' => 'Not found'], 404);
+            $sale = \App\Models\Sale::withTrashed()->findOrFail($id);
+
+            // Manual dynamic fallback check to map string values to staff properties securely
+            $staffName = 'Unknown Operator';
+            if ($sale->user_type === 'admin') {
+                $staffName = \DB::table('admins')->where('id', $sale->user_id)->value('name') ?? 'Admin';
+            } else {
+                $staffName = \DB::table('staff')->where('id', $sale->user_id)->value('name') ?? 'Staff';
+            }
+
+            // Fetch items directly from table database layer bypassing recursive mapping hooks
+            $rawItems = \DB::table('sale_items')
+                ->join('products', 'sale_items.product_id', '=', 'products.id')
+                ->where('sale_items.sale_id', $sale->id)
+                ->select('products.name as product_name', 'sale_items.quantity', 'sale_items.unit_price', 'sale_items.subtotal')
+                ->get();
 
             return response()->json([
                 'success' => true,
                 'sale' => [
                     'reference_no'    => $sale->reference_no,
-                    'staff_name'      => explode(' ', $sale->seller_name)[0],
+                    'created_at'      => $sale->created_at->format('d M, Y H:i'),
+                    'staff_name'      => $staffName,
                     'total_amount'    => $sale->total_amount,
                     'discount_amount' => $sale->discount_amount,
                     'payable_amount'  => $sale->payable_amount,
                     'payment_method'  => $sale->payment_method,
-                    'notes'           => $sale->notes,
-                    'created_at'      => $sale->created_at->format('d M, Y H:i'),
-                    'items' => $sale->items->map(fn($item) => [
-                        'product_name' => $item->product->name ?? 'Unknown',
-                        'quantity'     => $item->quantity,
-                        'unit_price'   => $item->unit_price
-                    ])
+                    'items'           => $rawItems
                 ]
             ]);
+
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaction items could not be found: ' . $e->getMessage()
+            ], 404);
         }
+    }
+
+    /**
+     * Delete a Sale Record (Voiding)
+     * Route: POST /admin/sales/void
+     */
+    public function voidSale(\Illuminate\Http\Request $request) 
+    {
+        $validator = Validator::make($request->all(), [
+            'sale_id' => 'required',
+            'reason'  => 'required|string|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $sale = \App\Models\Sale::withTrashed()->findOrFail($request->sale_id);
+        $user = \Auth::guard('admin')->user() ?? \Auth::guard('staff')->user() ?? \Auth::user();
+        
+        $ref    = $sale->reference_no;
+        $amt    = $sale->payable_amount;
+        $reason = $request->reason;
+
+        \DB::beginTransaction();
+        try {
+            $items = \DB::table('sale_items')
+                ->where('sale_id', $sale->id)
+                ->whereNull('deleted_at')
+                ->get();
+
+            foreach ($items as $item) {
+                \DB::table('products')
+                    ->where('id', $item->product_id)
+                    ->increment('stock_on_hand', $item->quantity);
+            }
+
+            \DB::table('sale_items')
+                ->where('sale_id', $sale->id)
+                ->update(['deleted_at' => now()]);
+
+            $sale->delete();
+
+            if (method_exists($this, 'notifyVoid')) {
+                $this->notifyVoid($ref, $amt, $user, $reason);
+            }
+
+            \DB::commit();
+
+            alert()->success('Voided Successfully', 'Transaction has been voided and stock restored.')->persistent('Close');
+
+        } catch (\Exception $e) {
+            \DB::rollback();
+            \Log::error("Void Sale Failed for Ref " . $ref . ": " . $e->getMessage());
+
+            alert()->error('Error', 'Could not void transaction: ' . $e->getMessage())->persistent('Close');
+        }
+
+        return redirect()->back();
     }
 
     private function notifySale($sale, $user) {

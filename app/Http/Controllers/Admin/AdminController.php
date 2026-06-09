@@ -321,6 +321,42 @@ class AdminController extends Controller
 
         return back()->with('success', 'Password changed successfully!');
     }
+
+    /**
+     * Delete an Administrator
+     */
+    public function deleteAdmin(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'admin_id' => 'required|exists:admins,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        // Prevent self-deletion
+        if ((int)$request->admin_id === (int)Auth::user()->id) {
+            alert()->error('Action Denied', 'You cannot delete your own administrator account.')->persistent('Close');
+            return redirect()->back();
+        }
+
+        $admin = Admin::findOrFail($request->admin_id);
+
+        DB::beginTransaction();
+        try {
+            $admin->delete();
+            DB::commit();
+
+            alert()->success('Deleted', 'Administrator account removed successfully')->persistent('Close');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Admin Deletion Failed: " . $e->getMessage());
+            alert()->error('Error', 'Failed to remove administrator account.')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
 }
 
 
