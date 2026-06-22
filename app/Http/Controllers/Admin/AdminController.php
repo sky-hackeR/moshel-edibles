@@ -357,6 +357,42 @@ class AdminController extends Controller
 
         return redirect()->back();
     }
+
+    /**
+     * Delete a Staff
+     */
+    public function deleteStaff(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'staff_id' => 'required|exists:staffit ,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        // // Prevent self-deletion
+        // if ((int)$request->admin_id === (int)Auth::user()->id) {
+        //     alert()->error('Action Denied', 'You cannot delete your own administrator account.')->persistent('Close');
+        //     return redirect()->back();
+        // }
+
+        $staff = Staff::findOrFail($request->staff_id);
+
+        DB::beginTransaction();
+        try {
+            $staff->delete();
+            DB::commit();
+
+            alert()->success('Deleted', 'Staff account removed successfully')->persistent('Close');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Staff Deletion Failed: " . $e->getMessage());
+            alert()->error('Error', 'Failed to remove staff account.')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
 }
 
 
