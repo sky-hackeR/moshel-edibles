@@ -51,22 +51,23 @@
                     <a href="{{ url('/admin/home') }}" class="logo logo-dark">
                         <span class="logo-sm">
                             <img src="{{ asset($pageGlobalData->setting?->favicon) }}" alt="Favicon" 
-                                style="height: 30px; width: auto; object-fit: contain; vertical-align: middle;">
+                                style="height: 30px; width: 40px; object-fit: contain; vertical-align: middle;">
                         </span>
                         <span class="logo-lg">
                             <img src="{{ asset($pageGlobalData->setting?->logo) }}" alt="Logo" 
-                                style="height: 40px; width: auto; max-width: 100%; object-fit: contain; vertical-align: middle;">
+                                style="height: 40px; width: auto; max-width: 75%; object-fit: contain; vertical-align: middle;">
                         </span>
                     </a>
 
                     <a href="{{ url('/admin/home') }}" class="logo logo-light">
                         <span class="logo-sm">
                             <img src="{{ asset($pageGlobalData->setting?->favicon) }}" alt="Favicon" 
-                                style="height: 30px; width: auto; object-fit: contain; vertical-align: middle;">
+                                style="height: 30px; width: 40px; object-fit: contain; vertical-align: middle;">
+
                         </span>
                         <span class="logo-lg">
                             <img src="{{ asset($pageGlobalData->setting?->logo) }}" alt="Logo" 
-                                style="height: 40px; width: auto; max-width: 100%; object-fit: contain; vertical-align: middle;">
+                                style="height: 40px; width: auto; max-width: 75%; object-fit: contain; vertical-align: middle;">
                         </span>
                     </a>
                 </div>
@@ -156,6 +157,20 @@
                     <li>
                         <a href="{{ url('/admin/salesHistory') }}"><i class="bx bx-list-check"></i><span>Sales History</span></a>
                     </li>
+
+
+                    <li class="menu-title">Utilities</li>
+
+                    <li>
+                        <a href="{{ url('/admin/bulkOperations') }}"><i class="bx bx-data"></i><span>Bulk Operations</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/admin/unitManager') }}"><i class="bx bx-ruler"></i><span>Unit Manager</span></a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/admin/systemSettings') }}"><i class="bx bx-desktop"></i><span>System Settings</span></a>
+                    </li>
+
 
                     <li class="menu-title">Users</li>
                     <li>

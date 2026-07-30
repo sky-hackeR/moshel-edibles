@@ -92,9 +92,19 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/deleteStaff', [App\Http\Controllers\Admin\AdminController::class, 'deleteStaff'])->name('deleteStaff')->middleware(['auth:admin']);
   
 
+  Route::get('/bulkOperations', [App\Http\Controllers\Admin\BulkController::class, 'bulkOperations'])->name('bulkOperations')->middleware(['auth:admin']);
+  Route::get('/bulkOperations/template/{module}',[App\Http\Controllers\Admin\BulkController::class, 'downloadTemplate'])->middleware(['auth:admin']);
+  
+  
+  Route::get('/unitManager', [App\Http\Controllers\Admin\BulkController::class, 'unitManager'])->name('unitManager')->middleware(['auth:admin']);
+  Route::get('/systemSettings', [App\Http\Controllers\Admin\BulkController::class, 'systemSettings'])->name('systemSettings')->middleware(['auth:admin']);
+
+
+
 });
 
 Route::group(['prefix' => 'staff'], function () {
+  Route::get('/', [App\Http\Controllers\Staff\Auth\LoginController::class, 'showLoginForm'])->name('staff.login');
   Route::get('/login', [App\Http\Controllers\Staff\Auth\LoginController::class, 'showLoginForm'])->name('login');
   Route::post('/login', [App\Http\Controllers\Staff\Auth\LoginController::class, 'login']);
   Route::post('/logout', [App\Http\Controllers\Staff\Auth\LoginController::class, 'logout'])->name('logout');
