@@ -100,7 +100,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Reason for Voiding</label>
-                        <textarea name="reason" id="void_reason" class="form-control no-editor" rows="3" required placeholder="e.g. Wrong item selected, payment failed..."></textarea>
+                        <textarea name="reason" class="form-control" rows="3" placeholder="e.g. Wrong item selected, payment failed..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
