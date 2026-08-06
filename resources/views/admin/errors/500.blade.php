@@ -1,4 +1,4 @@
-@extends('layout.dashboard')
+@extends('admin.layout.dashboard')
 
 @section('content')
 <div class="row justify-content-center my-5">

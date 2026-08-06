@@ -80,7 +80,7 @@
                 <div class="dropdown">
                     <button class="btn header-item" data-bs-toggle="dropdown">
                         <img class="rounded-circle header-profile-user" src="{{ asset('assets/images/users/avatar-1.jpg') }}">
-                        <span class="d-none d-xl-inline-block ms-1">{{ $admin->name }}</span>
+                        <span class="d-none d-xl-inline-block ms-1">{{ auth('admin')->user()?->name ?? 'Admin User' }}</span>
                         <i class="mdi mdi-chevron-down"></i>
                     </button>
 
