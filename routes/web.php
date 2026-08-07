@@ -90,7 +90,10 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/staffList', [App\Http\Controllers\Admin\AdminController::class, 'staffList'])->name('staffs')->middleware(['auth:admin']);
   Route::post('/newStaff', [App\Http\Controllers\Admin\AdminController::class, 'newStaff'])->name('newStaff')->middleware(['auth:admin']);
   Route::post('/deleteStaff', [App\Http\Controllers\Admin\AdminController::class, 'deleteStaff'])->name('deleteStaff')->middleware(['auth:admin']);
-  
+
+  Route::get('/openingStock', [App\Http\Controllers\Admin\OpeningStockController::class, 'openingStock'])->name('openingStock')->middleware(['auth:admin']);
+  Route::post('/addProductOpeningStock', [App\Http\Controllers\Admin\OpeningStockController::class, 'addProductStock'])->name('addProductOpeningStock')->middleware(['auth:admin']);
+  Route::post('/addIngredientOpeningStock', [App\Http\Controllers\Admin\OpeningStockController::class, 'addIngredientStock'])->name('addIngredientOpeningStock')->middleware(['auth:admin']);
 
 });
 
