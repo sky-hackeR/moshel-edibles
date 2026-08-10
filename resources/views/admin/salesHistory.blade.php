@@ -39,7 +39,7 @@
                             <td>{{ $sale->created_at->format('d M, Y H:i') }}</td>
                             <td><span class="fw-bold text-primary">{{ $sale->reference_no }}</span></td>
                             <td>{{ $sale->seller_name }}</td>
-                            <td>{{ number_format($sale->payable_amount, 2) }}</td>
+                            <td>₦{{ number_format($sale->payable_amount, 2) }}</td>
                             <td>
                                 @php
                                     $color = ['Cash' => 'success', 'Transfer' => 'info', 'Card' => 'warning'][$sale->payment_method] ?? 'secondary';
@@ -72,7 +72,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0" id="saleDetailsContent">
-            </div>
+                </div>
             <div class="modal-footer bg-light border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-success" onclick="printReceipt()">
@@ -87,7 +87,7 @@
 <div class="modal fade" id="voidSaleModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ route('sales.void') }}" method="POST">
+            <form action="{{ url('admin/sales/void') }}" method="POST">
                 @csrf
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title text-white">Void Transaction</h5>
@@ -100,7 +100,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label">Reason for Voiding</label>
-                        <textarea name="reason" id="void_reason" class="form-control no-editor" rows="3" required placeholder="e.g. Wrong item selected, payment failed..."></textarea>
+                        <textarea name="reason" class="form-control" rows="3" placeholder="e.g. Wrong item selected, payment failed..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -113,46 +113,27 @@
 </div>
 
 <script>
-    // Singleton handles to prevent event looping bugs
-    let detailsModalObj = null;
-    let voidModalObj = null;
-
     async function viewSaleDetails(saleId) {
-        const modalElement = document.getElementById('saleDetailsModal');
+        const modal = new bootstrap.Modal(document.getElementById('saleDetailsModal'));
         const content = document.getElementById('saleDetailsContent');
         
-        if (!detailsModalObj) {
-            detailsModalObj = new bootstrap.Modal(modalElement);
-        }
-        
         content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
-        detailsModalObj.show();
+        modal.show();
 
         try {
-            // Safe replacement token processing pattern
-            const url = "{{ route('sales.details', ':id') }}".replace(':id', saleId);
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
+            const response = await fetch("{{ url('admin/sales/details') }}/" + saleId);
             const data = await response.json();
 
             if (data.success) {
                 let itemsHtml = '';
                 data.sale.items.forEach(item => {
-                    const unitPrice = parseFloat(item.unit_price) || 0;
-                    const quantity = parseInt(item.quantity) || 0;
-                    const subtotal = quantity * unitPrice;
-
                     itemsHtml += `
                         <tr>
                             <td class="ps-0">
-                                <h6 class="mb-0">${item.product_name || 'Product'}</h6>
-                                <small class="text-muted">${quantity} x ₦${unitPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}</small>
+                                <h6 class="mb-0">${item.product_name}</h6>
+                                <small class="text-muted">${item.quantity} x ₦${parseFloat(item.unit_price).toLocaleString()}</small>
                             </td>
-                            <td class="text-end pe-0">₦${subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                            <td class="text-end pe-0">₦${(item.quantity * item.unit_price).toLocaleString()}</td>
                         </tr>`;
                 });
 
@@ -164,7 +145,7 @@
                         </div>
                         <div class="d-flex justify-content-between mb-3 small">
                             <span><strong>Date:</strong> ${data.sale.created_at}</span>
-                            <span><strong>Staff:</strong> ${data.sale.staff_name || 'Operator'}</span>
+                            <span><strong>Staff:</strong> ${data.sale.staff_name}</span>
                         </div>
                         <table class="table table-sm table-borderless">
                             <thead class="border-bottom small text-uppercase">
@@ -173,9 +154,9 @@
                             <tbody>${itemsHtml}</tbody>
                         </table>
                         <div class="border-top pt-3 mt-2">
-                            <div class="d-flex justify-content-between small"><span>Subtotal:</span><span>₦${(parseFloat(data.sale.total_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
-                            <div class="d-flex justify-content-between small"><span>Discount:</span><span class="text-danger">-₦${(parseFloat(data.sale.discount_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
-                            <div class="d-flex justify-content-between fw-bold h5 mt-2"><span>Total:</span><span class="text-primary">₦${(parseFloat(data.sale.payable_amount) || 0).toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                            <div class="d-flex justify-content-between small"><span>Subtotal:</span><span>₦${parseFloat(data.sale.total_amount).toLocaleString()}</span></div>
+                            <div class="d-flex justify-content-between small"><span>Discount:</span><span class="text-danger">-₦${parseFloat(data.sale.discount_amount).toLocaleString()}</span></div>
+                            <div class="d-flex justify-content-between fw-bold h5 mt-2"><span>Total:</span><span class="text-primary">₦${parseFloat(data.sale.payable_amount).toLocaleString()}</span></div>
                         </div>
                         <div class="mt-3 p-2 bg-light rounded text-center small">
                             Payment Method: <strong>${data.sale.payment_method}</strong>
@@ -185,7 +166,6 @@
                 content.innerHTML = `<div class="alert alert-danger m-3">${data.message}</div>`;
             }
         } catch (error) {
-            console.error("Fetch Execution Details Error:", error);
             content.innerHTML = `<div class="alert alert-danger m-3">Error fetching transaction data.</div>`;
         }
     }
@@ -193,40 +173,12 @@
     function confirmVoid(id, ref) {
         document.getElementById('void_sale_id').value = id;
         document.getElementById('void_ref_display').innerText = ref;
-        
-        const textarea = document.getElementById('void_reason');
-        if (textarea) {
-            textarea.value = '';
-        }
-
-        // Tearing down automated global script editors layout instances
-        if (typeof tinymce !== 'undefined') {
-            const editorInstance = tinymce.get('void_reason') || tinymce.get('mce_0');
-            if (editorInstance) {
-                editorInstance.destroy();
-            }
-        }
-
-        // Safely clear out hidden UI styles forced onto element fields
-        setTimeout(() => {
-            const targetField = document.getElementById('void_reason');
-            if (targetField) {
-                targetField.style.setProperty('display', 'block', 'important');
-                targetField.removeAttribute('aria-hidden');
-            }
-        }, 120);
-
-        if (!voidModalObj) {
-            voidModalObj = new bootstrap.Modal(document.getElementById('voidSaleModal'));
-        }
-        voidModalObj.show();
+        const voidModal = new bootstrap.Modal(document.getElementById('voidSaleModal'));
+        voidModal.show();
     }
 
     function printReceipt() {
-        const printArea = document.getElementById('receipt-print-area');
-        if (!printArea) return;
-        
-        const content = printArea.innerHTML;
+        const content = document.getElementById('receipt-print-area').innerHTML;
         const printWindow = window.open('', '_blank', 'width=400,height=600');
         
         printWindow.document.write(`
@@ -243,7 +195,7 @@
                     </style>
                 </head>
                 <body>
-                    \${content}
+                    ${content}
                     <script>
                         window.onload = function() {
                             window.print();

@@ -3,20 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     
-    <title>@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Mosh Edibles' }}</title>
-    
-    <meta content="{{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->description : 'Artisanal Treats Baked Fresh Daily.' }}" name="description" />
-    <meta content="sky-hackeR(+2348082574927)" name="author" />
-    
+    <!-- Primary SEO Meta Tags -->
+    <title>@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}</title>
+    <meta name="title" content="@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+    <meta name="description" content="{{ !empty($pageGlobalData->setting->description) ? $pageGlobalData->setting->description : 'Moshel Edibles - Home of yummy tastes. Artisanal treats, cakes, and gourmet bakes made fresh daily.' }}">
+    <meta name="keywords" content="Moshel Edibles, Bakery, Custom Cakes, Pastries, Gourmet Treats, Delights, Confectionery">
+    <meta name="author" content="{{ !empty($pageGlobalData->setting->site_name) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook SEO -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+    <meta property="og:description" content="{{ !empty($pageGlobalData->setting->description) ? $pageGlobalData->setting->description : 'Moshel Edibles - Home of yummy tastes. Artisanal treats, cakes, and gourmet bakes made fresh daily.' }}">
+    <meta property="og:image" content="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->logo) : asset('frontAssets/images/logo.png') }}">
+
+    <!-- Twitter SEO -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ url()->current() }}">
+    <meta property="twitter:title" content="@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+    <meta property="twitter:description" content="{{ !empty($pageGlobalData->setting->description) ? $pageGlobalData->setting->description : 'Moshel Edibles - Home of yummy tastes. Artisanal treats, cakes, and gourmet bakes made fresh daily.' }}">
+    <meta property="twitter:image" content="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->logo) : asset('frontAssets/images/logo.png') }}">
+
+    <!-- Favicon -->
     <link rel="shortcut icon" href="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->favicon) : '' }}">
-    
+
+    <!-- Scripts & Stylesheets -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -28,12 +48,14 @@
                     },
                     colors: { 
                         mosh: {
-                            gold: '#B38B46',
-                            dark: '#0D0B0A',
-                            card: '#161311',
-                            accent: '#6BA132',
-                            cream: '#F5F5F0',
-                            slateText: '#1E2329'
+                            purple: '#6B21A8',
+                            purpleHover: '#581C87',
+                            pink: '#D946EF',
+                            pinkHover: '#C026D3',
+                            dark: '#0F0A15',
+                            card: '#1A1225',
+                            cream: '#FAF5FF',
+                            slateText: '#1E1926'
                         }
                     }
                 }
@@ -44,45 +66,51 @@
         .theme-transition {
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .html-light-mode .glass-card {
-            background: rgba(255, 255, 255, 0.75) !important;
+            background: rgba(255, 255, 255, 0.85) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            box-shadow: 0 10px 30px -5px rgba(130, 110, 70, 0.06) !important;
+            border: 1px solid rgba(107, 33, 168, 0.1) !important;
+            box-shadow: 0 10px 30px -5px rgba(107, 33, 168, 0.05) !important;
         }
 
         .html-dark-mode .glass-card {
-            background: rgba(22, 19, 17, 0.75) !important;
+            background: rgba(26, 18, 37, 0.8) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.06) !important;
-            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(217, 70, 239, 0.12) !important;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5) !important;
         }
     </style>
 </head>
 <body id="app-body" class="theme-transition font-sans antialiased min-h-screen flex flex-col justify-between bg-mosh-dark text-gray-300">
 
-    <header id="app-header" class="theme-transition sticky top-0 left-0 right-0 z-50 border-b border-gray-500/10 glass-card">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            
-            <a href="{{ url('/') }}" class="text-xl font-serif font-bold tracking-tight id-logo-text text-white">
-                mosh<span class="text-mosh-gold font-normal">edibles</span>
+    <header id="app-header" class="theme-transition sticky top-0 left-0 right-0 z-50 border-b border-mosh-pink/10 glass-card">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+
+            <a href="{{ url('/') }}" class="flex items-center">
+                @if(!empty($pageGlobalData->setting->logo))
+                    <img src="{{ asset($pageGlobalData->setting->logo) }}" alt="{{ $pageGlobalData->setting->site_name ?? 'Moshel Edibles' }}" class="h-12 w-auto object-contain">
+                @else
+                    <span class="text-2xl font-serif font-bold tracking-tight id-logo-text text-white">
+                        Moshel<span class="text-mosh-pink font-normal">Edibles</span>
+                    </span>
+                @endif
             </a>
 
-            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-                <a href="{{ url('/products') }}" class="id-nav-link text-gray-400 hover:text-mosh-gold transition-colors">Our Menu</a>
-                <a href="{{ url('/about') }}" class="id-nav-link text-gray-400 hover:text-mosh-gold transition-colors">About Us</a>
-                <a href="{{ url('/contact') }}" class="id-nav-link text-gray-400 hover:text-mosh-gold transition-colors">Contact Us</a>
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                <a href="{{ url('/products') }}" class="id-nav-link text-gray-400 hover:text-mosh-pink transition-colors">Our Menu</a>
+                <a href="{{ url('/about') }}" class="id-nav-link text-gray-400 hover:text-mosh-pink transition-colors">About Us</a>
+                <a href="{{ url('/contact') }}" class="id-nav-link text-gray-400 hover:text-mosh-pink transition-colors">Contact Us</a>
             </nav>
 
-            <div class="flex items-center space-x-4">
-                <button onclick="toggleGlobalTheme()" class="text-lg id-nav-link text-gray-400 hover:text-mosh-gold focus:outline-none" title="Change Theme Mode">
+            <div class="flex items-center space-x-5">
+                <button onclick="toggleGlobalTheme()" class="text-xl id-nav-link text-gray-400 hover:text-mosh-pink focus:outline-none transition-colors" title="Change Theme Mode">
                     <i id="theme-icon" class="mdi mdi-weather-sunny"></i>
                 </button>
 
-                <a href="{{ url('/order') }}" class="bg-mosh-gold hover:bg-opacity-90 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
+                <a href="{{ url('/order') }}" class="bg-mosh-purple hover:bg-mosh-purpleHover text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all shadow-md shadow-mosh-purple/20 hover:shadow-mosh-purple/40">
                     Order Now
                 </a>
             </div>
@@ -94,23 +122,33 @@
         @yield('content')
     </div>
 
-    <footer id="app-footer" class="theme-transition border-t border-gray-900/60 bg-mosh-dark text-gray-500 py-10 text-xs">
+    <footer id="app-footer" class="theme-transition border-t border-mosh-purple/20 bg-mosh-dark text-gray-400 py-12 text-xs">
         <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-            
-            <div class="space-y-2">
-                <h3 class="text-lg font-serif font-bold text-mosh-gold">mosh<span class="font-normal text-gray-400">edibles</span></h3>
-                <p class="text-xs text-gray-400">Artisanal treats baked fresh daily.</p>
+
+            <div class="space-y-3">
+                <a href="{{ url('/') }}" class="inline-block">
+                    @if(!empty($pageGlobalData->setting->footer_logo))
+                        <img src="{{ asset($pageGlobalData->setting->footer_logo) }}" alt="{{ $pageGlobalData->setting->site_name ?? 'Moshel Edibles' }}" class="h-10 w-auto object-contain">
+                    @elseif(!empty($pageGlobalData->setting->logo))
+                        <img src="{{ asset($pageGlobalData->setting->logo) }}" alt="{{ $pageGlobalData->setting->site_name ?? 'Moshel Edibles' }}" class="h-10 w-auto object-contain">
+                    @else
+                        <h3 class="text-xl font-serif font-bold text-mosh-pink">Moshel<span class="font-normal text-gray-400">Edibles</span></h3>
+                    @endif
+                </a>
+                <p class="text-xs text-gray-400 leading-relaxed">Home of yummy tastes. Artisanal treats baked fresh daily.</p>
             </div>
 
             <div class="space-y-2">
-                <h4 class="text-xs font-semibold uppercase tracking-wider text-mosh-gold mb-3">Explore</h4>
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-mosh-pink mb-3">Explore</h4>
                 <ul class="space-y-2 text-xs">
-                    <li><a href="{{ url('/products') }}" class="id-nav-link text-gray-400 hover:text-mosh-gold transition-colors">View Menu</a></li>
+                    <li><a href="{{ url('/products') }}" class="id-nav-link text-gray-400 hover:text-mosh-pink transition-colors">View Menu</a></li>
+                    <li><a href="{{ url('/about') }}" class="id-nav-link text-gray-400 hover:text-mosh-pink transition-colors">About Us</a></li>
+                    <li><a href="{{ url('/contact') }}" class="id-nav-link text-gray-400 hover:text-mosh-pink transition-colors">Contact Us</a></li>
                 </ul>
             </div>
 
             <div class="space-y-2">
-                <h4 class="text-xs font-semibold uppercase tracking-wider text-mosh-gold mb-3">Contact</h4>
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-mosh-pink mb-3">Contact</h4>
                 <p class="text-xs text-gray-400 leading-relaxed">
                     hello@moshedibles.com <br>
                     Open Tue - Sun, 8 AM - 6 PM
@@ -118,9 +156,9 @@
             </div>
 
             <div class="space-y-2">
-                <h6 class="text-xs uppercase tracking-widest font-bold text-mosh-gold mb-3">Internal Portals</h6>
-                <p class="text-xs leading-relaxed text-gray-400 mb-2">Authorized personnel secure management console access.</p>
-                <a href="{{ url('/staff/login') }}" class="inline-flex items-center space-x-2 text-xs font-bold text-mosh-gold border border-mosh-gold/30 hover:border-mosh-gold bg-mosh-gold/5 hover:bg-mosh-gold/10 px-4 py-2 rounded transition">
+                <h6 class="text-xs uppercase tracking-widest font-bold text-mosh-pink mb-3">Internal Portals</h6>
+                <p class="text-xs leading-relaxed text-gray-400 mb-2">Authorized personnel management console.</p>
+                <a href="{{ url('/staff/login') }}" class="inline-flex items-center space-x-2 text-xs font-bold text-mosh-pink border border-mosh-pink/30 hover:border-mosh-pink bg-mosh-pink/5 hover:bg-mosh-pink/10 px-4 py-2 rounded-lg transition">
                     <i class="mdi mdi-lock-open-outline"></i>
                     <span>Staff Portal Dashboard</span>
                 </a>
@@ -128,10 +166,10 @@
 
         </div>
 
-        <div class="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-gray-500/10 text-center text-xs text-gray-400 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
-            <p>&copy; {{ date('Y') }} Mosh Edibles. All rights reserved.</p>
+        <div class="max-w-7xl mx-auto px-4 mt-10 pt-6 border-t border-gray-500/10 text-center text-xs text-gray-400 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+            <p>&copy; {{ date('Y') }} {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}. All rights reserved.</p>
             <div class="flex space-x-6 text-gray-400">
-                <span class="text-[10px] font-mono tracking-wider uppercase bg-gray-500/5 px-2 py-0.5 rounded border border-gray-500/10">HQ: Lagos, Nigeria</span>
+                <span class="text-[10px] font-mono tracking-wider uppercase bg-mosh-purple/10 text-mosh-pink px-2.5 py-1 rounded border border-mosh-purple/20">HQ: Lagos, Nigeria</span>
             </div>
         </div>
     </footer>
@@ -157,16 +195,16 @@
                 bodyNode.classList.replace('bg-mosh-dark', 'bg-mosh-cream');
                 bodyNode.classList.replace('text-gray-300', 'text-mosh-slateText');
                 
-                headerNode.className = "theme-transition sticky top-0 left-0 right-0 z-50 border-b border-gray-200 glass-card";
-                footerNode.className = "theme-transition border-t border-gray-200 bg-white text-gray-500 py-10 text-xs";
+                headerNode.className = "theme-transition sticky top-0 left-0 right-0 z-50 border-b border-mosh-purple/10 glass-card";
+                footerNode.className = "theme-transition border-t border-mosh-purple/10 bg-white text-gray-600 py-12 text-xs";
                 
                 iconNode.className = "mdi mdi-weather-night";
                 
-                logoTexts.forEach(el => { el.classList.remove('text-white'); el.classList.add('text-gray-900'); });
+                logoTexts.forEach(el => { el.classList.remove('text-white'); el.classList.add('text-mosh-purple'); });
                 navLinks.forEach(el => { el.classList.remove('text-gray-400'); el.classList.add('text-gray-700'); });
-                primaryHeadings.forEach(el => { el.classList.remove('text-white'); el.classList.add('text-gray-900'); });
-                bodyTexts.forEach(el => { el.classList.remove('text-gray-400'); el.classList.add('text-gray-700'); });
-                priceTexts.forEach(el => { el.classList.remove('text-white'); el.classList.add('text-gray-900'); });
+                primaryHeadings.forEach(el => { el.classList.remove('text-white'); el.classList.add('text-mosh-purple'); });
+                bodyTexts.forEach(el => { el.classList.remove('text-gray-400'); el.classList.add('text-gray-600'); });
+                priceTexts.forEach(el => { el.classList.remove('text-white'); el.classList.add('text-mosh-purple'); });
             } else {
                 htmlNode.classList.remove('html-light-mode');
                 htmlNode.classList.add('html-dark-mode');
@@ -174,16 +212,16 @@
                 bodyNode.classList.replace('bg-mosh-cream', 'bg-mosh-dark');
                 bodyNode.classList.replace('text-mosh-slateText', 'text-gray-300');
                 
-                headerNode.className = "theme-transition sticky top-0 left-0 right-0 z-50 border-b border-gray-500/10 glass-card";
-                footerNode.className = "theme-transition border-t border-gray-100/10 bg-mosh-dark text-gray-500 py-10 text-xs";
+                headerNode.className = "theme-transition sticky top-0 left-0 right-0 z-50 border-b border-mosh-pink/10 glass-card";
+                footerNode.className = "theme-transition border-t border-mosh-purple/20 bg-mosh-dark text-gray-400 py-12 text-xs";
                 
                 iconNode.className = "mdi mdi-weather-sunny";
                 
-                logoTexts.forEach(el => { el.classList.remove('text-gray-900'); el.classList.add('text-white'); });
+                logoTexts.forEach(el => { el.classList.remove('text-mosh-purple'); el.classList.add('text-white'); });
                 navLinks.forEach(el => { el.classList.remove('text-gray-700'); el.classList.add('text-gray-400'); });
-                primaryHeadings.forEach(el => { el.classList.remove('text-gray-900'); el.classList.add('text-white'); });
-                bodyTexts.forEach(el => { el.classList.remove('text-gray-700'); el.classList.add('text-gray-400'); });
-                priceTexts.forEach(el => { el.classList.remove('text-gray-900'); el.classList.add('text-white'); });
+                primaryHeadings.forEach(el => { el.classList.remove('text-mosh-purple'); el.classList.add('text-white'); });
+                bodyTexts.forEach(el => { el.classList.remove('text-gray-600'); el.classList.add('text-gray-400'); });
+                priceTexts.forEach(el => { el.classList.remove('text-mosh-purple'); el.classList.add('text-white'); });
             }
         }
 

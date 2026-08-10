@@ -128,6 +128,9 @@
                         <a href="{{ url('/admin/ingredients') }}"><i class="bx bx-box"></i><span>Ingredients</span></a>
                     </li>
                     <li>
+                        <a href="{{ url('/admin/openingStock') }}"><i class="bx bx-layer"></i><span>Opening Stock</span></a>
+                    </li>
+                    <li>
                         <a href="{{ url('/admin/stockIn') }}"><i class="bx bx-download"></i><span>Stock In (Purchases)</span></a>
                     </li>
                     <li>
