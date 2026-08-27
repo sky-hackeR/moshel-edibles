@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Store;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Http\Controllers\Controller;
+
 
 class PageController extends Controller
 {
@@ -16,7 +18,7 @@ class PageController extends Controller
             ->take(3)
             ->get();
 
-        return view('welcome', [
+        return view('store.welcome', [
             'featuredProducts' => $featuredProducts
         ]);
     }
@@ -30,7 +32,7 @@ class PageController extends Controller
         ->with(['recipe.items.ingredient'])
         ->get();
 
-        return view('products', [
+        return view('store.products', [
             'products' => $products
         ]);
     }
@@ -40,6 +42,6 @@ class PageController extends Controller
      */
     public function about()
     {
-        return view('about');   
+        return view('store.about');   
     }
 }

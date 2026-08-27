@@ -19,11 +19,55 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome');
 // });
 
-Route::get('/', [App\Http\Controllers\PageController::class, 'index'])->name('welcome');
-Route::get('/products', [App\Http\Controllers\PageController::class, 'products'])->name('products');
-Route::get('/about', [App\Http\Controllers\PageController::class, 'about'])->name('about');
-Route::get('/contact', [App\Http\Controllers\ContactController::class, 'contact'])->name('contact');
-Route::post('/contact', [App\Http\Controllers\ContactController::class, 'submit'])->name('contact.submit');
+
+
+    // =====================================================
+    // STOREFRONT
+    // =====================================================
+    Route::get('/', [App\Http\Controllers\Store\PageController::class, 'index'])->name('store.welcome');
+    Route::get('/products', [App\Http\Controllers\Store\PageController::class, 'products'])->name('store.products');
+    Route::get('/about', [App\Http\Controllers\Store\PageController::class, 'about'])->name('store.about');
+    Route::get('/contact', [App\Http\Controllers\Store\ContactController::class, 'contact'])->name('store.contact');
+    Route::post('/contact', [App\Http\Controllers\Store\ContactController::class, 'submit'])->name('store.contact.submit');
+
+
+    // =====================================================
+    // CUSTOMER AUTHENTICATION
+    // ====================================================
+    // Login
+    Route::get('/login', [App\Http\Controllers\Customer\Auth\LoginController::class,'showLoginForm'])->name('customer.login');
+    Route::post('/login', [App\Http\Controllers\Customer\Auth\LoginController::class,'login'])->name('customer.login.submit');
+    // Registration
+    Route::get('/register', [App\Http\Controllers\Customer\Auth\RegisterController::class,'showRegistrationForm'])->name('customer.register');
+    Route::post('/register', [App\Http\Controllers\Customer\Auth\RegisterController::class,'register'])->name('customer.register.submit');
+    // Logout
+    Route::post('/logout', [App\Http\Controllers\Customer\Auth\LoginController::class,'logout'])->name('customer.logout');
+    // Password Reset
+    Route::post('/password/email', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class,'sendResetLinkEmail'])->name('customer.password.email');
+    Route::post('/password/reset', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class,'reset'])->name('customer.password.reset');
+    Route::get('/password/reset', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class,'showLinkRequestForm'])->name('customer.password.request');
+    Route::get('/password/reset/{token}', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class,'showResetForm'])->name('customer.password.reset.form');
+
+
+    // =====================================================
+    // CUSTOMER-ONLY / AUTHENTICATED STOREFRONT
+    // =====================================================
+
+    Route::middleware('auth:customer')->group(function () {
+
+        Route::get('/account', [App\Http\Controllers\Customer\AccountController::class,'index'])->name('customer.account');
+
+        // We'll add these when we build them:
+        //
+        // Route::get('/cart', ...);
+        // Route::get('/checkout', ...);
+        // Route::post('/checkout', ...);
+        // Route::get('/orders', ...);
+    });
+
+
+
+
 
 Route::group(['prefix' => 'admin'], function () {
   Route::get('/', [App\Http\Controllers\Admin\Auth\LoginController::class, 'showLoginForm'])->name('admin.login');
@@ -128,4 +172,3 @@ Route::group(['prefix' => 'staff'], function () {
   Route::get('/salesHistory', [App\Http\Controllers\Staff\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:staff']);
   Route::get('/sales/details/{id}', [App\Http\Controllers\Staff\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:staff']);
 });
-
