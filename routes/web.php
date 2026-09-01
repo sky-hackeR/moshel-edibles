@@ -142,7 +142,11 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/store', [App\Http\Controllers\Admin\Store\StoreController::class, 'home'])->name('home')->middleware(['auth:admin']);   
   Route::post('/store/products/{product:slug}/add', [App\Http\Controllers\Admin\Store\StoreController::class,'addProduct'])->name('store.product.add')->middleware(['auth:admin']);
   Route::get('/store/products/{product:slug}/edit', [App\Http\Controllers\Admin\Store\StoreController::class,'editProduct'])->name('store.product.edit')->middleware(['auth:admin']);
-
+  Route::put('/store/products/{product:slug}/update', [App\Http\Controllers\Admin\Store\StoreController::class,'updateProduct'])->name('store.product.update')->middleware(['auth:admin']);
+  Route::patch('/store/products/{product:slug}/status', [App\Http\Controllers\Admin\Store\StoreController::class,'updateStatus'])->name('store.product.status')->middleware(['auth:admin']);
+  Route::post('/store/products/{product:slug}/images/add', [App\Http\Controllers\Admin\Store\StoreController::class,'addImage'])->name('store.product.image.add')->middleware(['auth:admin']);
+  Route::patch('/store/products/{product:slug}/images/{image}/primary', [App\Http\Controllers\Admin\Store\StoreController::class,'setPrimaryImage'])->name('store.product.image.primary')->middleware(['auth:admin']);
+  Route::delete('/store/products/{product:slug}/images/{image}/delete', [App\Http\Controllers\Admin\Store\StoreController::class,'deleteImage'])->name('store.product.image.delete')->middleware(['auth:admin']);
 });
 
 Route::group(['prefix' => 'staff'], function () {

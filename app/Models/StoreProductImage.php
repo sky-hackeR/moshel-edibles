@@ -12,7 +12,7 @@ class StoreProductImage extends Model
 
     protected $fillable = [
         'store_product_id',
-        'path',
+        'image_path',
         'alt_text',
         'sort_order',
         'is_primary',

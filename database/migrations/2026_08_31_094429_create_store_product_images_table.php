@@ -24,7 +24,7 @@ return new class extends Migration
              * Example:
              * store/products/chocolate-cake/main.jpg
              */
-            $table->string('path');
+            $table->string('image_path');
 
             /*
              * Accessibility / SEO text.

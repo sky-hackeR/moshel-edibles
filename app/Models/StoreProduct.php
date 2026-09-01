@@ -12,8 +12,11 @@ class StoreProduct extends Model
 
     protected $fillable = [
         'product_id',
+        'store_title',
         'short_description',
         'description',
+        'meta_title',
+        'meta_description',
         'is_published',
         'is_featured',
     ];

@@ -67,7 +67,7 @@
 
                 <div class="card-body">
 
-                    <form action="{{ url('/admin/store/products/' . $product->id . '/update') }}"
+                    <form action="{{ url('/admin/store/products/' . $product->slug . '/update') }}"
                           method="POST">
 
                         @csrf
@@ -284,7 +284,7 @@
                                                 @if(!$image->is_primary)
 
                                                     <form
-                                                        action="{{ url('/admin/store/products/' . $product->id . '/images/' . $image->id . '/primary') }}"
+                                                        action="{{ url('/admin/store/products/' . $product->slug . '/images/' . $image->id . '/primary') }}"
                                                         method="POST"
                                                     >
 
@@ -312,7 +312,7 @@
 
 
                                                 <form
-                                                    action="{{ url('/admin/store/products/' . $product->id . '/images/' . $image->id . '/delete') }}"
+                                                    action="{{ url('/admin/store/products/' . $product->slug . '/images/' . $image->id . '/delete') }}"
                                                     method="POST"
                                                     onsubmit="return confirm('Are you sure you want to delete this image?');"
                                                 >
@@ -497,7 +497,7 @@
                 <div class="card-body">
 
                     <form
-                        action="{{ url('/admin/store/products/' . $product->id . '/status') }}"
+                        action="{{ url('/admin/store/products/' . $product->slug . '/status') }}"
                         method="POST"
                     >
 
@@ -631,7 +631,7 @@
         <div class="modal-content">
 
             <form
-                action="{{ url('/admin/store/products/' . $product->id . '/images/add') }}"
+                action="{{ url('/admin/store/products/' . $product->slug . '/images/add') }}"
                 method="POST"
                 enctype="multipart/form-data"
             >

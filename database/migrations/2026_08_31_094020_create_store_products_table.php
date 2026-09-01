@@ -27,8 +27,13 @@ return new class extends Migration
             /*
              * Storefront-only content.
              */
-            $table->string('short_description')->nullable();
-            $table->longText('description')->nullable();
+            $table->string('store_title')->nullable();
+            $table->string('short_description', 500)->nullable();
+            $table->text('description')->nullable();
+
+            // SEO
+            $table->string('meta_title')->nullable();
+            $table->string('meta_description', 500)->nullable();
 
             /*
              * Controls visibility on the public storefront.
