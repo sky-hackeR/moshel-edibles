@@ -160,6 +160,28 @@
                         <a href="{{ url('/admin/salesHistory') }}"><i class="bx bx-list-check"></i><span>Sales History</span></a>
                     </li>
 
+                    <br>
+
+                    <!-- Storefront -->
+                    <li class="menu-title">Storefront</li>
+
+                    <li>
+                        <a href="{{ url('/admin/store') }}">
+                            <i class="bx bx-store"></i>
+                            <span>Store Management</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url('/') }}" target="_blank">
+                            <i class="bx bx-globe"></i>
+                            <span>View Store</span>
+                        </a>
+                    </li>
+
+
+                    <br>
+
                     <li class="menu-title">Users</li>
                     <li>
                         <a href="{{ url('/admin/adminList') }}"><i class="bx bx-user"></i><span>Admins</span></a>
@@ -168,10 +190,12 @@
                         <a href="{{ url('/admin/staffList') }}"><i class="bx bx-user-check"></i><span>Production Staff</span></a>
                     </li>
 
+                    <br>
+
                     <li>
                         <a href="{{ url('/admin/logout') }}" 
                         onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
-                            <i class="bx bx-power-off"></i><span>Logout</span>
+                            <i class="bx bx-power-off" style="color: red"></i><span style="color: red">Logout</span>
                         </a>
 
                         <form id="logout-form-sidebar" action="{{ url('/admin/logout') }}" method="POST" style="display:none;">
