@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
     // =====================================================
     Route::get('/', [App\Http\Controllers\Store\PageController::class, 'index'])->name('store.welcome');
     Route::get('/products', [App\Http\Controllers\Store\PageController::class, 'products'])->name('store.products');
+    Route::get('/products/{slug}', [App\Http\Controllers\Store\PageController::class, 'productDetails'])->name('store.productDetails');
     Route::get('/about', [App\Http\Controllers\Store\PageController::class, 'about'])->name('store.about');
     Route::get('/contact', [App\Http\Controllers\Store\ContactController::class, 'contact'])->name('store.contact');
     Route::post('/contact', [App\Http\Controllers\Store\ContactController::class, 'submit'])->name('store.contact.submit');

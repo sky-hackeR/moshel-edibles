@@ -15,13 +15,6 @@
         <!-- Favicon Icon -->
         <link rel="shortcut icon" type="image/x-icon" href="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->favicon) : '' }}">
 
-        <!-- Google Fonts Css-->
-        {{-- <link rel="preconnect" href="./fonts.googleapis.com/index.html" />
-        <link rel="preconnect" href="../../fonts.gstatic.com/index.html" crossorigin />
-        <link
-            href="../../fonts.googleapis.com/css243dd.css?family=Lora:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap"
-            rel="stylesheet"
-        /> --}}
         <!-- Bootstrap Css -->
         <link href="{{asset('frontAssets/css/bootstrap.min.css')}}" rel="stylesheet" media="screen" />
         <!-- SlickNav Css -->
@@ -33,11 +26,17 @@
         <!-- Animated Css -->
         <link href="{{ asset('frontAssets/css/animate.css') }}" rel="stylesheet" />
         <!-- Magnific Popup Core Css File -->
-        <link rel="stylesheet" href="{{asset('frontAssets/css/magnific-popup.css')}}" />
+        {{-- <link rel="stylesheet" href="{{asset('frontAssets/css/magnific-popup.css')}}" /> --}}
         <!-- Mouse Cursor Css File -->
         <link rel="stylesheet" href="{{asset('frontAssets/css/mousecursor.css')}}" />
         <!-- Main Custom Css -->
         <link href="{{asset('frontAssets/css/custom.css')}}" rel="stylesheet" media="screen" />
+
+        <!-- skY Custom Css -->
+        <link href="{{asset('frontAssets/css/sky.css')}}" rel="stylesheet" media="screen" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" />
+    
+
     </head>
     <body>
         <!-- Preloader Start -->
@@ -66,7 +65,7 @@
                                 <ul class="navbar-nav mr-auto" id="menu">
                                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}">Home</a></li>
                                     <li class="nav-item"><a class="nav-link" href="{{ url('/about') }}">About Us</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="services.html">Services</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ url('/products') }}">Products</a></li>
                                     <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
                                     <li class="nav-item submenu">
                                         <a class="nav-link" href="#">Pages</a>
@@ -248,8 +247,71 @@
         </footer>
         <!-- Footer End -->
 
-        <!-- Jquery Library File -->
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof jQuery !== 'undefined') {
+                    var productIds = [];
+                    
+                    $('.product-gallery-item').each(function () {
+                        var id = $(this).data('product-id');
+                        if (id && $.inArray(id, productIds) === -1) {
+                            productIds.push(id);
+                        }
+                    });
+
+                    $.each(productIds, function (index, id) {
+                        $('[data-product-id="' + id + '"]').magnificPopup({
+                            type: 'image',
+                            gallery: {
+                                enabled: true
+                            },
+                            image: {
+                                titleSrc: 'title'
+                            },
+                            zoom: {
+                                enabled: true,
+                                duration: 300
+                            },
+                            removalDelay: 300,
+                            mainClass: 'mfp-fade'
+                        });
+                    });
+                }
+            });
+        </script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof jQuery === 'undefined' || !$.fn.magnificPopup) return;
+
+                // Efficient delegation: Binds once per card container on demand
+                $('.store-product-card').each(function () {
+                    var $card = $(this);
+                    
+                    $card.magnificPopup({
+                        delegate: '.product-gallery-item',
+                        type: 'image',
+                        gallery: {
+                            enabled: true,
+                            navigateByImgClick: true,
+                            preload: [0, 1] // Efficient preloading: Preloads current + 1 next image only
+                        },
+                        image: {
+                            titleSrc: 'title'
+                        },
+                        removalDelay: 150, // Faster opening/closing animation time
+                        mainClass: 'mfp-fade'
+                    });
+                });
+            });
+        </script>
+
         <script src="{{ asset('frontAssets/js/jquery-3.7.1.min.js') }}"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+
+        <!-- Jquery Library File -->
         <!-- Bootstrap js file -->
         <script src="{{ asset('frontAssets/js/bootstrap.min.js') }}"></script>
         <!-- Validator js file -->
@@ -262,7 +324,7 @@
         <script src="{{asset('frontAssets/js/jquery.waypoints.min.js')}}"></script>
         <script src="{{asset('frontAssets/js/jquery.counterup.min.js')}}"></script>
         <!-- Magnific js file -->
-        <script src="{{asset('frontAssets/js/jquery.magnific-popup.min.js')}}"></script>
+        {{-- <script src="{{asset('frontAssets/js/jquery.magnific-popup.min.js')}}"></script> --}}
         <!-- SmoothScroll -->
         <script src="{{asset('frontAssets/js/SmoothScroll.js')}}"></script>
         <!-- Parallax js -->
@@ -279,7 +341,7 @@
         <script src="{{asset('frontAssets/js/wow.min.js')}}"></script>
         <!-- Main Custom js file -->
         <script src="{{asset('frontAssets/js/function.js')}}"></script>
-        <script src="../../demo.awaikenthemes.com/assets/js/theme-panel-dynamic.js"></script>
+        {{-- <script src="../../demo.awaikenthemes.com/assets/js/theme-panel-dynamic.js"></script> --}}
     </body>
 
 </html>

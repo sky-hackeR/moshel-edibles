@@ -403,12 +403,20 @@
                 <div class="card-body">
 
                     <div class="d-flex align-items-center mb-4">
-
-                        <div
-                            class="avatar-sm bg-light rounded d-flex align-items-center justify-content-center"
-                        >
-                            <i class="bx bx-package font-size-20 text-primary"></i>
-                        </div>
+                        @if($product->storeProduct?->primaryImage)
+                            <img
+                                src="{{ asset($product->storeProduct->primaryImage->image_path) }}"
+                                alt="{{ $product->name }}"
+                                class="rounded me-3"
+                                style="width: 45px; height: 45px; object-fit: cover;"
+                            >
+                        @else
+                            <div
+                                class="avatar-sm bg-light rounded d-flex align-items-center justify-content-center"
+                            >
+                                <i class="bx bx-package font-size-20 text-primary"></i>
+                            </div>
+                        @endif
 
                         <div class="ms-3">
 
