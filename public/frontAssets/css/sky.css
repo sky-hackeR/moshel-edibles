@@ -1,0 +1,701 @@
+/* =========================================================
+   PRODUCT CARD
+========================================================= */
+
+.store-product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.store-product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.09);
+}
+
+
+/* =========================================================
+   PRODUCT IMAGE
+========================================================= */
+
+.store-product-image {
+    position: relative;
+    height: 190px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+.store-product-image > a:first-child {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.store-product-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .5s ease;
+}
+
+.store-product-card:hover .store-product-image img  .product-card:hover{
+    transform: scale(1.05);
+}
+
+
+/* =========================================================
+   IMAGE OVERLAY
+========================================================= */
+
+.store-product-image-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, .25);
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+
+.store-product-image-overlay span {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--theme);
+    border-radius: 50%;
+    font-size: 16px;
+    transform: scale(.8);
+    transition: transform .3s ease;
+}
+
+.store-product-card:hover .store-product-image-overlay .product-card:hover {
+    opacity: 1;
+}
+
+.store-product-card:hover .product-card:hover .store-product-image-overlay span {
+    transform: scale(1);
+}
+
+
+/* =========================================================
+   HIDDEN GALLERY
+========================================================= */
+
+.store-product-gallery-hidden {
+    display: none !important;
+}
+
+
+/* =========================================================
+   FEATURED
+========================================================= */
+
+.store-product-featured {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 50px;
+    background: var(--theme);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 3;
+}
+
+.store-product-featured i {
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   IMAGE COUNT
+========================================================= */
+
+.store-product-image-count {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 9px;
+    border-radius: 50px;
+    background: rgba(0, 0, 0, .65);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    z-index: 3;
+}
+
+
+/* =========================================================
+   NO IMAGE
+========================================================= */
+
+.store-product-no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+}
+
+.store-product-no-image i {
+    margin-bottom: 8px;
+    font-size: 35px;
+}
+
+.store-product-no-image span {
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   PRODUCT BODY
+========================================================= */
+
+.store-product-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    padding: 17px 18px 18px;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.store-product-title {
+    margin: 0 0 6px;
+    font-size: 19px;
+    line-height: 1.3;
+}
+
+.store-product-title a {
+    color: #222;
+    text-decoration: none;
+    transition: color .3s ease;
+}
+
+.store-product-title a:hover {
+    color: var(--theme);
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.store-product-description {
+    height: auto;
+    margin: 0 0 14px;
+    color: #777;
+    font-size: 12px;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   INGREDIENTS
+========================================================= */
+
+.store-product-ingredients {
+    min-height: 0;
+    margin-top: 0;
+    margin-bottom: 14px;
+    padding: 11px;
+    background: #f8f8f8;
+    border-radius: 9px;
+}
+
+.store-product-ingredients-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+    color: #333;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.store-product-ingredients-title i {
+    color: var(--theme);
+    font-size: 11px;
+}
+
+.store-product-ingredient-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.store-product-ingredient-list span {
+    padding: 4px 7px;
+    border: 1px solid #e5e5e5;
+    border-radius: 50px;
+    background: #fff;
+    color: #666;
+    font-size: 9px;
+}
+
+.store-product-ingredient-list .ingredient-more {
+    border-color: transparent;
+    background: transparent;
+    color: var(--theme);
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   PRODUCT FOOTER
+========================================================= */
+
+.store-product-footer {
+    margin-top: auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 13px;
+    border-top: 1px solid #eeeeee;
+}
+
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+.store-product-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.store-product-price small {
+    margin-bottom: 2px;
+    color: #999;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.store-product-price strong {
+    color: var(--theme);
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   VIEW PRODUCT
+========================================================= */
+
+.store-product-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--theme);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: gap .3s ease;
+}
+
+.store-product-view:hover {
+    color: var(--theme);
+    gap: 9px;
+}
+
+.store-product-view i {
+    font-size: 10px;
+}
+
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.store-products-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 55px;
+}
+
+.store-products-pagination nav {
+    display: flex;
+    justify-content: center;
+}
+
+.store-products-pagination .pagination {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.store-products-pagination .page-item {
+    margin: 0;
+}
+
+.store-products-pagination .page-link {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #e5e5e5;
+    border-radius: 50%;
+    background: #fff;
+    color: #555;
+    font-size: 12px;
+    text-decoration: none;
+    transition: all .3s ease;
+}
+
+.store-products-pagination .page-link:hover {
+    border-color: var(--theme);
+    background: var(--theme);
+    color: #fff;
+}
+
+.store-products-pagination .page-item.active .page-link {
+    border-color: var(--theme);
+    background: var(--theme);
+    color: #fff;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.store-products-empty {
+    max-width: 550px;
+    margin: 30px auto 0;
+    padding: 60px 25px;
+    text-align: center;
+    border: 1px solid #eeeeee;
+    border-radius: 18px;
+    background: #fafafa;
+}
+
+.store-products-empty-icon {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    color: #aaa;
+    font-size: 27px;
+}
+
+.store-products-empty h3 {
+    margin-bottom: 8px;
+}
+
+.store-products-empty p {
+    margin-bottom: 20px;
+    color: #777;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 575px) {
+
+    .store-product-image {
+        height: 210px;
+    }
+
+    .store-product-body {
+        padding: 16px;
+    }
+}
+
+/* =========================================================
+   PERFORMANCE-OPTIMIZED MAGNIFIC POPUP STYLING
+========================================================= */
+
+/* Fast backdrop using pure opacity instead of heavy GPU blurs */
+.mfp-bg {
+    background: #0a0a0a !important;
+    opacity: 0.92 !important;
+    will-change: opacity;
+}
+
+/* Modal Content Wrapper */
+.mfp-content {
+    max-width: 800px !important;
+    margin: 0 auto;
+    will-change: transform;
+}
+
+.mfp-figure {
+    background: #181818;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.mfp-figure:after {
+    display: none !important;
+}
+
+/* Uniform viewport with hardware acceleration */
+.mfp-img {
+    width: 100% !important;
+    height: 500px !important;            /* Fixed canvas height across all aspect ratios */
+    max-height: 75vh !important;
+    object-fit: contain !important;       /* Fits full image without cropping or distortion */
+    background: #111111;                 /* Neutral container fill for portrait photos */
+    padding: 0 !important;
+    margin: 0 auto !important;
+    display: block !important;
+    transform: translateZ(0);            /* Force GPU layer promotion */
+    backface-visibility: hidden;
+}
+
+/* Bottom Caption Bar */
+.mfp-bottom-bar {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    padding: 14px 20px !important;
+    background: #181818 !important;
+    margin-top: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mfp-title {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    line-height: 1.4 !important;
+    padding-right: 15px !important;
+}
+
+.mfp-counter {
+    position: static !important;
+    font-size: 12px !important;
+    color: #888888 !important;
+    font-weight: 500 !important;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   NAVIGATION ARROWS (PERFECT CENTERING & FAST SVG ICONS)
+========================================================= */
+
+.mfp-arrow {
+    position: fixed !important;
+    top: 50% !important;
+    transform: translateY(-50%) translateZ(0) !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #ffffff !important;
+    border: none !important;
+    border-radius: 50% !important;
+    opacity: 0.9 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
+    z-index: 1046 !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 20px 20px !important;
+}
+
+/* Remove default CSS triangles */
+.mfp-arrow:before,
+.mfp-arrow:after {
+    display: none !important;
+}
+
+.mfp-arrow-left {
+    left: 20px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5'/%3E%3Cpath d='M12 19l-7-7 7-7'/%3E%3C/svg%3E") !important;
+}
+
+.mfp-arrow-right {
+    right: 20px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'/%3E%3Cpath d='M12 5l7 7-7 7'/%3E%3C/svg%3E") !important;
+}
+
+.mfp-arrow:hover {
+    opacity: 1 !important;
+    transform: translateY(-50%) scale(1.06) translateZ(0) !important;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
+.mfp-close {
+    position: absolute !important;
+    top: -40px !important;
+    right: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    color: #ffffff !important;
+    font-size: 28px !important;
+    opacity: 0.7 !important;
+    transition: opacity 0.15s ease !important;
+}
+
+.mfp-close:hover {
+    opacity: 1 !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE ADJUSTMENTS
+========================================================= */
+
+@media (max-width: 768px) {
+    .mfp-img {
+        height: 360px !important;
+    }
+
+    .mfp-arrow {
+        width: 40px !important;
+        height: 40px !important;
+        background-size: 18px 18px !important;
+    }
+
+    .mfp-arrow-left {
+        left: 10px !important;
+    }
+
+    .mfp-arrow-right {
+        right: 10px !important;
+    }
+}
+
+
+
+
+
+/* =========================================================
+   PRODUCT DETAILS PAGE
+========================================================= */
+
+/* Reset outer wrapper to clear extra backgrounds/padding */
+.product-gallery-wrapper {
+    width: 100%;
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Main Display Box with rounded corners */
+.product-main-card {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Ensures a strict square dimension */
+    background-color: #f7f5f2;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-main-card a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: zoom-in;
+}
+
+/* Forces image to fill exact area without stretching or letterboxing */
+.product-main-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.product-main-card:hover img {
+    transform: scale(1.04);
+}
+
+/* Thumbnail Grid Sizing */
+.thumbnail-item {
+    width: 70px;
+    height: 70px;
+    background-color: #f7f5f2;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.thumbnail-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.thumbnail-item:hover,
+.thumbnail-item.active {
+    border-color: #8b5a2b;
+    transform: translateY(-2px);
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0);
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.09);
+}

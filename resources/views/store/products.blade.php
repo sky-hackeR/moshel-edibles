@@ -1,105 +1,189 @@
 @extends('store.layouts.app')
 
-@section('title', 'Our Menu')
+@section('title', 'Our Products')
 
 @section('content')
-<div class="container mx-auto px-6 py-12">
-    <!-- Header Section -->
-    <div class="text-center max-w-2xl mx-auto mb-16">
-        <span class="text-mosh-pink text-xs font-bold uppercase tracking-widest block mb-2">The Collection</span>
-        <h1 class="text-3xl md:text-4xl font-serif font-medium text-white id-heading-main tracking-tight mb-4">
-            Browse Our Artisanal Batch Menu
-        </h1>
-        <p class="text-gray-400 id-text-body text-sm">
-            Handcrafted confections balanced carefully with local ingredients, culinary precision, and exceptional flavor notes.
-        </p>
-    </div>
 
-    <!-- Live Grid Framework -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        @forelse($products as $product)
-            @php
-                $activeRecipe = $product->recipe;
-            @endphp
-
-            <div class="glass-card rounded-xl p-6 flex flex-col justify-between theme-transition">
-                <div>
-                    <!-- Product Header -->
-                    <div class="flex items-start justify-between border-b border-gray-500/10 pb-4 mb-4 gap-4">
-                        <div>
-                            <h3 class="text-lg font-bold tracking-wide text-mosh-pink mb-1">{{ $product->name }}</h3>
-                            <span class="text-[11px] font-mono font-medium tracking-wider text-gray-500 uppercase">
-                                Unit: {{ $product->sales_unit ?? 'piece' }}
-                            </span>
-                        </div>
-                        <span class="text-base font-mono font-bold text-white id-price-text bg-mosh-pink/10 px-3 py-1 rounded border border-mosh-pink/20 tracking-tight theme-transition">
-                            ₦{{ number_format($product->selling_price, 2) }}
-                        </span>
-                    </div>
-
-                    <!-- Dynamic Recipe Formulation Notes -->
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3 italic theme-transition">
-                        @if($activeRecipe && $activeRecipe->is_active)
-                            "{{ $activeRecipe->note ?? 'Formulated with artisan quality controls.' }}"
-                        @else
-                            "No active formulation profile summary assigned to this batch yet."
-                        @endif
-                    </p>
-
-                    <!-- Gourmet Ingredient Composition List -->
-                    <div class="mb-6">
-                        <span class="text-[10px] uppercase tracking-widest font-bold text-mosh-pink/80 block mb-2">Composition Base:</span>
-                        <div class="flex flex-wrap gap-1.5">
-                            @if($activeRecipe && $activeRecipe->is_active && $activeRecipe->items->isNotEmpty())
-                                @foreach($activeRecipe->items as $item)
-                                    @if($item->ingredient)
-                                        <span class="text-[11px] font-medium px-2.5 py-1 bg-white/60 dark:bg-black/40 border border-gray-500/10 rounded-md text-gray-800 dark:text-gray-200 theme-transition shadow-sm">
-                                            {{ $item->ingredient->name }}
-                                        </span>
-                                    @endif
-                                @endforeach
-                            @else
-                                <span class="text-xs text-gray-500 italic">Ingredients unlisted</span>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer Mechanics & Stock Tracker -->
-                <div class="pt-4 border-t border-gray-500/10 flex items-center justify-between text-xs">
-                    <div class="flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full {{ $product->stock_on_hand <= 0 ? 'bg-red-500' : ($product->isLowStock() ? 'bg-amber-500' : 'bg-emerald-500') }}"></span>
-                        <span class="text-gray-500 font-medium">
-                            @php
-                                $unit = $product->sales_unit ?? 'piece';
-                            @endphp
-                            
-                            @if($product->stock_on_hand <= 0)
-                                Out of stock
-                            @else
-                                {{ $product->stock_on_hand }} 
-                                {{ $product->stock_on_hand == 1 ? $unit : Str::plural($unit) }} available
-                            @endif
-                        </span>
-                    </div>
-
-                    @if($product->stock_on_hand > 0)
-                        <a href="{{ url('/order?product=' . $product->id) }}" class="bg-mosh-purple hover:bg-mosh-purpleHover text-white font-bold px-4 py-2 rounded text-[11px] uppercase tracking-wider transition shadow-sm">
-                            Order Treat
-                        </a>
-                    @else
-                        <button disabled class="bg-gray-600/30 text-gray-400 font-bold px-4 py-2 rounded text-[11px] uppercase tracking-wider cursor-not-allowed">
-                            Sold Out
-                        </button>
-                    @endif
+<div class="page-header bg-section parallaxie">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-12">
+                <div class="page-header-box">
+                    <h1 class="text-anime-style-2" data-cursor="-opaque">
+                        Our <span>Products</span>
+                    </h1>
+                    <nav class="wow fadeInUp">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="{{ url('/') }}">Home</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Products</li>
+                        </ol>
+                    </nav>
                 </div>
             </div>
-        @empty
-            <div class="col-span-full text-center py-16 border border-dashed border-gray-400/30 rounded-xl glass-card">
-                <i class="mdi mdi-cookie-alert text-3xl text-mosh-pink block mb-3"></i>
-                <p class="text-gray-500 text-sm italic">Our dynamic kitchen catalog is currently empty. Check back soon for fresh batches.</p>
-            </div>
-        @endforelse
+        </div>
     </div>
 </div>
+
+<div class="page-product bg-section">
+    <div class="container">
+        {{-- PRODUCTS --}}
+        @if($products->count())
+            <div class="row g-4">
+                @foreach($products as $storeProduct)
+                    @php
+                        $product = $storeProduct->product;
+                        $title = $storeProduct->store_title ?: $product->name;
+                        $primaryImage = $storeProduct->images->firstWhere('is_primary', true) ?? $storeProduct->images->first();
+                        $ingredients = $product->recipe?->items ?? collect();
+                    @endphp
+
+                    <div class="col-xl-4 col-md-6">
+                        <article 
+                            class="store-product-card wow fadeInUp" 
+                            data-wow-delay="{{ ($loop->index % 3) * 0.15 }}s"
+                        >
+                            {{-- IMAGE --}}
+                            <div class="store-product-image">
+                                @if($primaryImage)
+                                    {{-- Visible image --}}
+                                    <a 
+                                        href="{{ asset($primaryImage->image_path) }}" 
+                                        class="product-gallery-item" 
+                                        data-product-id="{{ $product->id }}" 
+                                        title="{{ $title }}"
+                                    >
+                                        <img 
+                                            src="{{ asset($primaryImage->image_path) }}" 
+                                            alt="{{ $primaryImage->alt_text ?: $title }}" 
+                                            loading="lazy"
+                                        >
+                                        <div class="store-product-image-overlay">
+                                            <span>
+                                                <i class="fa-solid fa-expand"></i>
+                                            </span>
+                                        </div>
+                                    </a>
+
+                                    {{-- FEATURED --}}
+                                    @if($storeProduct->is_featured)
+                                        <div class="store-product-featured">
+                                            <i class="fa-solid fa-star"></i>
+                                            Featured
+                                        </div>
+                                    @endif
+
+                                    {{-- IMAGE COUNT --}}
+                                    @if($storeProduct->images->count() > 1)
+                                        <div class="store-product-image-count">
+                                            <i class="fa-solid fa-images"></i>
+                                            {{ $storeProduct->images->count() }}
+                                        </div>
+                                    @endif
+
+                                    {{-- Hidden gallery images --}}
+                                    @foreach($storeProduct->images as $image)
+                                        @if($image->id !== $primaryImage->id)
+                                            <a 
+                                                href="{{ asset($image->image_path) }}" 
+                                                class="product-gallery-item product-gallery-hidden" 
+                                                data-product-id="{{ $product->id }}" 
+                                                title="{{ $image->alt_text ?: $title }}"
+                                            ></a>
+                                        @endif
+                                    @endforeach
+                                @else
+                                    <div class="store-product-no-image">
+                                        <i class="fa-solid fa-image"></i>
+                                        <span>No image available</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- BODY --}}
+                            <div class="store-product-body">
+                                {{-- TITLE --}}
+                                <h3 class="store-product-title">
+                                    <a href="{{ url('/products/' . $product->slug) }}">
+                                        {{ $title }}
+                                    </a>
+                                </h3>
+
+                                {{-- DESCRIPTION --}}
+                                @if($storeProduct->short_description)
+                                    <p class="store-product-description">
+                                        {!! $storeProduct->short_description !!}
+                                    </p>
+                                @elseif($storeProduct->description)
+                                    <p class="store-product-description">
+                                        {{ \Illuminate\Support\Str::limit($storeProduct->description, 110) }}
+                                    </p>
+                                @endif
+
+                                {{-- INGREDIENTS --}}
+                                @if($ingredients->count())
+                                    <div class="store-product-ingredients">
+                                        <div class="store-product-ingredients-title">
+                                            <i class="fa-solid fa-wheat-awn"></i>
+                                            <span>Ingredients</span>
+                                        </div>
+
+                                        <div class="store-product-ingredient-list">
+                                            @foreach($ingredients->take(5) as $item)
+                                                @if($item->ingredient)
+                                                    <span>{{ $item->ingredient->name }}</span>
+                                                @endif
+                                            @endforeach
+
+                                            @if($ingredients->count() > 5)
+                                                <span class="ingredient-more">
+                                                    +{{ $ingredients->count() - 5 }} more
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+
+                                {{-- FOOTER --}}
+                                <div class="store-product-footer">
+                                    <div class="store-product-price">
+                                        <small>Price</small>
+                                        <strong>₦{{ number_format($product->selling_price, 2) }}</strong>
+                                    </div>
+
+                                    <a href="{{ url('/products/' . $product->slug) }}" class="store-product-view">
+                                        <span>View</span>
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- PAGINATION --}}
+            @if($products->hasPages())
+                <div class="store-products-pagination">
+                    {{ $products->links() }}
+                </div>
+            @endif
+        @else
+            {{-- EMPTY STATE --}}
+            <div class="store-products-empty">
+                <div class="store-products-empty-icon">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3>No products available</h3>
+                <p>We're currently updating our product catalog. Please check back soon.</p>
+                <a href="{{ route('store.welcome') }}" class="btn-default">Return Home</a>
+            </div>
+        @endif
+    </div>
+</div>
+    
+
+
+
 @endsection
