@@ -28,7 +28,7 @@ return new class extends Migration
              * Storefront-only content.
              */
             $table->string('store_title')->nullable();
-            $table->string('short_description', 500)->nullable();
+            $table->text('short_description')->nullable();
             $table->text('description')->nullable();
 
             // SEO
