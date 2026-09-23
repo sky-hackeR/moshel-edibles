@@ -4,6 +4,8 @@
     $primaryImage = $images->firstWhere('is_primary', true) ?? $images->first();
     $mainImagePath = $primaryImage ? asset($primaryImage->image_path) : asset('frontAssets/images/product-image-1.png');
     $productTitle = $storeProduct->store_title ?: $storeProduct->product->name;
+$ingredients = $storeProduct->product->recipe?->items ?? collect();
+
 @endphp
 
 @section('title', 'Our Products')
@@ -45,11 +47,6 @@
                     <!-- Product About Box Start -->
                     <div class="product-about-box">
                         <!-- Product Image Start -->
-                        {{-- <div class="team-member-image wow fadeInUp">
-                            <figure>
-                                <img src="{{ asset('frontAssets/images/product-image-1.png') }}" alt="">
-                            </figure>
-                        </div> --}}
                         <div class="team-member-image product-card wow fadeInUp">
                             <!-- Main Big Image Container -->
                             <div class="product-main-card mb-3">
@@ -83,27 +80,15 @@
 
                         <!-- Product Single Content Start -->
                         <div class="product-single-content">
-                            <div class="customer-rating-box wow fadeInUp">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <span>(Customer Reviews)</span>
-                            </div>
-                            <h3 class="wow fadeInUp" data-wow-delay="0.2s">$25.0 <span>$35.00</span></h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque">Fruit cupcakes</h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.4s">Fruit cupcakes infused with real fruit pieces and topped with a swirl of creamy fruit-flavored frosting. Each bite bursts with the natural sweetness of strawberries, blueberries, mango, or seasonal fruits-bringing a refreshing twist to a classic treat.</p>
-                            <ul class="wow fadeInUp" data-wow-delay="0.6s">
-                                <li>Made with fresh, juicy fruits</li>
-                                <li>Topped with fruit-infused buttercream</li>
-                                <li>Perfect for parties, events, or a sweet afternoon treat</li>
-                            </ul>                               
+                            <h3 class="wow fadeInUp" data-wow-delay="0.2s">₦{{ number_format($storeProduct->product->selling_price, 2) }}</h3>
+                            <h2 class="text-anime-style-2" data-cursor="-opaque">{{ $storeProduct->store_title }}</h2>
+
+                            <p>{!! $storeProduct->short_description !!}</p>
 
                             <!-- Product Cart Button Start -->
                             <div class="product-cart-btn wow fadeInUp" data-wow-delay="0.6s">
                                 <input type="number" value="1">
-                                <a href="contact.html" class="btn-default">Add to cart</a>
+                                <a href="#" class="btn-default">Add to cart</a>
                             </div>
                             <!-- Product Cart Button End -->                               
                         </div>
@@ -122,7 +107,7 @@
                                         <button class="nav-link active" id="first-tab" data-bs-toggle="tab" data-bs-target="#first" type="button" role="tab" aria-selected="true">Description</button>
                                     </li>
                                     <li class="nav-item" role="presentation">
-                                        <button class="nav-link" id="second-tab" data-bs-toggle="tab" data-bs-target="#second" type="button" role="tab" aria-selected="false">Reviews</button>
+                                        <button class="nav-link" id="second-tab" data-bs-toggle="tab" data-bs-target="#second" type="button" role="tab" aria-selected="false">Ingredients</button>
                                     </li>
                                 </ul>
                             </div>
@@ -131,12 +116,7 @@
                             <!-- Product Tab Item Box Start -->
                             <div class="product-tab-item-box tab-pane fade show active" id="first" role="tabpanel">
                                 <div class="product-tab-item-content">
-                                    <h2>Bursting with Freshness Our Signature Fruit Cupcakes</h2>
-                                    <p>Absolutely delicious! The cupcakes were incredibly soft and moist, and each one had real fruit pieces that made every bite refreshing and flavorful. I tried the strawberry and mango flavors—both were amazing, but the mango really stole the show. Not too sweet, just perfect. They also looked beautiful, perfect for parties. I'll definitely be ordering again!</p>
-                                    <ul>
-                                        <li>The Best Fruit Cupcakes I've Ever Had!</li>
-                                        <li>Experience the Sweetness of Nature in Every Bite</li>
-                                    </ul>
+                                    <p>{!! $storeProduct->description !!}</p>
                                 </div>
                             </div>
                             <!-- Product Tab Item End -->
@@ -144,84 +124,23 @@
                             <!-- Product Tab Item Box Start -->
                             <div class="product-tab-item-box tab-pane fade" id="second" role="tabpanel">
                                 <div class="product-review-from-content">
-                                    <!-- Customer Review List Start -->
-                                    <div class="customer-review-list">
-                                        <div class="customer-review-item">
-                                            <div class="icon-box">
-                                                <img src="{{ asset('frontAssets/images/author-1.jpg') }}" alt="">
-                                            </div>
-                                            <div class="customer-review-item-body">
-                                                <div class="customer-review-item-content">
-                                                    <p><span>author</span> - July 01, 2025</p>
-                                                    <p>Best Cupcakes, no preservatives love it!</p>
-                                                </div>
-                                                <div class="customer-review-item-rating">
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                </div>
-                                            </div>
+                                    <h3 class="d-block mb-1">Full Ingredient List</h3>
+
+                                    <!-- Ingredient Badges Grid -->
+                                    @if($ingredients->count())
+                                        <div class="w-100 d-flex flex-wrap gap-2 align-items-center">
+                                            @foreach($ingredients as $item)
+                                                @if($item->ingredient)
+                                                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fs-6 fw-normal d-inline-flex align-items-center">
+                                                        <i class="fa-solid fa-wheat-awn text-secondary me-2"></i>
+                                                        {{ $item->ingredient->name }}
+                                                    </span>
+                                                @endif
+                                            @endforeach
                                         </div>
-
-                                        <div class="customer-review-item">
-                                            <div class="icon-box">
-                                                <img src="{{ asset('frontAssets/images/author-2.jpg') }}" alt="">
-                                            </div>
-                                            <div class="customer-review-item-body">
-                                                <div class="customer-review-item-content">
-                                                    <p>author - July 02, 2025</p>
-                                                    <p>Pure freshness in every drop — 5/5!</p>
-                                                </div>
-                                                <div class="customer-review-item-rating">
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                    <i class="fa-solid fa-star"></i>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Customer Review List End -->
-
-                                    <!-- Contact Form Start -->
-                                    <div class="review-form">
-                                        <div class="review-form-content">
-                                            <h3>Add a review</h3>
-                                            <p>Your email address will not be published. Required fields are marked Your rating</p>
-                                        </div>
-                                        <form id="reviewForm" action="#" method="POST" data-toggle="validator">
-                                            <div class="row">                                
-                                                <div class="form-group col-md-12 mb-4">
-                                                    <input type="text" name="review" class="form-control" id="review" placeholder="Your review" required>
-                                                    <div class="help-block with-errors"></div>
-                                                </div>
-
-                                                <div class="form-group col-md-6 mb-4">
-                                                    <input type="text" name="name" class="form-control" id="name" placeholder="Full Name" required>
-                                                    <div class="help-block with-errors"></div>
-                                                </div>
-
-                                                <div class="form-group col-md-6 mb-4">
-                                                    <input type="email" name ="email" class="form-control" id="email" placeholder="Email" required>
-                                                    <div class="help-block with-errors"></div>
-                                                </div>
-
-                                                <div class="form-group review-form-note">
-                                                    <input type="checkbox" id="#" name="#">
-                                                    <label class="form-label">Save my name, email, and website in this browser for the next time I comment.</label>
-                                                </div>
-
-                                                <div class="col-md-12">
-                                                    <button type="submit" class="btn-default">Submit Message</button>
-                                                    <div id="msgSubmit" class="h3 hidden"></div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <!-- Contact Form End -->
+                                    @else
+                                        <p class="text-muted">No ingredient details listed for this product.</p>
+                                    @endif
                                 </div>                                    
                             </div>
                             <!-- Product Tab Item Box End -->
@@ -235,11 +154,11 @@
         </div>
 
         <div class="col-lg-12">
-            <!-- Related Products Box Start -->
+            {{-- <!-- Related Products Box Start -->
             <div class="related-products-box">
                 <!-- Section-title Start -->
                 <div class="section-title">
-                    <h2 class="text-anime-style-3">Related products</h2>
+                    <h2 class="text-anime-style-3">Other products</h2>
                 </div>
                 <!-- Section-title End -->
 
@@ -331,6 +250,52 @@
                 </div>
                 <!-- Related Products List End -->
             </div>
+            <!-- Related Products Box End --> --}}
+
+            <!-- Related Products Box Start -->
+            @if(isset($relatedProducts) && $relatedProducts->count() > 0)
+                <div class="related-products-box">
+                    <!-- Section-title Start -->
+                    <div class="section-title">
+                        <h2 class="text-anime-style-3">Other products</h2>
+                    </div>
+                    <!-- Section-title End -->
+
+                    <!-- Related Products List Start -->
+                    <div class="our-product-box related-products-list">
+                        @foreach($relatedProducts as $related)
+                            @php
+                                $relatedImage = $related->primaryImage 
+                                    ? asset($related->primaryImage->image_path) 
+                                    : asset('frontAssets/images/product-image-1.png');
+                                $relatedTitle = $related->store_title ?: $related->product->name;
+                                $animationDelay = ($loop->index * 0.2) . 's';
+                            @endphp
+
+                            <!-- Product Item Start -->
+                            <div class="product-item wow fadeInUp" data-wow-delay="{{ $animationDelay }}">
+                                <div class="product-image">
+                                    <a href="{{ url('/products/' . $related->id) }}">
+                                        <img src="{{ $relatedImage }}" alt="{{ $relatedTitle }}" style="border: 11px solid transparent; border-radius: 18px;">
+                                    </a>
+                                </div>
+                                <div class="product-item-body">
+                                    <div class="product-item-content">
+                                        <h2>
+                                            <a href="{{ url('/products/' . $related->id) }}">{{ $relatedTitle }}</a>
+                                        </h2>
+                                        <h3 class="product-price">
+                                            ₦{{ number_format($related->product->selling_price, 2) }}
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Product Item End -->
+                        @endforeach
+                    </div>
+                    <!-- Related Products List End -->
+                </div>
+            @endif
             <!-- Related Products Box End -->
         </div>
     </div>
