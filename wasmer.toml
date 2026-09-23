@@ -1,22 +1,13 @@
 [package]
 name = "moshel-edibles"
 version = "0.1.0"
-description = "Laravel deployment on Wasmer Edge"
 
 [[deploy]]
-# Bind your active cloud database credentials here
 [deploy.env]
 APP_ENV = "staging"
-APP_DEBUG = "true"
 DB_CONNECTION = "mysql"
 DB_HOST = "://wasmernet.com"
 DB_PORT = "20184"
 DB_DATABASE = "moshel"
 DB_USERNAME = "user_e30efcf9"
 DB_PASSWORD = "pw_zw9T5ceApv4P1FyydB0mwd30P6EBpliu"
-
-[deploy.build]
-# Override the automated default command with the explicit force flag
-commands = [
-    "php artisan migrate --force"
-]
