@@ -5,9 +5,6 @@ version = "0.1.0"
 [[deploy]]
 [deploy.env]
 APP_ENV = "staging"
+APP_DEBUG = "true"
 DB_CONNECTION = "mysql"
-DB_HOST = "://wasmernet.com"
-DB_PORT = "20184"
-DB_DATABASE = "moshel"
-DB_USERNAME = "user_e30efcf9"
-DB_PASSWORD = "pw_zw9T5ceApv4P1FyydB0mwd30P6EBpliu"
+# Wasmer will auto-inject DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
