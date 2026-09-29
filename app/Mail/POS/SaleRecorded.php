@@ -2,14 +2,10 @@
 
 namespace App\Mail\POS;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class SaleRecorded extends Mailable
+class SaleRecorded extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $sale;
     public $seller;
 

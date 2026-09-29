@@ -8,9 +8,33 @@
         <meta name="description" content="" />
         <meta name="keywords" content="" />
         <meta content="Jolayemi Olugbenga David (sky-hackeR(+2348082574927))" name="author" />
-        
+
+
+        <!-- Primary SEO Meta Tags -->
+        <title>@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}</title>
+        <meta name="title" content="@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+        <meta name="description" content="{{ !empty($pageGlobalData->setting->description) ? $pageGlobalData->setting->description : 'Moshel Edibles - Home of yummy tastes. Artisanal treats, cakes, and gourmet bakes made fresh daily.' }}">
+        <meta name="keywords" content="Moshel Edibles, Bakery, Custom Cakes, Pastries, Gourmet Treats, Delights, Confectionery">
+        <meta name="author" content="{{ !empty($pageGlobalData->setting->site_name) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+        <meta name="robots" content="index, follow">
+
+        <!-- Open Graph / Facebook SEO -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:title" content="@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+        <meta property="og:description" content="{{ !empty($pageGlobalData->setting->description) ? $pageGlobalData->setting->description : 'Moshel Edibles - Home of yummy tastes. Artisanal treats, cakes, and gourmet bakes made fresh daily.' }}">
+        <meta property="og:image" content="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->logo) : asset('frontAssets/images/logo.png') }}">
+
+        <!-- Twitter SEO -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:url" content="{{ url()->current() }}">
+        <meta property="twitter:title" content="@yield('title') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}">
+        <meta property="twitter:description" content="{{ !empty($pageGlobalData->setting->description) ? $pageGlobalData->setting->description : 'Moshel Edibles - Home of yummy tastes. Artisanal treats, cakes, and gourmet bakes made fresh daily.' }}">
+        <meta property="twitter:image" content="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->logo) : asset('frontAssets/images/logo.png') }}">
+
+
         <!-- Page Title -->
-        <title>{{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : "Moshel" }} - Front-Facing Shop</title>
+        <title>@yield('title', 'Store') | {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel' }}</title>
 
         <!-- Favicon Icon -->
         <link rel="shortcut icon" type="image/x-icon" href="{{ !empty($pageGlobalData->setting) ? asset($pageGlobalData->setting->favicon) : '' }}">
@@ -66,40 +90,7 @@
                                     <li class="nav-item"><a class="nav-link" href="{{ url('/') }}">Home</a></li>
                                     <li class="nav-item"><a class="nav-link" href="{{ url('/about') }}">About Us</a></li>
                                     <li class="nav-item"><a class="nav-link" href="{{ url('/products') }}">Products</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
-                                    <li class="nav-item submenu">
-                                        <a class="nav-link" href="#">Pages</a>
-                                        <ul>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="service-single.html">Service Details</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="blog-single.html">Blog Details</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="products.html">Our Products</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="product-single.html">Product Details</a>
-                                            </li>
-                                            <li class="nav-item"><a class="nav-link" href="team.html">Our Team</a></li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="team-single.html">Team Details</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="testimonials.html">Testimonials</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="image-gallery.html">Image Gallery</a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" href="video-gallery.html">Video Gallery</a>
-                                            </li>
-                                            <li class="nav-item"><a class="nav-link" href="faqs.html">FAQs</a></li>
-                                            <li class="nav-item"><a class="nav-link" href="404.html">404</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="{{ route('store.contact') }}">Contact Us</a></li>
                                 </ul>
                             </div>
 
@@ -119,13 +110,42 @@
                             </div>
                             <!-- Header Social Links End -->
 
-                            <!-- Header Btn Start -->
-                            <div class="header-btn">
-                                <a href="contact.html" class="btn-default">Shop Now</a>
-                            </div>
-                            <!-- Header Btn End -->
                         </div>
                         <!-- Main Menu End -->
+                        <div class="header-btn d-flex align-items-center gap-2">
+                            @auth('customer')
+                                <div class="dropdown d-inline-block">
+                                    <a href="#" class="store-header-account-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Account">
+                                        <i class="fa-regular fa-user"></i>
+                                        <span class="d-none d-md-inline">{{ \Illuminate\Support\Str::words(auth('customer')->user()->name, 1, '') }}</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 12px; min-width: 180px; padding: 8px 0; margin-top: 10px;">
+                                        <li><a class="dropdown-item py-2" href="{{ route('customer.account') }}"><i class="fa-solid fa-receipt me-2 text-muted"></i> My Orders</a></li>
+                                        <li><a class="dropdown-item py-2" href="{{ route('customer.account.profile') }}"><i class="fa-regular fa-id-badge me-2 text-muted"></i> Profile</a></li>
+                                        <li><a class="dropdown-item py-2" href="{{ route('customer.account.addresses') }}"><i class="fa-solid fa-location-dot me-2 text-muted"></i> Addresses</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="POST" action="{{ route('customer.logout') }}">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item py-2 text-danger">
+                                                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Sign Out
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            @else
+                                <a href="#" class="store-header-account-btn" data-bs-toggle="modal" data-bs-target="#customerLoginModal" aria-label="Sign In" title="Sign In">
+                                    <i class="fa-regular fa-user"></i>
+                                    <span class="d-none d-md-inline">Sign in</span>
+                                </a>
+                            @endauth
+
+                            <a href="{{ route('store.cart') }}" class="store-header-cart" aria-label="Open cart" title="Shopping Cart">
+                                <i class="fa-solid fa-basket-shopping"></i>
+                                <span class="store-cart-count">{{ app(\App\Services\Store\CartService::class)->count() }}</span>
+                            </a>
+                        </div>
                         <div class="navbar-toggle"></div>
                     </div>
                 </nav>
@@ -135,6 +155,39 @@
         <!-- Header End -->
 
         @yield('content')
+
+        @guest('customer')
+            <div class="modal fade store-auth-modal" id="customerLoginModal" tabindex="-1" aria-labelledby="customerLoginModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><span class="store-summary-kicker">Welcome back</span><h2 class="modal-title" id="customerLoginModalLabel">Sign in to Moshel</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body">
+                    @if(session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
+                    <form method="POST" action="{{ route('customer.login.submit') }}">@csrf
+                        <div class="store-form-field"><label for="modal-login-email">Email address</label><input id="modal-login-email" type="email" name="email" value="{{ old('email') }}" required></div>
+                        <div class="store-form-field"><label for="modal-login-password">Password</label><input id="modal-login-password" type="password" name="password" required></div>
+                        <div class="d-flex justify-content-between align-items-center mb-4"><label class="store-check"><input type="checkbox" name="remember"> Remember me</label><a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerPasswordModal" data-bs-dismiss="modal">Forgot password?</a></div>
+                        <button type="submit" class="btn-default w-100">Sign in</button>
+                    </form>
+                    <p class="store-form-footnote">New here? <a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerRegisterModal" data-bs-dismiss="modal">Create an account</a></p>
+                </div></div></div>
+            </div>
+            <div class="modal fade store-auth-modal" id="customerRegisterModal" tabindex="-1" aria-labelledby="customerRegisterModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><span class="store-summary-kicker">Start your journey</span><h2 class="modal-title" id="customerRegisterModalLabel">Create your account</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body">
+                    <form method="POST" action="{{ route('customer.register.submit') }}">@csrf
+                        <div class="store-form-field"><label for="modal-register-name">Full name</label><input id="modal-register-name" type="text" name="name" value="{{ old('name') }}" required></div>
+                        <div class="store-form-field"><label for="modal-register-email">Email address</label><input id="modal-register-email" type="email" name="email" value="{{ old('email') }}" required></div>
+                        <div class="row"><div class="col-md-6"><div class="store-form-field"><label for="modal-register-password">Password</label><input id="modal-register-password" type="password" name="password" required></div></div><div class="col-md-6"><div class="store-form-field"><label for="modal-register-confirmation">Confirm password</label><input id="modal-register-confirmation" type="password" name="password_confirmation" required></div></div></div>
+                        <button type="submit" class="btn-default w-100">Create account</button>
+                    </form>
+                    <p class="store-form-footnote">Already registered? <a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerLoginModal" data-bs-dismiss="modal">Sign in</a></p>
+                </div></div></div>
+            </div>
+            <div class="modal fade store-auth-modal" id="customerPasswordModal" tabindex="-1" aria-labelledby="customerPasswordModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><span class="store-summary-kicker">Account access</span><h2 class="modal-title" id="customerPasswordModalLabel">Reset your password</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body">
+                    <p class="store-modal-copy">Enter your email and we will send you a secure reset link.</p>
+                    <form method="POST" action="{{ route('customer.password.email') }}">@csrf<div class="store-form-field"><label for="modal-reset-email">Email address</label><input id="modal-reset-email" type="email" name="email" value="{{ old('email') }}" required></div><button type="submit" class="btn-default w-100">Send reset link</button></form>
+                    <p class="store-form-footnote"><a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerLoginModal" data-bs-dismiss="modal">Back to sign in</a></p>
+                </div></div></div>
+            </div>
+        @endguest
 
         <!-- Footer Start -->
         <footer class="main-footer bg-section dark-section">
@@ -154,17 +207,17 @@
                                 <ul>
                                     <li><a href="{{url('/')}}">Home</a></li>
                                     <li><a href="{{url('/about')}}">About us</a></li>
-                                    <li><a href="services.html">services</a></li>
-                                    <li><a href="image-gallery.html">Gallery</a></li>
-                                    <li><a href="contact.html">Contact</a></li>
+                                    <li><a href="{{ route('store.products') }}">Products</a></li>
+                                    <li><a href="{{ route('store.cart') }}">Cart</a></li>
+                                    <li><a href="{{ route('store.contact') }}">Contact</a></li>
                                 </ul>
                             </div>
                             <!-- Footer Menu End -->
 
                             <!-- Footer Contact Item Start -->
                             <div class="footer-contact-item">
-                                <h3><a href="tel:+123456789">(+123) 456-789</a></h3>
-                                <p>4517 Washington Ave. Manchester, Kentucky 39495</p>
+                                <h3><a href="tel:+2348082574927">+234 808 257 4927</a></h3>
+                                <p>Lagos, Nigeria · Fresh Kitchen & Doorstep Dispatch</p>
                             </div>
                             <!-- Footer Contact Item End -->
                         </div>
@@ -176,24 +229,25 @@
                         <div class="footer-newsletter-form">
                             <!-- Footer Newsletter Info Start -->
                             <div class="footer-newsletter-info">
-                                <h3>Subscribe To Our Newsletter!</h3>
-                                <p>Freshly baked goodness crafted with love in every single bite</p>
+                                <h3>Subscribe to Our Kitchen Dispatch</h3>
+                                <p>Be first to know about fresh seasonal batches, weekend specials & celebration treats</p>
                             </div>
                             <!-- Footer Newsletter Info End -->
 
                             <!-- Newsletter Form Start -->
                             <div class="newsletter-form">
-                                <form id="newslettersForm" action="#" method="POST">
+                                <form id="newslettersForm" action="{{ route('store.contact.submit') }}" method="POST">
+                                    @csrf
                                     <div class="form-group">
                                         <input
                                             type="email"
-                                            name="mail"
+                                            name="email"
                                             class="form-control"
                                             id="mail"
-                                            placeholder="Enter Your Email Address *"
+                                            placeholder="Enter your email address..."
                                             required
                                         />
-                                        <button type="submit" class="btn-default btn-highlighted">Subscribe Now</button>
+                                        <button type="submit" class="btn-default btn-highlighted">Subscribe</button>
                                     </div>
                                 </form>
                             </div>
@@ -201,19 +255,16 @@
 
                             <!-- Footer Social Links Start -->
                             <div class="footer-social-links">
-                                <h3>Follow Us On Socials:</h3>
+                                <h3>Connect With Us:</h3>
                                 <ul>
                                     <li>
-                                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                                        <a href="https://wa.me/2348082574927" target="_blank" rel="noopener" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                                        <a href="tel:+2348082574927" title="Call Us"><i class="fa-solid fa-phone"></i></a>
                                     </li>
                                     <li>
-                                        <a href="#"><i class="fa-brands fa-dribbble"></i></a>
-                                    </li>
-                                    <li>
-                                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                                        <a href="mailto:hello@moshedibles.com" title="Email"><i class="fa-regular fa-envelope"></i></a>
                                     </li>
                                 </ul>
                             </div>
@@ -227,15 +278,15 @@
                         <div class="footer-copyright">
                             <!-- Footer Copyright Text Start -->
                             <div class="footer-copyright-text">
-                                <p>Copyright © 2025 All Rights Reserved.</p>
+                                <p>Copyright © {{ date('Y') }} {{ !empty($pageGlobalData->setting) ? $pageGlobalData->setting->site_name : 'Moshel Edibles' }}. All Rights Reserved.</p>
                             </div>
                             <!-- Footer Copyright Text End -->
 
                             <!-- Footer Privacy Policy Start -->
                             <div class="footer-privacy-policy">
                                 <ul>
-                                    <li><a href="#">Privacy Policy</a></li>
-                                    <li><a href="#">Legal Information</a></li>
+                                    <li><a href="{{ route('store.contact') }}">Custom Orders</a></li>
+                                    <li><a href="{{ route('store.about') }}">Our Craft</a></li>
                                 </ul>
                             </div>
                             <!-- Footer Privacy Policy End -->
@@ -247,101 +298,56 @@
         </footer>
         <!-- Footer End -->
 
+        <!-- Scripts -->
+        <script src="{{ asset('frontAssets/js/jquery-3.7.1.min.js') }}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+        <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/validator.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/jquery.slicknav.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/swiper-bundle.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/jquery.waypoints.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/jquery.counterup.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/SmoothScroll.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/parallaxie.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/gsap.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/magiccursor.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/SplitText.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/ScrollTrigger.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/jquery.mb.YTPlayer.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/wow.min.js') }}"></script>
+        <script src="{{ asset('frontAssets/js/function.js') }}"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                if (typeof jQuery !== 'undefined') {
-                    var productIds = [];
-                    
-                    $('.product-gallery-item').each(function () {
-                        var id = $(this).data('product-id');
-                        if (id && $.inArray(id, productIds) === -1) {
-                            productIds.push(id);
-                        }
-                    });
-
-                    $.each(productIds, function (index, id) {
-                        $('[data-product-id="' + id + '"]').magnificPopup({
-                            type: 'image',
-                            gallery: {
-                                enabled: true
-                            },
-                            image: {
-                                titleSrc: 'title'
-                            },
-                            zoom: {
-                                enabled: true,
-                                duration: 300
-                            },
-                            removalDelay: 300,
-                            mainClass: 'mfp-fade'
-                        });
+                if (typeof jQuery !== 'undefined' && typeof jQuery.fn.magnificPopup !== 'undefined') {
+                    $('.product-gallery-item').magnificPopup({
+                        type: 'image',
+                        gallery: {
+                            enabled: true
+                        },
+                        image: {
+                            titleSrc: 'title'
+                        },
+                        zoom: {
+                            enabled: true,
+                            duration: 300
+                        },
+                        removalDelay: 300,
+                        mainClass: 'mfp-fade'
                     });
                 }
             });
         </script>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                if (typeof jQuery === 'undefined' || !$.fn.magnificPopup) return;
-
-                // Efficient delegation: Binds once per card container on demand
-                $('.store-product-card').each(function () {
-                    var $card = $(this);
-                    
-                    $card.magnificPopup({
-                        delegate: '.product-gallery-item',
-                        type: 'image',
-                        gallery: {
-                            enabled: true,
-                            navigateByImgClick: true,
-                            preload: [0, 1] // Efficient preloading: Preloads current + 1 next image only
-                        },
-                        image: {
-                            titleSrc: 'title'
-                        },
-                        removalDelay: 150, // Faster opening/closing animation time
-                        mainClass: 'mfp-fade'
-                    });
+        @if(session('auth_modal') === 'login')
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    var loginModal = document.getElementById('customerLoginModal');
+                    if (loginModal && window.bootstrap) {
+                        bootstrap.Modal.getOrCreateInstance(loginModal).show();
+                    }
                 });
-            });
-        </script>
-
-        <script src="{{ asset('frontAssets/js/jquery-3.7.1.min.js') }}"></script>
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
-
-        <!-- Jquery Library File -->
-        <!-- Bootstrap js file -->
-        <script src="{{ asset('frontAssets/js/bootstrap.min.js') }}"></script>
-        <!-- Validator js file -->
-        <script src="{{ asset('frontAssets/js/validator.min.js') }}"></script>
-        <!-- SlickNav js file -->
-        <script src="{{ asset('frontAssets/js/jquery.slicknav.js') }}"></script>
-        <!-- Swiper js file -->
-        <script src="{{asset('frontAssets/js/swiper-bundle.min.js')}}"></script>
-        <!-- Counter js file -->
-        <script src="{{asset('frontAssets/js/jquery.waypoints.min.js')}}"></script>
-        <script src="{{asset('frontAssets/js/jquery.counterup.min.js')}}"></script>
-        <!-- Magnific js file -->
-        {{-- <script src="{{asset('frontAssets/js/jquery.magnific-popup.min.js')}}"></script> --}}
-        <!-- SmoothScroll -->
-        <script src="{{asset('frontAssets/js/SmoothScroll.js')}}"></script>
-        <!-- Parallax js -->
-        <script src="{{asset('frontAssets/js/parallaxie.js')}}"></script>
-        <!-- MagicCursor js file -->
-        <script src="{{asset('frontAssets/js/gsap.min.js')}}"></script>
-        <script src="{{asset('frontAssets/js/magiccursor.js')}}"></script>
-        <!-- Text Effect js file -->
-        <script src="{{ asset('frontAssets/js/SplitText.js') }}"></script>
-        <script src="{{asset('frontAssets/js/ScrollTrigger.min.js')}}"></script>
-        <!-- YTPlayer js File -->
-        <script src="{{asset('frontAssets/js/jquery.mb.YTPlayer.min.js')}}"></script>
-        <!-- Wow js file -->
-        <script src="{{asset('frontAssets/js/wow.min.js')}}"></script>
-        <!-- Main Custom js file -->
-        <script src="{{asset('frontAssets/js/function.js')}}"></script>
-        {{-- <script src="../../demo.awaikenthemes.com/assets/js/theme-panel-dynamic.js"></script> --}}
+            </script>
+        @endif
     </body>
-
 </html>

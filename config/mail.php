@@ -15,6 +15,8 @@ return [
 
     'default' => env('MAIL_MAILER', 'smtp'),
 
+    'outbound_rate_limit_per_minute' => env('MAIL_RATE_LIMIT_PER_MINUTE', 10),
+
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations

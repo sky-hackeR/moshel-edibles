@@ -2,14 +2,10 @@
 
 namespace App\Mail\Production;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class InsufficientStock extends Mailable
+class InsufficientStock extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $product;
     public $ingredientName;
     public $needed;

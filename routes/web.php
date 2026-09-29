@@ -30,24 +30,31 @@ use Illuminate\Support\Facades\Route;
     Route::get('/about', [App\Http\Controllers\Store\PageController::class, 'about'])->name('store.about');
     Route::get('/contact', [App\Http\Controllers\Store\ContactController::class, 'contact'])->name('store.contact');
     Route::post('/contact', [App\Http\Controllers\Store\ContactController::class, 'submit'])->name('store.contact.submit');
+    Route::get('/cart', [App\Http\Controllers\Store\CartController::class, 'index'])->name('store.cart');
+    Route::post('/cart', [App\Http\Controllers\Store\CartController::class, 'add'])->name('store.cart.add');
+    Route::patch('/cart', [App\Http\Controllers\Store\CartController::class, 'update'])->name('store.cart.update');
+    Route::delete('/cart/{product}', [App\Http\Controllers\Store\CartController::class, 'remove'])->name('store.cart.remove');
+    Route::get('/paystack/callback', [App\Http\Controllers\Store\CheckoutController::class, 'callback'])->name('store.checkout.callback');
+    Route::post('/paystack/webhook', [App\Http\Controllers\Store\CheckoutController::class, 'webhook'])->name('store.checkout.webhook');
+    Route::get('/checkout', [App\Http\Controllers\Store\CheckoutController::class, 'index'])->name('store.checkout');
 
 
     // =====================================================
     // CUSTOMER AUTHENTICATION
-    // ====================================================
+    // =====================================================
     // Login
-    Route::get('/login', [App\Http\Controllers\Customer\Auth\LoginController::class,'showLoginForm'])->name('customer.login');
-    Route::post('/login', [App\Http\Controllers\Customer\Auth\LoginController::class,'login'])->name('customer.login.submit');
+    Route::get('/login', [App\Http\Controllers\Customer\Auth\LoginController::class, 'showLoginForm'])->name('customer.login');
+    Route::post('/login', [App\Http\Controllers\Customer\Auth\LoginController::class, 'login'])->name('customer.login.submit');
     // Registration
-    Route::get('/register', [App\Http\Controllers\Customer\Auth\RegisterController::class,'showRegistrationForm'])->name('customer.register');
-    Route::post('/register', [App\Http\Controllers\Customer\Auth\RegisterController::class,'register'])->name('customer.register.submit');
+    Route::get('/register', [App\Http\Controllers\Customer\Auth\RegisterController::class, 'showRegistrationForm'])->name('customer.register');
+    Route::post('/register', [App\Http\Controllers\Customer\Auth\RegisterController::class, 'register'])->name('customer.register.submit');
     // Logout
-    Route::post('/logout', [App\Http\Controllers\Customer\Auth\LoginController::class,'logout'])->name('customer.logout');
+    Route::post('/logout', [App\Http\Controllers\Customer\Auth\LoginController::class, 'logout'])->name('customer.logout');
     // Password Reset
-    Route::post('/password/email', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class,'sendResetLinkEmail'])->name('customer.password.email');
-    Route::post('/password/reset', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class,'reset'])->name('customer.password.reset');
-    Route::get('/password/reset', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class,'showLinkRequestForm'])->name('customer.password.request');
-    Route::get('/password/reset/{token}', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class,'showResetForm'])->name('customer.password.reset.form');
+    Route::post('/password/email', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('customer.password.email');
+    Route::post('/password/reset', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class, 'reset'])->name('customer.password.reset');
+    Route::get('/password/reset', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('customer.password.request');
+    Route::get('/password/reset/{token}', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class, 'showResetForm'])->name('customer.password.reset.form');
 
 
     // =====================================================
@@ -57,13 +64,12 @@ use Illuminate\Support\Facades\Route;
     Route::middleware('auth:customer')->group(function () {
 
         Route::get('/account', [App\Http\Controllers\Customer\AccountController::class,'index'])->name('customer.account');
-
-        // We'll add these when we build them:
-        //
-        // Route::get('/cart', ...);
-        // Route::get('/checkout', ...);
-        // Route::post('/checkout', ...);
-        // Route::get('/orders', ...);
+        Route::get('/account/profile', [App\Http\Controllers\Customer\AccountController::class,'profile'])->name('customer.account.profile');
+        Route::put('/account/profile', [App\Http\Controllers\Customer\AccountController::class,'updateProfile'])->name('customer.account.profile.update');
+        Route::get('/account/addresses', [App\Http\Controllers\Customer\AccountController::class,'addresses'])->name('customer.account.addresses');
+        Route::post('/checkout', [App\Http\Controllers\Store\CheckoutController::class, 'initialize'])->name('store.checkout.initialize');
+        Route::get('/checkout/success/{reference}', [App\Http\Controllers\Store\CheckoutController::class, 'success'])->name('store.checkout.success');
+        Route::get('/checkout/failed/{reference}', [App\Http\Controllers\Store\CheckoutController::class, 'failed'])->name('store.checkout.failed');
     });
 
 
@@ -91,6 +97,7 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/updatePassword', [App\Http\Controllers\Admin\ERP\AdminController::class, 'updatePassword'])->name('updatePassword')->middleware(['auth:admin']);
 
   Route::get('/home', [App\Http\Controllers\Admin\ERP\AdminController::class, 'index'])->name('home')->middleware(['auth:admin']);
+  Route::get('/send-report', [App\Http\Controllers\Admin\ERP\AdminController::class, 'sendDailyReport'])->name('send.report')->middleware(['auth:admin']);
   Route::get('/siteSettings', [App\Http\Controllers\Admin\ERP\AdminController::class, 'siteSettings'])->name('siteSettings')->middleware(['auth:admin']);
 
   Route::get('/unitManagement', [App\Http\Controllers\Admin\ERP\UnitController::class, 'unitManagement'])->name('unitManagement')->middleware(['auth:admin']);
@@ -135,6 +142,9 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/staffList', [App\Http\Controllers\Admin\ERP\AdminController::class, 'staffList'])->name('staffs')->middleware(['auth:admin']);
   Route::post('/newStaff', [App\Http\Controllers\Admin\ERP\AdminController::class, 'newStaff'])->name('newStaff')->middleware(['auth:admin']);
   Route::post('/deleteStaff', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteStaff'])->name('deleteStaff')->middleware(['auth:admin']);
+
+  Route::get('/customers', [App\Http\Controllers\Admin\ERP\AdminController::class, 'customers'])->name('customers')->middleware(['auth:admin']);
+  Route::post('/deleteCustomer', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteCustomer'])->name('deleteCustomer')->middleware(['auth:admin']);
 
   Route::get('/openingStock', [App\Http\Controllers\Admin\ERP\OpeningStockController::class, 'openingStock'])->name('openingStock')->middleware(['auth:admin']);
   Route::post('/addProductOpeningStock', [App\Http\Controllers\Admin\ERP\OpeningStockController::class, 'addProductStock'])->name('addProductOpeningStock')->middleware(['auth:admin']);

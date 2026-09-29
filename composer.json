@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3|^8.2",
+        "php": "^8.2",
         "alaminfirdows/laravel-multi-auth": "^0.0.1@alpha",
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^2.0",

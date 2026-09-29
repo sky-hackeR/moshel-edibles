@@ -12,6 +12,11 @@
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
             <h4 class="mb-sm-0 font-size-18">Dashboard Analytics</h4>
+            <div>
+                <a href="{{ route('send.report') }}" class="btn btn-light btn-sm" title="Email today's financial report and low-stock alerts">
+                    <i class="bx bx-send me-1"></i> Send Daily Report
+                </a>
+            </div>
         </div>
     </div>
 </div>

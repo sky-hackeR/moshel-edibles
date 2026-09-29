@@ -15,12 +15,9 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
-// Import your new Mailables
-use App\Mail\Admin\AccountCreated as AdminAccountMail;
 use App\Mail\Admin\AdminCreated as SecurityAlertMail;
-use App\Mail\Staff\Created as StaffWelcomeMail;
 use App\Mail\Finance\DailyPerformance;
-use App\Mail\Finance\LowStockAlert;
+use App\Mail\Stock\LowStockAlert;
 
 use App\Services\UnitConversion\UnitConverter;
 use App\Models\SiteInfo as Setting;
@@ -38,6 +35,7 @@ use App\Models\Production;
 use App\Models\ProductionItem;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Models\Customer;
 
 use SweetAlert;
 use Alert;
@@ -106,7 +104,6 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|max:255|unique:admins,email',
-            'password' => 'required|string|min:6|confirmed', 
         ]);
 
         if ($validator->fails()) {
@@ -118,18 +115,19 @@ class AdminController extends Controller
         $admin->fill([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make(Str::random(64)),
         ]);
 
         if ($admin->save()) {
             try {
-                // Mail 1: To the new Admin with their credentials
-                Mail::to($admin->email)->send(new AdminAccountMail($admin, $request->password));
+                $resetStatus = Password::broker('admins')->sendResetLink(['email' => $admin->email]);
+                if ($resetStatus !== Password::RESET_LINK_SENT) {
+                    throw new \RuntimeException('Admin password setup email could not be queued.');
+                }
                 
-                // Mail 2: Security Alert to the Admin who performed the action
                 Mail::to(Auth::user()->email)->send(new SecurityAlertMail($admin, Auth::user()));
                 
-                alert()->success('Success', 'Admin created and notification emails sent')->persistent('Close');
+                alert()->success('Success', 'Admin created and a secure password setup link was sent')->persistent('Close');
             } catch (\Exception $e) {
                 Log::error("Email failed: " . $e->getMessage());
                 alert()->success('Success', 'Admin created, but email notifications failed. Check logs.')->persistent('Close');
@@ -145,7 +143,6 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|max:255|unique:staff,email',
-            'password' => 'required|string|min:6|confirmed', 
         ]);
 
         if ($validator->fails()) {
@@ -157,14 +154,16 @@ class AdminController extends Controller
         $staff->fill([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => Hash::make(Str::random(64)),
         ]);
 
         if ($staff->save()) {
             try {
-                // Mail the new staff member
-                Mail::to($staff->email)->send(new StaffWelcomeMail($staff, $request->password));
-                alert()->success('Success', 'Staff created and welcome email sent')->persistent('Close');
+                $resetStatus = Password::broker('staff')->sendResetLink(['email' => $staff->email]);
+                if ($resetStatus !== Password::RESET_LINK_SENT) {
+                    throw new \RuntimeException('Staff password setup email could not be queued.');
+                }
+                alert()->success('Success', 'Staff account created and a secure password setup link was sent')->persistent('Close');
             } catch (\Exception $e) {
                 Log::error("Staff Email failed: " . $e->getMessage());
                 alert()->success('Success', 'Staff created, but welcome email failed.')->persistent('Close');
@@ -363,7 +362,7 @@ class AdminController extends Controller
      */
     public function deleteStaff(Request $request) {
         $validator = Validator::make($request->all(), [
-            'staff_id' => 'required|exists:staffit ,id',
+            'staff_id' => 'required|exists:staff,id',
         ]);
 
         if ($validator->fails()) {
@@ -393,6 +392,65 @@ class AdminController extends Controller
 
         return redirect()->back();
     }
+
+
+    public function customers() {
+        $customers = Customer::withCount('sales')->orderBy('name', 'asc')->get();
+
+        return view('admin.erp.customers', [
+            'customers' => $customers,
+        ]);
+    }
+
+    public function deleteCustomer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_id' => 'required|exists:customers,id',
+        ]);
+
+        if ($validator->fails()) {
+            alert()->error('Validation Error', $validator->messages()->first())->persistent('Close');
+            return redirect()->back();
+        }
+
+        $customer = Customer::findOrFail($request->customer_id);
+        try {
+            $customer->delete();
+            alert()->success('Deleted', 'Customer account removed successfully.')->persistent('Close');
+        } catch (\Throwable $exception) {
+            Log::error('Customer deletion failed: ' . $exception->getMessage());
+            alert()->error('Error', 'Customer account could not be removed.')->persistent('Close');
+        }
+
+        return redirect()->back();
+    }
+
+    /**
+     * Manual trigger for Daily Financial Report
+     * Can be linked to a button: /admin/send-report
+     */
+    // public function sendDailyReport()
+    // {
+    //     $today = Carbon::today();
+
+    //     $stats = [
+    //         'revenue' => Sale::whereDate('created_at', $today)->sum('payable_amount'),
+    //         'cost'    => Production::whereDate('produced_at', $today)->sum('total_cost'),
+    //     ];
+    //     $stats['profit'] = $stats['revenue'] - $stats['cost'];
+
+    //     // Send Report
+    //     Mail::to(Auth::user()->email)->send(new DailyPerformance($stats));
+
+    //     // Check for Low Stock and include in alert if any exist
+    //     $lowStock = Product::where('stock_on_hand', '<=', 10)->where('is_active', true)->get();
+    //     if ($lowStock->count() > 0) {
+    //         Mail::to(Auth::user()->email)->send(new LowStockAlert($lowStock));
+    //     }
+
+    //     alert()->success('Mailed!', 'Report and alerts sent to your inbox.')->persistent('Close');
+    //     return redirect()->back();
+    // }
 }
 
 

@@ -37,6 +37,7 @@
                             <th class="text-center" style="width: 50px;">S/N</th>
                             <th>Ingredient Name</th>
                             <th>Base Unit</th>
+                            <th>Reorder Level</th>
                             <th>Status</th>
                             <th width="120">Actions</th>
                         </tr>
@@ -56,6 +57,7 @@
                                         {{ $ingredient->baseUnit->name }} ({{ $ingredient->baseUnit->symbol }})
                                     </span>
                                 </td>
+                                <td>{{ $ingredient->reorder_level !== null ? number_format($ingredient->reorder_level, 3) : 'Default' }}</td>
                                 <td>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" {{ $ingredient->is_active ? 'checked' : '' }} disabled>
@@ -119,6 +121,11 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Reorder Level ({{ $ingredient->baseUnit->symbol }})</label>
+                            <input type="number" name="reorder_level" class="form-control" min="0" step="0.001" value="{{ $ingredient->reorder_level }}">
+                            <small class="text-muted">Leave blank to use the default threshold.</small>
+                        </div>
                         <div class="col-md-12">
                             <div class="form-check form-switch mt-2">
                                 <input class="form-check-input" type="checkbox" name="is_active" id="editActive{{ $ingredient->id }}" {{ $ingredient->is_active ? 'checked' : '' }}>
@@ -180,6 +187,11 @@
                                 <option value="{{ $unit->id }}">{{ $unit->name }} ({{ $unit->symbol }})</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Reorder Level (base unit)</label>
+                        <input type="number" name="reorder_level" class="form-control" min="0" step="0.001">
+                        <small class="text-muted">Leave blank to use the default threshold.</small>
                     </div>
                     <div class="col-md-12">
                         <div class="form-check form-switch mt-2">

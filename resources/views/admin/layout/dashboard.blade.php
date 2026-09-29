@@ -189,6 +189,9 @@
                     <li>
                         <a href="{{ url('/admin/staffList') }}"><i class="bx bx-user-check"></i><span>Production Staff</span></a>
                     </li>
+                    <li>
+                        <a href="{{ url('/admin/customers') }}"><i class="bx bxs-user-detail"></i><span>Customers</span></a>
+                    </li>
 
                     <br>
 

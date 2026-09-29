@@ -43,7 +43,7 @@
 /*** 	 01. Global Variables	  ***/
 /************************************/
 
-:root{
+/* :root{
 	--primary-color					: #121820;
 	--secondary-color				: #8B5E3C0D;
 	--text-color					: #575757;
@@ -51,6 +51,21 @@
 	--bg-color						: #F3EFEB;
 	--white-color					: #FFFFFF;
 	--divider-color					: #1218201A;
+	--dark-divider-color			: #FFFFFF1A;
+	--error-color					: rgb(230, 87, 87);
+	--default-font					: "Plus Jakarta Sans", sans-serif;
+	--accent-font					: "Lora", serif;
+} */
+
+
+:root{
+	--primary-color					: #1E1B22;
+	--secondary-color				: #D81B800D;
+	--text-color					: #52525A;
+	--accent-color					: #D81B80;
+	--bg-color						: #FAFAFB;
+	--white-color					: #FFFFFF;
+	--divider-color					: #1E1B221A;
 	--dark-divider-color			: #FFFFFF1A;
 	--error-color					: rgb(230, 87, 87);
 	--default-font					: "Plus Jakarta Sans", sans-serif;
@@ -5171,7 +5186,8 @@ header.main-header .header-sticky.active{
     }
 
 	.header-btn{
-		display: none;
+		display: block;
+		margin-right: 55px;
 	}
 
 	.bg-section{

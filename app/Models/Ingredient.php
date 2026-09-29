@@ -14,12 +14,31 @@ class Ingredient extends Model
         'name',
         'slug',
         'base_unit_id',
+        'reorder_level',
         'is_active',
     ];
 
     protected $casts = [
+        'reorder_level' => 'decimal:3',
         'is_active' => 'boolean',
     ];
+
+    public function getEffectiveReorderLevelAttribute()
+    {
+        if ($this->reorder_level !== null) {
+            return (float) $this->reorder_level;
+        }
+
+        $thresholds = [
+            'g' => 1000,
+            'ml' => 1000,
+            'pcs' => 10,
+        ];
+
+        $unitSymbol = strtolower($this->baseUnit->symbol ?? '');
+
+        return $thresholds[$unitSymbol] ?? 0;
+    }
 
     public function baseUnit()
     {

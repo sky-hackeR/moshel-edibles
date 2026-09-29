@@ -66,6 +66,9 @@ class POSController extends Controller
                 'discount_amount' => $request->discount_amount ?? 0,
                 'payable_amount'  => $request->payable_amount,
                 'payment_method'  => $request->payment_method,
+                'order_status'    => 'completed',
+                'payment_status'  => 'paid',
+                'paid_at'         => now(),
                 'notes'           => $request->notes,
             ]);
 
@@ -116,7 +119,9 @@ class POSController extends Controller
 
             // Manual dynamic fallback check to map string values to staff properties securely
             $staffName = 'Unknown Operator';
-            if ($sale->user_type === 'admin') {
+            if ($sale->user_type === 'customer') {
+                $staffName = 'Online Merchant';
+            } elseif ($sale->user_type === 'admin') {
                 $staffName = \DB::table('admins')->where('id', $sale->user_id)->value('name') ?? 'Admin';
             } else {
                 $staffName = \DB::table('staff')->where('id', $sale->user_id)->value('name') ?? 'Staff';
@@ -135,10 +140,15 @@ class POSController extends Controller
                     'reference_no'    => $sale->reference_no,
                     'created_at'      => $sale->created_at->format('d M, Y H:i'),
                     'staff_name'      => $staffName,
+                    'merchant_name'   => $staffName,
                     'total_amount'    => $sale->total_amount,
                     'discount_amount' => $sale->discount_amount,
                     'payable_amount'  => $sale->payable_amount,
                     'payment_method'  => $sale->payment_method,
+                    'payment_status'  => $sale->payment_status,
+                    'order_status'    => $sale->order_status,
+                    'paystack_amount' => $sale->paystack_amount,
+                    'paystack_currency' => $sale->paystack_currency,
                     'items'           => $rawItems
                 ]
             ]);
@@ -168,6 +178,11 @@ class POSController extends Controller
         }
 
         $sale = \App\Models\Sale::withTrashed()->findOrFail($request->sale_id);
+        if ($sale->trashed() || $sale->user_type === 'customer') {
+            alert()->error('Action unavailable', 'Online orders and already voided sales cannot be voided through the POS.')->persistent('Close');
+            return redirect()->back();
+        }
+
         $user = \Auth::guard('admin')->user() ?? \Auth::guard('staff')->user() ?? \Auth::user();
         
         $ref    = $sale->reference_no;
@@ -219,7 +234,6 @@ class POSController extends Controller
             }
         } catch (\Exception $e) { Log::error("Sale mail failed: " . $e->getMessage()); }
     }
-
     private function notifyVoid($ref, $amt, $user, $reason) {
         try {
             $admins = Admin::all();

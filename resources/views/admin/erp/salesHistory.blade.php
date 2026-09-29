@@ -30,6 +30,7 @@
                             <th>Staff</th>
                             <th>Amount</th>
                             <th>Method</th>
+                            <th>Payment / Order Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -43,16 +44,26 @@
                             <td>
                                 @php
                                     $color = ['Cash' => 'success', 'Transfer' => 'info', 'Card' => 'warning'][$sale->payment_method] ?? 'secondary';
+                                    $statusColor = $sale->payment_status === 'paid' && $sale->order_status !== 'payment_review' ? 'success' : ($sale->payment_status === 'failed' ? 'danger' : 'warning');
                                 @endphp
                                 <span class="badge bg-soft-{{ $color }} text-{{ $color }}">{{ $sale->payment_method }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-soft-{{ $statusColor }} text-{{ $statusColor }}">{{ ucfirst($sale->payment_status) }}</span>
+                                <small class="d-block text-muted">{{ ucfirst(str_replace('_', ' ', $sale->order_status)) }}</small>
+                                @if($sale->payment_status === 'review')
+                                    <small class="d-block text-danger">Amount/currency mismatch</small>
+                                @endif
                             </td>
                             <td>
                                 <button class="btn btn-primary btn-sm" onclick="viewSaleDetails({{ $sale->id }})">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="confirmVoid({{ $sale->id }}, '{{ $sale->reference_no }}')">
-                                    <i class="mdi mdi-trash-can me-1"></i> Void
-                                </button>
+                                @if($sale->user_type !== 'customer')
+                                    <button class="btn btn-danger btn-sm" onclick="confirmVoid({{ $sale->id }}, '{{ $sale->reference_no }}')">
+                                        <i class="mdi mdi-trash-can me-1"></i> Void
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -96,7 +107,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="sale_id" id="void_sale_id">
                     <p>Are you sure you want to void transaction <strong id="void_ref_display"></strong>?</p>
-                    <p class="text-muted small">This will restore stock levels and notify the administrator.</p>
+                    <p class="text-muted small">This is for in-store sales only. Online orders must be reviewed and refunded through the payment provider.</p>
                     
                     <div class="mb-3">
                         <label class="form-label">Reason for Voiding</label>
@@ -145,7 +156,7 @@
                         </div>
                         <div class="d-flex justify-content-between mb-3 small">
                             <span><strong>Date:</strong> ${data.sale.created_at}</span>
-                            <span><strong>Staff:</strong> ${data.sale.staff_name}</span>
+                            <span><strong>Merchant:</strong> ${data.sale.merchant_name || data.sale.staff_name || 'Unknown Operator'}</span>
                         </div>
                         <table class="table table-sm table-borderless">
                             <thead class="border-bottom small text-uppercase">
@@ -160,6 +171,11 @@
                         </div>
                         <div class="mt-3 p-2 bg-light rounded text-center small">
                             Payment Method: <strong>${data.sale.payment_method}</strong>
+                        </div>
+                        <div class="mt-2 p-2 bg-light rounded small">
+                            Payment status: <strong>${data.sale.payment_status}</strong><br>
+                            Order status: <strong>${data.sale.order_status}</strong>
+                            ${data.sale.paystack_amount !== null ? `<br>Paystack verified: <strong>${data.sale.paystack_currency || ''} ${(data.sale.paystack_amount / 100).toLocaleString()}</strong>` : ''}
                         </div>
                     </div>`;
             } else {

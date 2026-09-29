@@ -1,1538 +1,520 @@
 @extends('store.layouts.app')
 
-@section('title', 'Curated Confections & Artisanal Sweets')
+@php
+    $siteName = $pageGlobalData->setting->site_name ?? 'Moshel Edibles';
+    $leadProduct = $leadProduct ?? $featuredProducts->first() ?? $allProducts->first();
+    $leadImage = $leadProduct?->primaryImage ?: $leadProduct?->images->first();
+    $leadTitle = $leadProduct?->store_title ?: $leadProduct?->product->name ?? 'Artisanal Bakes';
+@endphp
+
+@section('title', 'Artisanal Breads, Celebration Cakes & Fresh Pastries')
 
 @section('content')
-    <!-- Hero Section Start -->
-    <div class="hero bg-section">
-        <div class="container-fluid">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <!-- Hero Box Start -->
-                    <div class="hero-box">
-                        <!-- Hero Content Start -->
-                        <div class="hero-content dark-section">
-                            <!-- Section Title Start -->
-                            <div class="section-title">
-                                <h3 class="wow fadeInUp">Welcome to your neighborhood bakery</h3>
-                                <h1 class="text-anime-style-2" data-cursor="-opaque">
-                                    Handcrafted pastries, breads and cakes made <span>daily with love</span>
-                                </h1>
-                                <p class="wow fadeInUp" data-wow-delay="0.2s">
-                                    We're here to flip the scripts on traditional baking. Think bold flavor combos,
-                                    Insta-worthy pastries, and a rotating menu.
-                                </p>
-                            </div>
-                            <!-- Section Title End -->
 
-                            <!-- Hero Body Start -->
-                            <div class="hero-body wow fadeInUp" data-wow-delay="0.4s">
-                                <!-- Hero Button Start -->
-                                <div class="hero-btn">
-                                    <a href="content.html" class="btn-default btn-highlighted">Shop Now</a>
-                                </div>
-                                <!-- Hero Button End -->
+<!-- =====================================================
+     HERO SECTION (WARM, BESPOKE & INTUITIVE)
+===================================================== -->
+<section class="store-hero-section bg-section py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <!-- Hero Copy -->
+            <div class="col-lg-6">
+                <div class="hero-content-wrap pe-lg-3">
+                    <span class="store-summary-kicker d-inline-flex align-items-center gap-2 mb-3">
+                        <i class="fa-solid fa-wheat-awn"></i>
+                        <span>Handcrafted Daily in Lagos, Nigeria</span>
+                    </span>
 
-                                <!-- Video Play Button Start -->
-                                <div class="video-play-button border-btn">
-                                    <p>Watch video</p>
-                                    <a
-                                        href="https://www.youtube.com/watch?v=Y-x0efG1seA"
-                                        class="popup-video"
-                                        data-cursor-text="Play"
-                                    >
-                                        <i class="fa-solid fa-play"></i>
-                                    </a>
-                                </div>
-                                <!-- Video Play Button End -->
-                            </div>
-                            <!-- Hero Body End -->
+                    <h1 class="hero-title text-anime-style-2 mb-3" data-cursor="-opaque" style="font-size: clamp(34px, 4.2vw, 54px); font-weight: 800; line-height: 1.15; color: var(--primary-color);">
+                        Everyday table bakes, gourmet cakes &amp; savory treats crafted with <span style="color: var(--accent-color);">genuine passion</span>
+                    </h1>
 
-                            <!-- Hero Content List Start -->
-                            <div class="hero-content-list wow fadeInUp" data-wow-delay="0.6s">
-                                <ul>
-                                    <li>Freshly Baked</li>
-                                    <li>Cookies & Bars</li>
-                                    <li>Seasonal Treats</li>
-                                </ul>
-                            </div>
-                            <!-- Hero Content List End -->
-                        </div>
-                        <!-- Hero Content End -->
+                    <p class="hero-description text-muted mb-4" style="font-size: 16px; line-height: 1.8;">
+                        From crusty golden whole loaves to rich celebration cakes and flaky savory pies — we bake everyday nourishment and celebration showstoppers using pure, unadulterated ingredients.
+                    </p>
 
-                        <!-- Hero Image Box Start -->
-                        <div class="hero-image-box">
-                            <!-- Hero Image Start -->
-                            <div class="hero-image">
-                                <figure class="image-anime">
-                                    <img src="frontAssets/images/hero-image.jpg" alt="" />
-                                </figure>
-                            </div>
-                            <!-- Hero Image End -->
+                    <div class="d-flex align-items-center gap-3 flex-wrap mb-4">
+                        <a href="{{ route('store.products') }}" class="btn-default btn-highlighted py-3 px-4 d-inline-flex align-items-center gap-2" style="font-size: 15px; font-weight: 600;">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                            <span>Shop Fresh Bakes</span>
+                        </a>
 
-                            <!-- Hero Counter Start -->
-                            <div class="hero-counter">
-                                <!-- Hero Counter Box Start -->
-                                <div class="hero-counter-box">
-                                    <!-- Hero Counter Content Start -->
-                                    <div class="hero-counter-content">
-                                        <h2><span class="counter">200</span>+</h2>
-                                        <p>Packed with wholesome ingredients to nourish.</p>
-                                    </div>
-                                    <!-- Hero Counter Content End -->
-
-                                    <!-- Review Images Start -->
-                                    <div class="review-images">
-                                        <div class="review-image">
-                                            <figure class="image-anime">
-                                                <img src="frontAssets/images/author-1.jpg" alt="" />
-                                            </figure>
-                                        </div>
-                                        <div class="review-image">
-                                            <figure class="image-anime">
-                                                <img src="frontAssets/images/author-2.jpg" alt="" />
-                                            </figure>
-                                        </div>
-                                        <div class="review-image add-more">
-                                            <i class="fa-solid fa-plus"></i>
-                                        </div>
-                                    </div>
-                                    <!-- Review Images End -->
-                                </div>
-                                <!-- Hero Counter Box End -->
-                            </div>
-                            <!-- Hero Counter End -->
-                        </div>
-                        <!-- Hero Image Box End -->
+                        <a href="{{ route('store.contact') }}" class="btn-default py-3 px-4 d-inline-flex align-items-center gap-2" style="font-size: 15px; font-weight: 600;">
+                            <i class="fa-solid fa-cake-candles"></i>
+                            <span>Custom Inquiries</span>
+                        </a>
                     </div>
-                    <!-- Hero Box End -->
 
-                    <!-- Hero Info List Start -->
-                    <div class="hero-info-list">
-                        <!-- Hero Info Video Box Start -->
-                        <div class="hero-info-video-box wow fadeInUp">
-                            <!-- Hero Info Video Bg Image Start -->
-                            <div class="hero-info-bg-image">
-                                <figure>
-                                    <img src="frontAssets/images/hero-info-bg-image-1.jpg" alt="" />
-                                </figure>
-                            </div>
-                            <!-- Hero Info Video Bg Image End -->
+                    <!-- Trust Pillars -->
+                    <div class="d-flex align-items-center gap-4 flex-wrap pt-3 border-top" style="border-color: rgba(139, 94, 60, 0.15) !important;">
+                        <div class="d-flex align-items-center gap-2" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                            <span>Small-Batch Integrity</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                            <span>100% Real Butter &amp; Cocoa</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2" style="font-size: 13px; font-weight: 600; color: var(--primary-color);">
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                            <span>Lagos Doorstep Dispatch</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                            <!-- Hero Video tag Button Start -->
-                            <div class="hero-video-tag-btn">
-                                <!-- Hero Video tag Start -->
-                                <div class="hero-video-tag">
-                                    <h3>
-                                        <a
-                                            href="https://www.youtube.com/watch?v=Y-x0efG1seA"
-                                            class="popup-video"
-                                            data-cursor-text="Play"
-                                            >View Videos</a
-                                        >
+            <!-- Hero Media & Spotlight -->
+            <div class="col-lg-6">
+                <div class="hero-media-wrap position-relative">
+                    <div class="hero-main-card rounded-4 overflow-hidden shadow-lg border" style="background: #fff;">
+                        <div class="position-relative" style="height: 380px; overflow: hidden; background: #fdfbf7;">
+                            <img src="{{ $leadImage ? asset($leadImage->image_path) : asset('frontAssets/images/hero-image.jpg') }}" 
+                                 alt="{{ $leadTitle }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                            
+                            @if($leadProduct)
+                                <div class="position-absolute top-0 start-0 m-3">
+                                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm" style="font-size: 12px; font-weight: 700;">
+                                        <i class="fa-solid fa-star me-1"></i> Today's Highlight
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+
+                        @if($leadProduct)
+                            <div class="p-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: #fff;">
+                                <div>
+                                    <span class="text-muted d-block" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Fresh From The Oven</span>
+                                    <h3 class="mb-1" style="font-size: 20px; font-weight: 700;">
+                                        <a href="{{ route('store.productDetails', $leadProduct->product->slug) }}" class="text-dark text-decoration-none">
+                                            {{ $leadTitle }}
+                                        </a>
                                     </h3>
+                                    <strong style="font-size: 18px; color: var(--accent-color);">₦{{ number_format($leadProduct->product->selling_price, 2) }}</strong>
+                                    <small class="text-muted">/ {{ $leadProduct->product->sales_unit }}</small>
                                 </div>
-                                <!-- Hero Video tag End -->
 
-                                <!-- Hero Video Button Start -->
-                                <div class="hero-video-btn">
-                                    <a href="video-gallery.html">
-                                        <img src="frontAssets/images/arrow-accent.svg" alt="" />
+                                <a href="{{ route('store.productDetails', $leadProduct->product->slug) }}" class="btn-default btn-highlighted py-2 px-3" style="font-size: 13px;">
+                                    <span>View Details</span> <i class="fa-solid fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- HERO SECTION END -->
+
+
+<!-- =====================================================
+     OUR BAKERY SPECIALTIES
+===================================================== -->
+<section class="store-specialties-section bg-section py-5">
+    <div class="container">
+        <div class="row align-items-end mb-4">
+            <div class="col-lg-7">
+                <div class="section-title mb-0">
+                    <span class="store-summary-kicker">What We Bake</span>
+                    <h2 class="text-anime-style-2" data-cursor="-opaque">Freshly crafted for everyday tables &amp; <span>milestone celebrations</span></h2>
+                </div>
+            </div>
+            <div class="col-lg-5 text-lg-end mt-3 mt-lg-0">
+                <a href="{{ route('store.products') }}" class="store-text-link fw-bold" style="font-size: 14px;">
+                    View Complete Bakery Catalog <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white mb-3" style="width: 50px; height: 50px; background: var(--accent-color);">
+                            <i class="fa-solid fa-bread-slice fs-5"></i>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Artisanal Loaves</h3>
+                        <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
+                            Slow-fermented breads, whole wheat sandwich loaves, and wholesome morning bakes with natural crumb.
+                        </p>
+                    </div>
+                    <a href="{{ route('store.products') }}" class="store-text-link mt-3 fw-bold" style="font-size: 13px;">
+                        Explore Loaves <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white mb-3" style="width: 50px; height: 50px; background: var(--primary-color);">
+                            <i class="fa-solid fa-cake-candles fs-5"></i>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Gourmet Cakes</h3>
+                        <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
+                            Moist triple-layer chocolate fudge, velvety red velvet, and custom styled birthday and anniversary tiers.
+                        </p>
+                    </div>
+                    <a href="{{ route('store.products') }}" class="store-text-link mt-3 fw-bold" style="font-size: 13px;">
+                        Explore Cakes <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white mb-3" style="width: 50px; height: 50px; background: var(--accent-color);">
+                            <i class="fa-solid fa-utensils fs-5"></i>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Savory Pastries</h3>
+                        <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
+                            Generously filled golden meat pies, flaky pastries, and fresh breakfast finger foods.
+                        </p>
+                    </div>
+                    <a href="{{ route('store.products') }}" class="store-text-link mt-3 fw-bold" style="font-size: 13px;">
+                        Explore Savories <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 d-flex flex-column justify-content-between" style="border: 2px dashed var(--accent-color) !important; background: rgba(139, 94, 60, 0.03) !important;">
+                    <div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white mb-3" style="width: 50px; height: 50px; background: #222;">
+                            <i class="fa-solid fa-wand-magic-sparkles fs-5"></i>
+                        </div>
+                        <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Custom Inquiries</h3>
+                        <p class="text-muted" style="font-size: 13px; line-height: 1.6;">
+                            Have a specific recipe, dietary requirement, celebration theme, or bulk event order?
+                        </p>
+                    </div>
+                    <a href="{{ route('store.contact') }}" class="store-text-link mt-3 fw-bold" style="font-size: 13px;">
+                        Send Inquiries <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- SPECIALTIES END -->
+
+
+<!-- =====================================================
+     CURRENT FRESH SHELF (DYNAMIC DB PRODUCTS)
+===================================================== -->
+<section class="store-products-section bg-section py-5">
+    <div class="container">
+        <div class="row align-items-end mb-4">
+            <div class="col-lg-8">
+                <div class="section-title mb-0">
+                    <span class="store-summary-kicker">Today's Fresh Shelf</span>
+                    <h2 class="text-anime-style-2" data-cursor="-opaque">Baked fresh &amp; ready for <span>your table</span></h2>
+                    <p class="text-muted mt-2" style="font-size: 14px;">Handcrafted in small batches with uncompromised quality. Choose your favourites for fast delivery.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{{ route('store.products') }}" class="btn-default py-2 px-4" style="font-size: 13px;">
+                    <i class="fa-solid fa-bag-shopping me-1"></i> View All Items
+                </a>
+            </div>
+        </div>
+
+        @if($allProducts->isNotEmpty())
+            <div class="row g-4">
+                @foreach($allProducts as $idx => $sp)
+                    @php
+                        $prod = $sp->product;
+                        $prodImg = $sp->primaryImage ?: $sp->images->first();
+                        $title = $sp->store_title ?: $prod->name;
+                        $ingredients = $prod->recipe?->items ?? collect();
+                    @endphp
+                    <div class="col-lg-4 col-md-6">
+                        <article class="store-product-card p-4 rounded-4 shadow-sm bg-white border h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="product-item-image mb-3 overflow-hidden rounded-3 position-relative" style="height: 230px; background: #fdfbf7;">
+                                    <a href="{{ route('store.productDetails', $prod->slug) }}" class="d-block h-100">
+                                        <img src="{{ $prodImg ? asset($prodImg->image_path) : asset('frontAssets/images/product-1.jpg') }}" 
+                                             alt="{{ $title }}" 
+                                             style="width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease;">
                                     </a>
-                                </div>
-                                <!-- Hero Video Button End -->
-                            </div>
-                            <!-- Hero Video tag Button End -->
-
-                            <!-- Hero Info Video Content Start -->
-                            <div class="hero-info-video-content">
-                                <h3>Classic Butter Croissant</h3>
-                            </div>
-                            <!-- Hero Info Video Content End -->
-                        </div>
-                        <!-- Hero Info Video Box End -->
-
-                        <!-- Hero Image Rating Box Start -->
-                        <div class="hero-image-rating-box wow fadeInUp" data-wow-delay="0.2s">
-                            <!-- Hero Image Bg Image Start -->
-                            <div class="hero-info-bg-image">
-                                <figure>
-                                    <img src="frontAssets/images/hero-info-bg-image-1.jpg" alt="" />
-                                </figure>
-                            </div>
-                            <!-- Hero Image Bg Image End -->
-
-                            <!-- Hero Rating Content Start -->
-                            <div class="hero-rating-content">
-                                <h3>
-                                    “The best croissants I've ever tasted! Fresh, flaky & buttery - I can't start my
-                                    mornings ”
-                                </h3>
-                            </div>
-                            <!-- Hero Rating Content End -->
-
-                            <!-- Google Rating Box Start -->
-                            <div class="google-rating-box">
-                                <!-- Google Rating Header Start -->
-                                <div class="google-rating-header">
-                                    <div class="icon-box">
-                                        <img src="frontAssets/images/icon-google.svg" alt="" />
-                                    </div>
-                                    <div class="google-rating-content">
-                                        <p>Google Rating</p>
-                                        <p>
-                                            <i class="fa-solid fa-star"></i>
-                                            <i class="fa-solid fa-star"></i>
-                                            <i class="fa-solid fa-star"></i>
-                                            <i class="fa-solid fa-star"></i>
-                                            <i class="fa-solid fa-star"></i>
-                                        </p>
-                                    </div>
-                                </div>
-                                <!-- Google Rating Header End -->
-
-                                <!-- Review Images Start -->
-                                <div class="review-images">
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-1.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-2.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-3.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-4.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image add-more">
-                                        <h3><span class="counter">5</span>K</h3>
-                                    </div>
-                                </div>
-                                <!-- Review Images End -->
-                            </div>
-                            <!-- Google Rating Box End -->
-                        </div>
-                        <!-- Hero Image Rating Box End -->
-
-                        <!-- Working Hours Item Start -->
-                        <div class="working-hours-item wow fadeInUp" data-wow-delay="0.4s">
-                            <!-- Working Hours Header Start -->
-                            <div class="working-hours-header">
-                                <h3>Working Hours</h3>
-                                <img src="frontAssets/images/icon-clock.svg" alt="" />
-                            </div>
-                            <!-- Working Hours Header End -->
-
-                            <!-- Working Hours Body Start -->
-                            <div class="working-hours-body">
-                                <ul>
-                                    <li>Monday - Friday <span>8:00 AM - 8:00 PM</span></li>
-                                    <li>Saturday <span>9:00 AM - 6:00 PM</span></li>
-                                    <li>Sunday <span>Closed</span></li>
-                                </ul>
-                            </div>
-                            <!-- Working Hours Body End -->
-
-                            <!-- Working Hours Button Start -->
-                            <div class="working-hours-btn">
-                                <a href="contact.html" class="btn-default">Get Started Now!</a>
-                            </div>
-                            <!-- Working Hours Button End -->
-                        </div>
-                        <!-- Working Hours Item End -->
-                    </div>
-                    <!-- Hero Info List End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Hero Section End -->
-
-    <!-- About Us Section Start -->
-    <div class="about-us bg-section project-cover">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <!-- About Us Content Start -->
-                    <div class="about-us-content">
-                        <!-- Section Title Start -->
-                        <div class="section-title">
-                            <h3 class="wow fadeInUp">About Us</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque">
-                                Baking with heart, heritage, and a whole <span>lot of butter</span>
-                            </h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.2s">
-                                At our bakery, every recipe tells a story - rooted in tradition perfected with
-                                passion, and baked with love. We blend time-honored techniques with high-quality
-                                ingredients.
-                            </p>
-                            <p class="wow fadeInUp" data-wow-delay="0.4s">
-                                We're here to flip the script on traditional baking. Think bold flavor combos,
-                                Insta-worthy pastries, and a rotating menu.
-                            </p>
-                        </div>
-                        <!-- Section Title End -->
-
-                        <!-- About Us List Start -->
-                        <div class="about-us-list wow fadeInUp" data-wow-delay="0.6s">
-                            <ul>
-                                <li>Freshly Baked with Care.</li>
-                                <li>100% Quality You Can Taste!</li>
-                            </ul>
-                        </div>
-                        <!-- About Us list End -->
-
-                        <!-- About Us Button Start -->
-                        <div class="about-us-btn wow fadeInUp" data-wow-delay="0.8s">
-                            <a href="about.html" class="btn-default">More About Us</a>
-                        </div>
-                        <!-- About Us Button End -->
-                    </div>
-                    <!-- About Us Content End -->
-                </div>
-
-                <div class="col-lg-6">
-                    <!-- About Us Images Start -->
-                    <div class="about-us-images">
-                        <!-- About Image Start -->
-                        <div class="about-image">
-                            <figure class="image-anime reveal">
-                                <img src="frontAssets/images/about-us-image-1.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <!-- About Image End -->
-
-                        <!-- About Image Start -->
-                        <div class="about-image">
-                            <figure class="image-anime reveal">
-                                <img src="frontAssets/images/about-us-image-2.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <!-- About Image End -->
-
-                        <!-- Year Experience Box Start -->
-                        <div class="year-experience-circle">
-                            <img src="frontAssets/images/year-experience-circle.svg" alt="" />
-                            <h2><span class="counter">25</span>+</h2>
-                        </div>
-                        <!-- Year Experience Box End -->
-                    </div>
-                    <!-- About Us Images End -->
-                </div>
-
-                <div class="col-lg-12">
-                    <!-- About Us Item List Start -->
-                    <div class="about-us-item-list">
-                        <!-- About Us Item Start -->
-                        <div class="about-us-item wow fadeInUp">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-about-us-item-1.svg" alt="" />
-                            </div>
-                            <div class="about-us-item-content">
-                                <h3>Wide Variety of Baked Goods</h3>
-                                <p>From breads to cakes</p>
-                            </div>
-                        </div>
-                        <!-- About Us Item End -->
-
-                        <!-- About Us Item Start -->
-                        <div class="about-us-item wow fadeInUp" data-wow-delay="0.2s">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-about-us-item-2.svg" alt="" />
-                            </div>
-                            <div class="about-us-item-content">
-                                <h3>Locally Sourced Ingredients</h3>
-                                <p>Supporting local farmers</p>
-                            </div>
-                        </div>
-                        <!-- About Us Item End -->
-
-                        <!-- About Us Item Start -->
-                        <div class="about-us-item wow fadeInUp" data-wow-delay="0.4s">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-about-us-item-3.svg" alt="" />
-                            </div>
-                            <div class="about-us-item-content">
-                                <h3>Custom Cakes & Orders</h3>
-                                <p>Personalized cakes and desserts</p>
-                            </div>
-                        </div>
-                        <!-- About Us Item End -->
-                    </div>
-                    <!-- About Us Item List End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- About Us Section End -->
-
-    <!-- Our Services Section Start -->
-    <div class="our-services bg-section">
-        <div class="container">
-            <div class="row section-row align-items-center">
-                <div class="col-lg-6">
-                    <!-- Section Title Start -->
-                    <div class="section-title">
-                        <h3 class="wow fadeInUp">Our services</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque">
-                            Delicious service that bring joy to <span>every table</span>
-                        </h2>
-                    </div>
-                    <!-- Section Title End -->
-                </div>
-
-                <div class="col-lg-6">
-                    <!-- Section Title Content Start -->
-                    <div class="section-title-content wow fadeInUp" data-wow-delay="0.2s">
-                        <p>
-                            We believe every meal should be a celebration - that's why our artisanal baked goods are
-                            made with the finest ingredients and a whole lot of love, delivering joy and flavor to
-                            every table we serve.
-                        </p>
-                    </div>
-                    <!-- Section Title Content End -->
-                </div>
-            </div>
-
-            <div class="row service-item-list">
-                <div class="col-lg-3 col-md-6">
-                    <!-- Service Item Start -->
-                    <div class="service-item active wow fadeInUp">
-                        <!-- Service Content Start -->
-                        <div class="service-item-content">
-                            <h3>01.</h3>
-                            <h2><a href="service-single.html">Custom Cake Order</a></h2>
-                            <p>Fresh, handcrafted bakery items delivered daily.</p>
-                        </div>
-                        <!-- Service Content End -->
-
-                        <!-- Service Readmore Start -->
-                        <div class="service-readmore-btn">
-                            <a href="service-single.html" class="readmore-btn">read more</a>
-                        </div>
-                        <!-- Service Readmore End -->
-                    </div>
-                    <!-- Service Item End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Service Item Start -->
-                    <div class="service-item wow fadeInUp" data-wow-delay="0.2s">
-                        <!-- Service Content Start -->
-                        <div class="service-item-content">
-                            <h3>02.</h3>
-                            <h2><a href="service-single.html">Dessert Catering</a></h2>
-                            <p>Fresh, handcrafted bakery items delivered daily.</p>
-                        </div>
-                        <!-- Service Content End -->
-
-                        <!-- Service Readmore Start -->
-                        <div class="service-readmore-btn">
-                            <a href="service-single.html" class="readmore-btn">read more</a>
-                        </div>
-                        <!-- Service Readmore End -->
-                    </div>
-                    <!-- Service Item End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Service Item Start -->
-                    <div class="service-item wow fadeInUp" data-wow-delay="0.4s">
-                        <!-- Service Content Start -->
-                        <div class="service-item-content">
-                            <h3>03.</h3>
-                            <h2><a href="service-single.html">Online Ordering</a></h2>
-                            <p>Fresh, handcrafted bakery items delivered daily.</p>
-                        </div>
-                        <!-- Service Content End -->
-
-                        <!-- Service Readmore Start -->
-                        <div class="service-readmore-btn">
-                            <a href="service-single.html" class="readmore-btn">read more</a>
-                        </div>
-                        <!-- Service Readmore End -->
-                    </div>
-                    <!-- Service Item End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Service Item Start -->
-                    <div class="service-item wow fadeInUp" data-wow-delay="0.6s">
-                        <!-- Service Content Start -->
-                        <div class="service-item-content">
-                            <h3>04.</h3>
-                            <h2><a href="service-single.html">Baking Workshops</a></h2>
-                            <p>Fresh, handcrafted bakery items delivered daily.</p>
-                        </div>
-                        <!-- Service Content End -->
-
-                        <!-- Service Readmore Start -->
-                        <div class="service-readmore-btn">
-                            <a href="service-single.html" class="readmore-btn">read more</a>
-                        </div>
-                        <!-- Service Readmore End -->
-                    </div>
-                    <!-- Service Item End -->
-                </div>
-
-                <div class="col-lg-12">
-                    <!-- Section Footer Text Start -->
-                    <div class="section-footer-text wow fadeInUp" data-wow-delay="0.8s">
-                        <p>
-                            <span>Free</span>Experience the taste everyone's talking about -
-                            <a href="contact.html">come in or order online!</a>
-                        </p>
-                    </div>
-                    <!-- Section Footer Text End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Our Services Section End -->
-
-    <!-- Why Choose Us Section Start -->
-    <div class="why-choose-us bg-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <!-- Why Choose Content Start -->
-                    <div class="why-choose-content">
-                        <!-- Section Title Start -->
-                        <div class="section-title">
-                            <h3 class="wow fadeInUp">Why choose us</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque">
-                                Baking freshness & flavor <span>you can trust</span>
-                            </h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.2s">
-                                We blend time-honored techniques with the finest ingredients to create elegant
-                                pastries and breads that delight the senses.
-                            </p>
-                        </div>
-                        <!-- Section Title End -->
-
-                        <!-- Why Choose Item List Start -->
-                        <div class="why-choose-item-list">
-                            <!-- Why Choose Item Start -->
-                            <div class="why-choose-item wow fadeInUp" data-wow-delay="0.4s">
-                                <div class="icon-box">
-                                    <img src="frontAssets/images/icon-why-choose-1.svg" alt="" />
-                                </div>
-                                <div class="why-choose-item-content">
-                                    <h3>Passion and Care in Every Batch</h3>
-                                    <p>
-                                        Baking isn't just a job for us - it's a craft. We pour love, attention, and
-                                        expertise into every pastry, bread, and cake.
-                                    </p>
-                                </div>
-                            </div>
-                            <!-- Why Choose Item End -->
-
-                            <!-- Why Choose Item Start -->
-                            <div class="why-choose-item wow fadeInUp" data-wow-delay="0.6s">
-                                <div class="icon-box">
-                                    <img src="frontAssets/images/icon-why-choose-2.svg" alt="" />
-                                </div>
-                                <div class="why-choose-item-content">
-                                    <h3>Custom Orders for Every Occasion</h3>
-                                    <p>
-                                        Baking isn't just a job for us - it's a craft. We pour love, attention, and
-                                        expertise into every pastry, bread, and cake.
-                                    </p>
-                                </div>
-                            </div>
-                            <!-- Why Choose Item End -->
-
-                            <!-- Why Choose Item Start -->
-                            <div class="why-choose-item wow fadeInUp" data-wow-delay="0.8s">
-                                <div class="icon-box">
-                                    <img src="frontAssets/images/icon-why-choose-3.svg" alt="" />
-                                </div>
-                                <div class="why-choose-item-content">
-                                    <h3>Traditional Recipes with a Modern Twist</h3>
-                                    <p>
-                                        Baking isn't just a job for us - it's a craft. We pour love, attention, and
-                                        expertise into every pastry, bread, and cake.
-                                    </p>
-                                </div>
-                            </div>
-                            <!-- Why Choose Item End -->
-                        </div>
-                        <!-- Why Choose Item List End -->
-                    </div>
-                    <!-- Why Choose Content End -->
-                </div>
-
-                <div class="col-lg-6">
-                    <!-- Why Choose Images Start -->
-                    <div class="why-choose-images">
-                        <!-- Why Choose Image Box 1 Start -->
-                        <div class="why-choose-image-box-1">
-                            <!-- Why Choose Image Start -->
-                            <div class="why-choose-image wow fadeInUp">
-                                <figure class="image-anime">
-                                    <img src="frontAssets/images/why-choose-image-1.jpg" alt="" />
-                                </figure>
-
-                                <!-- Why Choose CTA Box Start -->
-                                <div class="why-choose-cta-box">
-                                    <div class="icon-box">
-                                        <img src="frontAssets/images/icon-headset.svg" alt="" />
-                                    </div>
-                                    <div class="why-choose-cta-content">
-                                        <p>Got questions? we're here to help!</p>
-                                    </div>
-                                </div>
-                                <!-- Why Choose CTA Box End -->
-                            </div>
-                            <!-- Why Choose Image End -->
-
-                            <div class="google-rating-box wow fadeInUp" data-wow-delay="0.2s">
-                                <!-- Google Rating Content Start -->
-                                <div class="google-rating-content">
-                                    <p>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                        <i class="fa-solid fa-star"></i>
-                                    </p>
-                                    <p>More Than 1K+ Trusted Clients</p>
-                                </div>
-                                <!-- Google Rating Content End -->
-
-                                <!-- Review Images Start -->
-                                <div class="review-images">
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-1.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-2.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-3.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image">
-                                        <figure class="image-anime">
-                                            <img src="frontAssets/images/author-4.jpg" alt="" />
-                                        </figure>
-                                    </div>
-                                    <div class="review-image add-more">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </div>
-                                </div>
-                                <!-- Review Images End -->
-                            </div>
-                        </div>
-                        <!-- Why Choose Image Box 1 End -->
-
-                        <!-- Why Choose Image Box 2 Start -->
-                        <div class="why-choose-image-box-2">
-                            <!-- Contact Us Circle Start -->
-                            <div class="contact-us-circle">
-                                <a href="contact.html"><img src="frontAssets/images/contact-us-circle.svg" alt="" /></a>
-                            </div>
-                            <!-- Contact Us Circle End -->
-
-                            <!-- Why Choose Image Start -->
-                            <div class="why-choose-image">
-                                <figure class="image-anime reveal">
-                                    <img src="frontAssets/images/why-choose-image-2.jpg" alt="" />
-                                </figure>
-                            </div>
-                            <!-- Why Choose Image End -->
-                        </div>
-                        <!-- Why Choose Image Box 2 End -->
-                    </div>
-                    <!-- Why Choose Images End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Why Choose Us Section End -->
-
-    <!-- Our Feature Section Start -->
-    <div class="our-features bg-section">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-lg-6">
-                    <!-- Feature Content Start -->
-                    <div class="feature-content dark-section parallaxie">
-                        <!-- Section Title Start -->
-                        <div class="section-title">
-                            <h3 class="wow fadeInUp">Our features</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque">
-                                Crafting fresh bakes daily with <span>love and tradition</span>
-                            </h2>
-                            <p class="wow fadeInUp" data-wow-delay="0.2s">
-                                From sunrise to oven, we create handcrafted breads, pastries, and cakes using
-                                time-honored techniques and premium ingredients. Whether it's a morning croissant, a
-                                celebration cake.
-                            </p>
-                        </div>
-                        <!-- Section Title End -->
-
-                        <!-- Feature Button Start -->
-                        <div class="feature-btn wow fadeInUp" data-wow-delay="0.4s">
-                            <a href="contact.html" class="btn-default btn-highlighted">Learn more</a>
-                        </div>
-                        <!-- Feature Button End -->
-                    </div>
-                    <!-- Feature Content End -->
-                </div>
-
-                <div class="col-lg-6">
-                    <!-- Feature Items List Start -->
-                    <div class="feature-items-list">
-                        <!-- Feature Item Start -->
-                        <div class="feature-item wow fadeInUp">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-feature-1.svg" alt="" />
-                            </div>
-                            <div class="feature-item-content">
-                                <h3>Handcrafted Baked Goods</h3>
-                                <p>
-                                    We create a wide range of breads, pastries, cakes, and dessertsc from scratch.
-                                </p>
-                            </div>
-                        </div>
-                        <!-- Feature Item End -->
-
-                        <!-- Feature Item Start -->
-                        <div class="feature-item wow fadeInUp" data-wow-delay="0.2s">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-feature-2.svg" alt="" />
-                            </div>
-                            <div class="feature-item-content">
-                                <h3>Custom Cake Design</h3>
-                                <p>
-                                    Our skilled bakers and decorators craft personalized cakes tailored to your
-                                    style and occasion.
-                                </p>
-                            </div>
-                        </div>
-                        <!-- Feature Item End -->
-
-                        <!-- Feature Item Start -->
-                        <div class="feature-item wow fadeInUp" data-wow-delay="0.4s">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-feature-3.svg" alt="" />
-                            </div>
-                            <div class="feature-item-content">
-                                <h3>Daily Fresh Production</h3>
-                                <p>
-                                    Every morning, we bake fresh batches to ensure our customers always enjoy warm,
-                                    just-out-of-the-oven.
-                                </p>
-                            </div>
-                        </div>
-                        <!-- Feature Item End -->
-
-                        <!-- Feature Item Start -->
-                        <div class="feature-item wow fadeInUp" data-wow-delay="0.6s">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-feature-4.svg" alt="" />
-                            </div>
-                            <div class="feature-item-content">
-                                <h3>Catering & Special Orders</h3>
-                                <p>
-                                    We offer catering services and special bulk orders for events, meetings, and
-                                    celebrations.
-                                </p>
-                            </div>
-                        </div>
-                        <!-- Feature Item End -->
-                    </div>
-                    <!-- Feature Item List End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Our Feature Section End -->
-
-    <!-- Our Products Section Start -->
-    <div class="our-products bg-section">
-        <div class="container">
-            <div class="row section-row">
-                <div class="col-lg-12">
-                    <!-- Section Title Start -->
-                    <div class="section-title section-title-center">
-                        <h3 class="wow fadeInUp">Our products</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque">
-                            Artisan baked goods perfect for any occasion or <span>everyday treats</span>
-                        </h2>
-                    </div>
-                    <!-- Section Title End -->
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-3 col-md-6">
-                    <!-- Product Item Start -->
-                    <div class="product-item product-box-1 wow fadeInUp">
-                        <div class="product-item-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/product-1.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="product-item-content">
-                            <p>01.</p>
-                            <h3>Gourmet Cupcakes</h3>
-                        </div>
-                    </div>
-                    <!-- Product Item End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Product Item Start -->
-                    <div class="product-item product-box-2 wow fadeInUp" data-wow-delay="0.2s">
-                        <div class="product-item-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/product-2.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="product-item-content">
-                            <p>02.</p>
-                            <h3>Artisan Breads</h3>
-                        </div>
-                    </div>
-                    <!-- Product Item End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Product Item Start -->
-                    <div class="product-item product-box-3 wow fadeInUp" data-wow-delay="0.4s">
-                        <div class="product-item-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/product-3.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="product-item-content">
-                            <p>03.</p>
-                            <h3>Celebration Cakes</h3>
-                        </div>
-                    </div>
-                    <!-- Product Item End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Product Item Start -->
-                    <div class="product-item product-box-4 wow fadeInUp" data-wow-delay="0.6s">
-                        <div class="product-item-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/product-4.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="product-item-content">
-                            <p>04.</p>
-                            <h3>Delicious Pastries</h3>
-                        </div>
-                    </div>
-                    <!-- Product Item End -->
-                </div>
-
-                <div class="col-lg-12">
-                    <!-- Section Footer Text Start -->
-                    <div class="section-footer-text wow fadeInUp" data-wow-delay="0.8s">
-                        <p>
-                            Feel the freedom of the open trail -
-                            <a href="contact.html">Start your riding journey with us now!</a>
-                        </p>
-                    </div>
-                    <!-- Section Footer Text End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Our Products Section End -->
-
-    <!-- How It Work Section Start -->
-    <div class="how-it-work bg-section dark-section">
-        <div class="container">
-            <div class="row section-row">
-                <div class="col-lg-12">
-                    <!-- Section Title Start -->
-                    <div class="section-title section-title-center">
-                        <h3 class="wow fadeInUp">How it works</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque">
-                            Fresh bakes made simple - from our oven to <span>your doorstep</span>
-                        </h2>
-                    </div>
-                    <!-- Section Title End -->
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-3 col-md-6">
-                    <!-- How It Work Content Start -->
-                    <div class="work-content-box wow fadeInUp">
-                        <h3>Getting fresh baked goods is easier</h3>
-                        <p>We've made it simple for you to enjoy bakery-fresh delights.</p>
-                        <ul>
-                            <li>Explore our menu filled</li>
-                            <li>Daily Fresh Production</li>
-                        </ul>
-                        <a href="contact.html" class="btn-default btn-highlighted">contact us</a>
-                    </div>
-                    <!-- How It Work Content End -->
-                </div>
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Work Step Item Start -->
-                    <div class="work-step-item wow fadeInUp" data-wow-delay="0.2s">
-                        <div class="work-step-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/work-step-image-1.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="work-step-no">
-                            <h2>01</h2>
-                        </div>
-                        <div class="work-step-content">
-                            <h3>Pick Your Treats</h3>
-                            <p>Explore our menu filled with delicious pastries.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Work Step Item End -->
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Work Step Item Start -->
-                    <div class="work-step-item wow fadeInUp" data-wow-delay="0.4s">
-                        <div class="work-step-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/work-step-image-2.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="work-step-no">
-                            <h2>02</h2>
-                        </div>
-                        <div class="work-step-content">
-                            <h3>Confirm Your Order</h3>
-                            <p>Choose your pickup or delivery place.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- Work Step Item End -->
-
-                <div class="col-lg-3 col-md-6">
-                    <!-- Work Step Item Start -->
-                    <div class="work-step-item wow fadeInUp" data-wow-delay="0.6s">
-                        <div class="work-step-image">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/work-step-image-3.jpg" alt="" />
-                            </figure>
-                        </div>
-                        <div class="work-step-no">
-                            <h2>03</h2>
-                        </div>
-                        <div class="work-step-content">
-                            <h3>Enjoy the Freshness</h3>
-                            <p>Savor every bite made with fresh ingredients.</p>
-                        </div>
-                    </div>
-                    <!-- Work Step Item End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- How It Work Section End- -->
-
-    <!-- Our Special Offers Section Start -->
-    <div class="our-special-offers bg-section">
-        <div class="container">
-            <div class="row section-row">
-                <div class="col-lg-12">
-                    <!-- Section Title Start -->
-                    <div class="section-title section-title-center">
-                        <h3 class="wow fadeInUp">Special offers</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque">
-                            Sweet savings and limited-time treats you <span>don't want to miss</span>
-                        </h2>
-                    </div>
-                    <!-- Section Title End -->
-                </div>
-            </div>
-
-            <div class="row align-items-center">
-                <div class="col-lg-4 col-md-6 order-1">
-                    <!-- Offers Item List Start -->
-                    <div class="offers-item-list offer-list-1">
-                        <!-- Offers Item Start -->
-                        <div class="offer-item wow fadeInUp">
-                            <div class="offer-image">
-                                <figure>
-                                    <img src="frontAssets/images/best-product-1.png" alt="" />
-                                </figure>
-                            </div>
-                            <div class="offer-item-content">
-                                <h2>Cupcake</h2>
-                                <p>Delightfully moist and perfectly portioned.</p>
-                                <h3>Price: $24.95</h3>
-                            </div>
-                        </div>
-                        <!-- Offers Item End -->
-
-                        <!-- Offers Item Start -->
-                        <div class="offer-item wow fadeInUp" data-wow-delay="0.2s">
-                            <div class="offer-image">
-                                <figure>
-                                    <img src="frontAssets/images/best-product-2.png" alt="" />
-                                </figure>
-                            </div>
-                            <div class="offer-item-content">
-                                <h2>Multigrain Loaf</h2>
-                                <p>A wholesome blend of grains and seeds baked to perfection</p>
-                                <h3>Price: $55.00</h3>
-                            </div>
-                        </div>
-                        <!-- Offers Item End -->
-
-                        <!-- Offers Item Start -->
-                        <div class="offer-item wow fadeInUp" data-wow-delay="0.4s">
-                            <div class="offer-image">
-                                <figure>
-                                    <img src="frontAssets/images/best-product-3.png" alt="" />
-                                </figure>
-                            </div>
-                            <div class="offer-item-content">
-                                <h2>Cinnamon Roll</h2>
-                                <p>Soft, fluffy rolls swirled with cinnamon and sugar.</p>
-                                <h3>Price: $39.95</h3>
-                            </div>
-                        </div>
-                        <!-- Offers Item End -->
-                    </div>
-                    <!-- Offers Item List End -->
-                </div>
-
-                <div class="col-lg-4 order-lg-2 order-md-3 order-2">
-                    <!-- Best Offer Image Box Start -->
-                    <div class="best-offer-image-box">
-                        <!-- Best Offer Content Start -->
-                        <div class="best-offer-content wow fadeInUp">
-                            <h2>Best offers</h2>
-                            <p>A Little Thank You, from Us to You!</p>
-                            <a href="contact.html" class="readmore-btn">View all offers</a>
-                        </div>
-                        <!-- Best Offer Content End -->
-
-                        <!-- Best Offer Image Start -->
-                        <div class="best-offer-image wow fadeInUp" data-wow-delay="0.2s">
-                            <figure>
-                                <img src="frontAssets/images/best-offer-image.png" alt="" />
-                            </figure>
-                        </div>
-                        <!-- Best Offer Image End -->
-                    </div>
-                    <!-- Best Offer Image Box End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6 order-lg-3 order-md-2 order-3">
-                    <!-- Offers Item List Start -->
-                    <div class="offers-item-list offer-list-2">
-                        <!-- Offers Item Start -->
-                        <div class="offer-item wow fadeInUp">
-                            <div class="offer-image">
-                                <figure>
-                                    <img src="frontAssets/images/best-product-4.png" alt="" />
-                                </figure>
-                            </div>
-                            <div class="offer-item-content">
-                                <h2>Cheesecake</h2>
-                                <p>Creamy smooth cheesecake on butter graham cracker crust</p>
-                                <h3>Price: $50.00</h3>
-                            </div>
-                        </div>
-                        <!-- Offers Item End -->
-
-                        <!-- Offers Item Start -->
-                        <div class="offer-item wow fadeInUp" data-wow-delay="0.2s">
-                            <div class="offer-image">
-                                <figure>
-                                    <img src="frontAssets/images/best-product-5.png" alt="" />
-                                </figure>
-                            </div>
-                            <div class="offer-item-content">
-                                <h2>Red Velvet Cupcake</h2>
-                                <p>Moist & vibrant red velvet cake topped with rich velvety cream</p>
-                                <h3>Price: $70.50</h3>
-                            </div>
-                        </div>
-                        <!-- Offers Item End -->
-
-                        <!-- Offers Item Start -->
-                        <div class="offer-item wow fadeInUp" data-wow-delay="0.4s">
-                            <div class="offer-image">
-                                <figure>
-                                    <img src="frontAssets/images/best-product-6.png" alt="" />
-                                </figure>
-                            </div>
-                            <div class="offer-item-content">
-                                <h2>Cheese Scone</h2>
-                                <p>Buttery, crumbly scones baked with sharp cheddar cheese.</p>
-                                <h3>Price: $60.00</h3>
-                            </div>
-                        </div>
-                        <!-- Offers Item End -->
-                    </div>
-                    <!-- Offers Item List End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Our Special Offers Section End -->
-
-    <!-- Our Gallery Section Start -->
-    <div class="our-gallery bg-section">
-        <div class="container-fluid">
-            <div class="row section-row">
-                <div class="col-lg-12">
-                    <!-- Section Title Start -->
-                    <div class="section-title section-title-center">
-                        <h3 class="wow fadeInUp">Our gallery</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque">
-                            Feast your eyes on our fresh creations and <span>bakery delights</span>
-                        </h2>
-                    </div>
-                    <!-- Section Title End -->
-                </div>
-            </div>
-
-            <div class="row no-gutters">
-                <div class="col-lg-12">
-                    <!-- Gallery Slider Start -->
-                    <div class="gallery-slider">
-                        <div class="swiper">
-                            <div class="swiper-wrapper gallery-items" data-cursor-text="Drag">
-                                <!-- Gallery Slide Start -->
-                                <div class="swiper-slide">
-                                    <!-- Image Gallery start -->
-                                    <div class="photo-gallery">
-                                        <a href="frontAssets/images/gallery-1.jpg" data-cursor-text="View">
-                                            <figure>
-                                                <img src="frontAssets/images/gallery-1.jpg" alt="" />
-                                            </figure>
-                                        </a>
-                                    </div>
-                                    <!-- Image Gallery end -->
-                                </div>
-                                <!-- Gallery Slide End -->
-
-                                <!-- Gallery Slide Start -->
-                                <div class="swiper-slide">
-                                    <!-- Image Gallery start -->
-                                    <div class="photo-gallery">
-                                        <a href="frontAssets/images/gallery-2.jpg" data-cursor-text="View">
-                                            <figure>
-                                                <img src="frontAssets/images/gallery-2.jpg" alt="" />
-                                            </figure>
-                                        </a>
-                                    </div>
-                                    <!-- Image Gallery end -->
-                                </div>
-                                <!-- Gallery Slide End -->
-
-                                <!-- Gallery Slide Start -->
-                                <div class="swiper-slide">
-                                    <!-- Image Gallery start -->
-                                    <div class="photo-gallery">
-                                        <a href="frontAssets/images/gallery-3.jpg" data-cursor-text="View">
-                                            <figure>
-                                                <img src="frontAssets/images/gallery-3.jpg" alt="" />
-                                            </figure>
-                                        </a>
-                                    </div>
-                                    <!-- Image Gallery end -->
-                                </div>
-                                <!-- Gallery Slide End -->
-
-                                <!-- Gallery Slide Start -->
-                                <div class="swiper-slide">
-                                    <!-- Image Gallery start -->
-                                    <div class="photo-gallery">
-                                        <a href="frontAssets/images/gallery-4.jpg" data-cursor-text="View">
-                                            <figure>
-                                                <img src="frontAssets/images/gallery-4.jpg" alt="" />
-                                            </figure>
-                                        </a>
-                                    </div>
-                                    <!-- Image Gallery end -->
-                                </div>
-                                <!-- Gallery Slide End -->
-
-                                <!-- Gallery Slide Start -->
-                                <div class="swiper-slide">
-                                    <!-- Image Gallery start -->
-                                    <div class="photo-gallery">
-                                        <a href="frontAssets/images/gallery-5.jpg" data-cursor-text="View">
-                                            <figure>
-                                                <img src="frontAssets/images/gallery-5.jpg" alt="" />
-                                            </figure>
-                                        </a>
-                                    </div>
-                                    <!-- Image Gallery end -->
-                                </div>
-                                <!-- Gallery Slide End -->
-
-                                <!-- Gallery Slide Start -->
-                                <div class="swiper-slide">
-                                    <!-- Image Gallery start -->
-                                    <div class="photo-gallery">
-                                        <a href="frontAssets/images/gallery-6.jpg" data-cursor-text="View">
-                                            <figure>
-                                                <img src="frontAssets/images/gallery-6.jpg" alt="" />
-                                            </figure>
-                                        </a>
-                                    </div>
-                                    <!-- Image Gallery end -->
-                                </div>
-                                <!-- Gallery Slide End -->
-                            </div>
-
-                            <!-- Gallery Button Start -->
-                            <div class="gallery-btn">
-                                <div class="gallery-button-prev"></div>
-                                <div class="gallery-button-next"></div>
-                            </div>
-                            <!-- Gallery Button End -->
-                        </div>
-                    </div>
-                    <!-- Gallery Slider End -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Our Gallery Section End -->
-
-    <!-- Our Testimonials Section Start -->
-    <div class="our-testimonials bg-section dark-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-7">
-                    <!-- Testimonials Content Start -->
-                    <div class="testimonials-content">
-                        <!-- Section Title Start -->
-                        <div class="section-title">
-                            <h3 class="wow fadeInUp">Our testimonials</h3>
-                            <h2 class="text-anime-style-2" data-cursor="-opaque">
-                                Hear what our customers say <span>about us</span>
-                            </h2>
-                        </div>
-                        <!-- Section Title End -->
-
-                        <!-- Testimonial Slider Start -->
-                        <div class="testimonial-slider">
-                            <div class="swiper">
-                                <div class="swiper-wrapper" data-cursor-text="Drag">
-                                    <!-- Testimonial Slide Start -->
-                                    <div class="swiper-slide">
-                                        <!-- Testimonial Item Start -->
-                                        <div class="testimonial-item">
-                                            <!-- Testimonial Content Start -->
-                                            <div class="testimonial-item-content">
-                                                <p>
-                                                    “ I attended the Rio Carnal last February and it was a
-                                                    life-changing experience. The music, the energy, - everything
-                                                    was electric. I felt completely immersed in Brazilian culture. I
-                                                    attended the Rio Carnival last February. ”
-                                                </p>
-                                            </div>
-                                            <!-- Testimonial Content End -->
-
-                                            <!-- Testimonial Body Start -->
-                                            <div class="testimonial-author">
-                                                <div class="author-image">
-                                                    <figure class="image-anime">
-                                                        <img src="frontAssets/images/author-1.jpg" alt="" />
-                                                    </figure>
-                                                </div>
-                                                <div class="author-content">
-                                                    <h3>Darlene Robertson</h3>
-                                                    <p>Regular Customer</p>
-                                                </div>
-                                            </div>
-                                            <!-- Testimonial Body End -->
+                                    
+                                    @if($sp->is_featured)
+                                        <div class="position-absolute top-0 start-0 m-2">
+                                            <span class="badge bg-warning text-dark px-2 py-1 rounded-pill" style="font-size: 10px; font-weight: 700;">
+                                                <i class="fa-solid fa-star me-1"></i> Featured
+                                            </span>
                                         </div>
-                                        <!-- Testimonial Item End -->
+                                    @endif
+                                </div>
+                                
+                                <div class="product-item-content">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="text-muted" style="font-size: 12px; font-weight: 700;">0{{ $idx + 1 }}.</span>
+                                        @if($prod->stock_on_hand > 0)
+                                            <span class="badge bg-success py-1 px-2 rounded-pill" style="font-size: 11px;">Available Fresh</span>
+                                        @else
+                                            <span class="badge bg-secondary py-1 px-2 rounded-pill" style="font-size: 11px;">Out of Stock</span>
+                                        @endif
                                     </div>
-                                    <!-- Testimonial Slide End -->
+                                    
+                                    <h3 class="mb-2" style="font-size: 20px; font-weight: 700;">
+                                        <a href="{{ route('store.productDetails', $prod->slug) }}" class="text-dark text-decoration-none">
+                                            {{ $title }}
+                                        </a>
+                                    </h3>
+                                    
+                                    <p class="text-muted mb-3" style="font-size: 13px; line-height: 1.6;">
+                                        {{ \Illuminate\Support\Str::limit(strip_tags($sp->short_description ?: $sp->description ?: 'Freshly handcrafted with unadulterated ingredients.'), 95) }}
+                                    </p>
 
-                                    <!-- Testimonial Slide Start -->
-                                    <div class="swiper-slide">
-                                        <!-- Testimonial Item Start -->
-                                        <div class="testimonial-item">
-                                            <!-- Testimonial Content Start -->
-                                            <div class="testimonial-item-content">
-                                                <p>
-                                                    “ I attended the Rio Carnal last February and it was a
-                                                    life-changing experience. The music, the energy, - everything
-                                                    was electric. I felt completely immersed in Brazilian culture. I
-                                                    attended the Rio Carnival last February. ”
-                                                </p>
-                                            </div>
-                                            <!-- Testimonial Content End -->
-
-                                            <!-- Testimonial Body Start -->
-                                            <div class="testimonial-author">
-                                                <div class="author-image">
-                                                    <figure class="image-anime">
-                                                        <img src="frontAssets/images/author-2.jpg" alt="" />
-                                                    </figure>
-                                                </div>
-                                                <div class="author-content">
-                                                    <h3>Olivia Clarke</h3>
-                                                    <p>General Manager</p>
-                                                </div>
-                                            </div>
-                                            <!-- Testimonial Body End -->
+                                    @if($ingredients->count())
+                                        <div class="d-flex flex-wrap gap-1 mb-3">
+                                            @foreach($ingredients->take(3) as $item)
+                                                @if($item->ingredient)
+                                                    <span class="badge bg-light text-muted border px-2 py-1" style="font-size: 10px; font-weight: 500;">
+                                                        {{ $item->ingredient->name }}
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                            @if($ingredients->count() > 3)
+                                                <span class="badge bg-light text-muted border px-2 py-1" style="font-size: 10px;">+{{ $ingredients->count() - 3 }} more</span>
+                                            @endif
                                         </div>
-                                        <!-- Testimonial Item End -->
-                                    </div>
-                                    <!-- Testimonial Slide End -->
+                                    @endif
                                 </div>
                             </div>
-                        </div>
-                        <!-- Testimonial Slider End -->
 
-                        <!-- Testimonial Footer Start -->
-                        <div class="testimonials-counter-list">
-                            <!-- Testimonials Counter Item Start -->
-                            <div class="testimonial-counter-item">
-                                <!-- Testimonials Counter Header Start -->
-                                <div class="testimonial-counter-header">
-                                    <div class="icon-box">
-                                        <img src="frontAssets/images/icon-testimonial-counter-1.svg" alt="" />
-                                    </div>
-                                    <div class="testimonial-counter-title">
-                                        <h2><span class="counter">15</span>K+</h2>
-                                    </div>
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-2">
+                                <div>
+                                    <strong style="font-size: 18px; color: var(--accent-color);">₦{{ number_format($prod->selling_price, 2) }}</strong>
+                                    <small class="text-muted d-block" style="font-size: 11px;">/ {{ $prod->sales_unit }}</small>
                                 </div>
-                                <!-- Testimonials Counter Header End -->
-
-                                <!-- Testimonials Counter Body Start -->
-                                <div class="testimonial-counter-body">
-                                    <p>From breads to cakes From breads to cakes</p>
-                                </div>
-                                <!-- Testimonials Counter Body End -->
+                                <a href="{{ route('store.productDetails', $prod->slug) }}" class="btn-default btn-highlighted py-2 px-3" style="font-size: 13px;">
+                                    <span>View Treat</span> <i class="fa-solid fa-arrow-right ms-1"></i>
+                                </a>
                             </div>
-                            <!-- Testimonials Counter Item End -->
-
-                            <!-- Testimonials Counter Item Start -->
-                            <div class="testimonial-counter-item">
-                                <!-- Testimonials Counter Header Start -->
-                                <div class="testimonial-counter-header">
-                                    <div class="icon-box">
-                                        <img src="frontAssets/images/icon-testimonial-counter-2.svg" alt="" />
-                                    </div>
-                                    <div class="testimonial-counter-title">
-                                        <h2><span class="counter">98</span>%</h2>
-                                    </div>
-                                </div>
-                                <!-- Testimonials Counter Header End -->
-
-                                <!-- Testimonials Counter Body Start -->
-                                <div class="testimonial-counter-body">
-                                    <p>From breads to cakes From breads to cakes</p>
-                                </div>
-                                <!-- Testimonials Counter Body End -->
-                            </div>
-                            <!-- Testimonials Counter Item End -->
-
-                            <!-- Testimonials Counter Item Start -->
-                            <div class="testimonial-counter-item">
-                                <!-- Testimonials Counter Header Start -->
-                                <div class="testimonial-counter-header">
-                                    <div class="icon-box">
-                                        <img src="frontAssets/images/icon-testimonial-counter-3.svg" alt="" />
-                                    </div>
-                                    <div class="testimonial-counter-title">
-                                        <h2><span class="counter">25</span>+</h2>
-                                    </div>
-                                </div>
-                                <!-- Testimonials Counter Header End -->
-
-                                <!-- Testimonials Counter Body Start -->
-                                <div class="testimonial-counter-body">
-                                    <p>From breads to cakes From breads to cakes</p>
-                                </div>
-                                <!-- Testimonials Counter Body End -->
-                            </div>
-                            <!-- Testimonials Counter Item End -->
-                        </div>
-                        <!-- Testimonial Footer End -->
+                        </article>
                     </div>
-                    <!-- Testimonials Content End -->
+                @endforeach
+            </div>
+        @else
+            <div class="store-products-empty">
+                <div class="store-products-empty-icon">
+                    <i class="fa-solid fa-wheat-awn"></i>
+                </div>
+                <h3>Our online shelf is being freshly updated</h3>
+                <p>Our bakers are prepping today's batches. Reach out directly for custom celebration orders.</p>
+                <a href="{{ route('store.contact') }}" class="btn-default btn-highlighted mt-2">Custom Order Inquiry</a>
+            </div>
+        @endif
+    </div>
+</section>
+<!-- FRESH SHELF END -->
+
+
+<!-- =====================================================
+     THE MOSHEL CRAFT & PHILOSOPHY
+===================================================== -->
+<section class="store-story-section bg-section py-5" style="background: #faf7f2;">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="section-title mb-4">
+                    <span class="store-summary-kicker">The Moshel Craft</span>
+                    <h2 class="text-anime-style-2" data-cursor="-opaque">
+                        Unrushed baking, pure ingredients &amp; <span>uncompromising taste</span>
+                    </h2>
+                    <p class="mt-3 text-muted" style="font-size: 15px; line-height: 1.8;">
+                        At {{ $siteName }}, baking is an artisan craft. We reject chemical improvers, pre-mix powders, and artificial shortcuts. Instead, our breads undergo slow natural fermentation to unlock deep flavor and easy digestion.
+                    </p>
+                    <p class="text-muted" style="font-size: 15px; line-height: 1.8;">
+                        Our celebration cakes are built on rich, moist sponge layers infused with pure butter and premium cocoa, frosted with velvety handcrafted buttercream and smooth chocolate ganache.
+                    </p>
                 </div>
 
-                <div class="col-lg-5">
-                    <!-- Testimonials Image Start -->
-                    <div class="testimonials-image wow fadeInUp" data-wow-delay="0.2s">
-                        <div class="testimonial-img">
-                            <figure class="image-anime">
-                                <img src="frontAssets/images/testimonial-image.jpg" alt="" />
-                            </figure>
-                        </div>
-
-                        <!-- Why Choose CTA Box Start -->
-                        <div class="why-choose-cta-box testimonial-cta-box">
-                            <div class="icon-box">
-                                <img src="frontAssets/images/icon-headset.svg" alt="" />
-                            </div>
-                            <div class="why-choose-cta-content">
-                                <p>Need Answers? Let's Clear Things Up For You!</p>
-                                <h3><a href="tel:123465789">+(123) 465-789</a></h3>
-                            </div>
-                        </div>
-                        <!-- Why Choose CTA Box End -->
+                <div class="d-flex flex-column gap-2 mb-4">
+                    <div class="d-flex align-items-center gap-2" style="font-size: 14px; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check text-success"></i>
+                        <span>Slow 24-Hour Natural Fermentation for Superior Crumb</span>
                     </div>
-                    <!-- Testimonials Image End -->
+                    <div class="d-flex align-items-center gap-2" style="font-size: 14px; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check text-success"></i>
+                        <span>Bespoke Cake Styling for Birthdays, Weddings &amp; Events</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2" style="font-size: 14px; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check text-success"></i>
+                        <span>Zero Artificial Fillers or Synthetic Flavorings</span>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <a href="{{ url('/about') }}" class="btn-default py-3 px-4" style="font-size: 14px;">
+                        <span>Our Full Kitchen Story</span>
+                    </a>
+                    <a href="{{ route('store.contact') }}" class="btn-default btn-highlighted py-3 px-4" style="font-size: 14px;">
+                        <span>Special Requests</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="rounded-4 overflow-hidden shadow-sm" style="height: 260px;">
+                            <img src="{{ asset('frontAssets/images/about-us-image-1.jpg') }}" alt="Crafted bakes" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="rounded-4 overflow-hidden shadow-sm mt-4" style="height: 260px;">
+                            <img src="{{ asset('frontAssets/images/about-us-image-2.jpg') }}" alt="Artisanal treats" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Our Testimonials Section End -->
+</section>
+<!-- STORY END -->
 
-    <!-- Our Blog Section Start -->
-    <div class="our-blog bg-section">
-        <div class="container">
-            <div class="row section-row">
-                <div class="col-lg-12">
-                    <!-- Section Title Start -->
-                    <div class="section-title section-title-center">
-                        <h3 class="wow fadeInUp">Latest blog</h3>
-                        <h2 class="text-anime-style-2" data-cursor="-opaque">
-                            Inspiration, recipes, and behind the <span>scenes moments</span>
-                        </h2>
+
+<!-- =====================================================
+     HOW IT WORKS (SIMPLE & INTUITIVE)
+===================================================== -->
+<section class="store-process-section bg-section py-5">
+    <div class="container">
+        <div class="row section-row mb-5 text-center">
+            <div class="col-lg-8 mx-auto">
+                <div class="section-title section-title-center">
+                    <span class="store-summary-kicker">From Oven to Table</span>
+                    <h2 class="text-anime-style-2" data-cursor="-opaque">
+                        Fresh bakes made simple — <span>delivered to your door</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 text-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 60px; height: 60px; background: var(--accent-color); font-size: 22px; font-weight: 700;">
+                        01
                     </div>
-                    <!-- Section Title End -->
+                    <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Choose Your Treats</h3>
+                    <p class="text-muted mb-0" style="font-size: 14px; line-height: 1.6;">
+                        Browse our active menu of artisanal loaves, decadent cakes, and savory pastries.
+                    </p>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-lg-4 col-md-6">
-                    <!-- Post Item Start -->
-                    <div class="post-item wow fadeInUp">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image">
-                            <a href="blog-single.html" data-cursor-text="View">
-                                <figure class="image-anime">
-                                    <img src="frontAssets/images/post-1.jpg" alt="" />
-                                </figure>
-                            </a>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- Post Item Body Start -->
-                        <div class="post-item-body">
-                            <!-- Post Item Content Start -->
-                            <div class="post-item-content">
-                                <h2>
-                                    <a href="blog-single.html"
-                                        >Why We Only Bake With Real Butter - And You Should Too</a
-                                    >
-                                </h2>
-                            </div>
-                            <!-- Post Item Content End -->
-
-                            <!-- Post Item Readmore Button Start-->
-                            <div class="post-item-btn">
-                                <a href="blog-single.html" class="readmore-btn">read more</a>
-                            </div>
-                            <!-- Post Item Readmore Button End-->
-                        </div>
-                        <!-- Post Item Body End -->
+            <div class="col-lg-4 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 text-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 60px; height: 60px; background: var(--primary-color); font-size: 22px; font-weight: 700;">
+                        02
                     </div>
-                    <!-- Post Item End -->
+                    <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Seamless Checkout</h3>
+                    <p class="text-muted mb-0" style="font-size: 14px; line-height: 1.6;">
+                        Your address is automatically saved to your profile, and payment is processed securely via Paystack.
+                    </p>
                 </div>
+            </div>
 
-                <div class="col-lg-4 col-md-6">
-                    <!-- Post Item Start -->
-                    <div class="post-item wow fadeInUp" data-wow-delay="0.2s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image">
-                            <a href="blog-single.html" data-cursor-text="View">
-                                <figure class="image-anime">
-                                    <img src="frontAssets/images/post-2.jpg" alt="" />
-                                </figure>
-                            </a>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- Post Item Body Start -->
-                        <div class="post-item-body">
-                            <!-- Post Item Content Start -->
-                            <div class="post-item-content">
-                                <h2>
-                                    <a href="blog-single.html"
-                                        >Behind the Scenes A Full Day in the Life of a Small Artisan Bakery</a
-                                    >
-                                </h2>
-                            </div>
-                            <!-- Post Item Content End -->
-
-                            <!-- Post Item Readmore Button Start-->
-                            <div class="post-item-btn">
-                                <a href="blog-single.html" class="readmore-btn">read more</a>
-                            </div>
-                            <!-- Post Item Readmore Button End-->
-                        </div>
-                        <!-- Post Item Body End -->
+            <div class="col-lg-4 col-md-6">
+                <div class="p-4 rounded-4 bg-white border shadow-sm h-100 text-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3" style="width: 60px; height: 60px; background: var(--accent-color); font-size: 22px; font-weight: 700;">
+                        03
                     </div>
-                    <!-- Post Item End -->
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <!-- Post Item Start -->
-                    <div class="post-item wow fadeInUp" data-wow-delay="0.4s">
-                        <!-- Post Featured Image Start-->
-                        <div class="post-featured-image">
-                            <a href="blog-single.html" data-cursor-text="View">
-                                <figure class="image-anime">
-                                    <img src="frontAssets/images/post-3.jpg" alt="" />
-                                </figure>
-                            </a>
-                        </div>
-                        <!-- Post Featured Image End -->
-
-                        <!-- Post Item Body Start -->
-                        <div class="post-item-body">
-                            <!-- Post Item Content Start -->
-                            <div class="post-item-content">
-                                <h2>
-                                    <a href="blog-single.html"
-                                        >Seasonal Baking Favorites You'll Only Find in Our Shop This Time of Year</a
-                                    >
-                                </h2>
-                            </div>
-                            <!-- Post Item Content End -->
-
-                            <!-- Post Item Readmore Button Start-->
-                            <div class="post-item-btn">
-                                <a href="blog-single.html" class="readmore-btn">read more</a>
-                            </div>
-                            <!-- Post Item Readmore Button End-->
-                        </div>
-                        <!-- Post Item Body End -->
-                    </div>
-                    <!-- Post Item End -->
+                    <h3 style="font-size: 19px; font-weight: 700;" class="mb-2">Fresh Doorstep Delivery</h3>
+                    <p class="text-muted mb-0" style="font-size: 14px; line-height: 1.6;">
+                        Receive your fresh bakes in pristine packaging and savor every single bite.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Our Blog Section End -->
+</section>
+<!-- PROCESS END -->
+
+
+<!-- =====================================================
+     KITCHEN GALLERY
+===================================================== -->
+<section class="store-gallery-section bg-section py-5">
+    <div class="container-fluid">
+        <div class="row section-row mb-4 text-center">
+            <div class="col-lg-12">
+                <div class="section-title section-title-center">
+                    <span class="store-summary-kicker">Kitchen Gallery</span>
+                    <h2 class="text-anime-style-2" data-cursor="-opaque">
+                        A visual taste of our freshly crafted <span>creations</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="gallery-slider">
+                    <div class="swiper">
+                        <div class="swiper-wrapper gallery-items">
+                            @php
+                                $galleryList = [
+                                    'gallery-1.jpg', 'gallery-2.jpg', 'gallery-3.jpg', 
+                                    'gallery-4.jpg', 'gallery-5.jpg', 'gallery-6.jpg', 
+                                    'gallery-7.jpg', 'gallery-8.jpg'
+                                ];
+                            @endphp
+                            @foreach($galleryList as $gImg)
+                                <div class="swiper-slide">
+                                    <div class="photo-gallery rounded-3 overflow-hidden shadow-sm" style="height: 230px;">
+                                        <a href="{{ asset('frontAssets/images/' . $gImg) }}" class="product-gallery-item d-block h-100" title="Moshel Treat">
+                                            <img src="{{ asset('frontAssets/images/' . $gImg) }}" alt="Moshel Treat" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        
+                        <div class="gallery-btn mt-3">
+                            <div class="gallery-button-prev"></div>
+                            <div class="gallery-button-next"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- GALLERY END -->
+
+
+<!-- =====================================================
+     CUSTOM CELEBRATION CTA BANNER
+===================================================== -->
+<section class="store-cta-section bg-section py-5">
+    <div class="container">
+        <div class="row align-items-center p-4 p-md-5 rounded-4 shadow-sm" style="background: var(--primary-color); color: #fff;">
+            <div class="col-lg-8">
+                <span class="text-uppercase fw-bold" style="color: var(--accent-color); font-size: 12px; letter-spacing: 1px;">Tailored For Your Occasions</span>
+                <h2 class="text-white mt-2 mb-3" style="font-size: 32px; font-weight: 700;">
+                    Planning a birthday, anniversary, or special event?
+                </h2>
+                <p class="text-white-50 mb-0" style="font-size: 15px; max-width: 600px; line-height: 1.7;">
+                    Whether it's a multi-tiered celebration cake, corporate breakfast snack assortment, or bespoke recipe request, our bakers are ready to formulate it to perfection.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <div class="d-flex flex-column flex-sm-row justify-content-lg-end gap-3">
+                    <a href="{{ route('store.contact') }}" class="btn-default btn-highlighted py-3 px-4 d-inline-flex align-items-center justify-content-center gap-2" style="font-size: 15px; font-weight: 600;">
+                        <span>Start Custom Order</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- CTA BANNER END -->
+
 @endsection

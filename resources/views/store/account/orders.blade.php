@@ -1,0 +1,1 @@
+@extends('store.account.index')

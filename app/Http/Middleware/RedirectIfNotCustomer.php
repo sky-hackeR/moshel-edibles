@@ -10,7 +10,7 @@ class RedirectIfNotCustomer
     public function handle($request, Closure $next, $guard = 'customer')
     {
         if (!Auth::guard($guard)->check()) {
-            return redirect()->guest(route('customer.login'));
+            return redirect()->route('customer.login')->with('info', 'Please sign in to access your profile and order history.');
         }
 
         return $next($request);

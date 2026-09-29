@@ -29,23 +29,12 @@
         <tbody>
             @foreach($lowStockItems as $item)
             @php
-                // Logic to display the effective threshold used by the system
-                $unit = strtolower($item->ingredient->baseUnit->name ?? '');
-                $thresholds = [
-                    'gram' => 1000, 
-                    'ml'   => 1000, 
-                    'pcs'  => 10
-                ];
-                
-                $effectiveThreshold = $item->ingredient->reorder_level > 0 
-                    ? $item->ingredient->reorder_level 
-                    : ($thresholds[$unit] ?? 0);
-                
+                $effectiveThreshold = $item->ingredient->reorder_level ?? $item->ingredient->safety_stock_level ?? 0;
                 $unitSymbol = $item->ingredient->baseUnit->symbol ?? '';
             @endphp
             <tr>
                 <td style="color: #2d3748; font-weight: 600;">
-                    {{ $item->ingredient->name }}
+                    {{ $item->ingredient->name ?? 'Unnamed Ingredient' }}
                 </td>
                 <td style="text-align: center; font-weight: 800; color: #e53e3e;">
                     {{ number_format($item->quantity, 2) }} <small style="font-weight: 400; color: #a0aec0;">{{ $unitSymbol }}</small>

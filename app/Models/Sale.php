@@ -18,11 +18,25 @@ class Sale extends Model
         'discount_amount',
         'payable_amount',
         'payment_method',
-        'notes'
+        'notes',
+        'customer_id',
+        'order_status',
+        'payment_status',
+        'paystack_reference',
+        'paystack_amount',
+        'paystack_currency',
+        'paid_at',
+        'delivery_address',
+        'delivery_phone',
     ];
 
-    // This makes the seller_name available in the JSON response automatically
-    protected $appends = ['seller_name'];
+    protected $casts = [
+        'paid_at' => 'datetime',
+        'paystack_amount' => 'integer',
+    ];
+
+    // This makes the seller_name, channel, and in-store status available in JSON responses
+    protected $appends = ['seller_name', 'channel', 'is_in_store'];
 
     public function items()
     {
@@ -30,21 +44,62 @@ class Sale extends Model
     }
 
     public function staff() {
-        // We link user_id to the staff table's id
         return $this->belongsTo(Staff::class, 'user_id');
     }
 
     public function admin() {
-        // We link user_id to the admin table's id
         return $this->belongsTo(Admin::class, 'user_id');
     }
 
-    // This is the "seller_name" logic used in your controller
-    public function getSellerNameAttribute() {
-        if ($this->user_type === 'staff') {
-            return $this->staff->name ?? 'Staff';
-        }
-        return $this->admin->name ?? 'Admin';
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 
+    /**
+     * Seller / Cashier / Channel identification
+     */
+    public function getSellerNameAttribute() {
+        if ($this->user_type === 'staff') {
+            return $this->staff->name ?? 'Staff Cashier';
+        }
+        if ($this->user_type === 'admin') {
+            return $this->admin->name ?? 'Admin Cashier';
+        }
+        if ($this->customer) {
+            return $this->customer->name . ' (Online)';
+        }
+        return 'Online Customer';
+    }
+
+    /**
+     * Identifies whether sale was In-Store POS or Online Storefront
+     */
+    public function getChannelAttribute() {
+        if ($this->user_type === 'staff' || $this->user_type === 'admin') {
+            return 'In-Store (POS)';
+        }
+        return 'Online Store';
+    }
+
+    /**
+     * Check if sale was performed in-store
+     */
+    public function getIsInStoreAttribute() {
+        return in_array($this->user_type, ['staff', 'admin']);
+    }
+
+    /**
+     * Scope for paid sales (both completed in-store POS and paid online orders)
+     */
+    public function scopePaid($query) {
+        return $query->where(function ($q) {
+            $q->where('payment_status', 'paid')
+              ->orWhereIn('order_status', ['completed', 'delivered', 'processing'])
+              ->orWhere(function ($sub) {
+                  $sub->whereIn('user_type', ['staff', 'admin'])
+                      ->whereNull('paystack_reference');
+              });
+        });
+    }
 }

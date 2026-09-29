@@ -1,9 +1,9 @@
 <?php
 namespace App\Mail\Inventory;
 
-use Illuminate\Mail\Mailable;
+use App\Mail\QueuedMailable;
 
-class DeletionAttempt extends Mailable {
+class DeletionAttempt extends QueuedMailable {
     public $ingredient;
     public $user;
     public $reason;

@@ -2,14 +2,10 @@
 
 namespace App\Mail\Stock;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class StockInRecorded extends Mailable
+class StockInRecorded extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $stockIn;
     public $totalSpent;
     public $user;

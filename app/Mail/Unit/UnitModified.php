@@ -2,14 +2,10 @@
 
 namespace App\Mail\Unit;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class UnitModified extends Mailable
+class UnitModified extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $unit;
     public $action;
     public $user;

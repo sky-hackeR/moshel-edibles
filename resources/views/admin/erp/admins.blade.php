@@ -262,16 +262,7 @@
                         <label class="form-label fw-bold">Email Address *</label>
                         <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="admin@example.com" required>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Password *</label>
-                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Confirm Password *</label>
-                            <input type="password" name="password_confirmation" class="form-control" placeholder="••••••••" required>
-                        </div>
-                    </div>
+                    <p class="text-muted small mb-0">A secure password setup link will be sent to this email address.</p>
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Discard</button>

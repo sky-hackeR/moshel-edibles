@@ -2,14 +2,10 @@
 
 namespace App\Mail\Recipe;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class RecipeDeleted extends Mailable
+class RecipeDeleted extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $recipeName;
     public $user;
 

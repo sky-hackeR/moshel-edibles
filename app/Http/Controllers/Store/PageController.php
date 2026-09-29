@@ -15,12 +15,33 @@ class PageController extends Controller
      */
     public function index()
     {
-        $featuredProducts = Product::where('is_active', true)
-            ->take(3)
+        $publishedProducts = StoreProduct::where('is_published', true)
+            ->whereHas('product', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->with([
+                'product',
+                'images',
+                'primaryImage',
+            ])
+            ->orderByDesc('is_featured')
+            ->latest()
             ->get();
 
+        $featuredProducts = $publishedProducts->where('is_featured', true);
+
+        if ($featuredProducts->isEmpty()) {
+            $featuredProducts = $publishedProducts->take(4);
+        }
+
+        $leadProduct = $featuredProducts->first() ?: $publishedProducts->first();
+        $activeProducts = Product::where('is_active', true)->get();
+
         return view('store.welcome', [
-            'featuredProducts' => $featuredProducts
+            'featuredProducts' => $featuredProducts,
+            'allProducts'      => $publishedProducts,
+            'leadProduct'      => $leadProduct,
+            'activeProducts'   => $activeProducts,
         ]);
     }
 

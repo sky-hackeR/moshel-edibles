@@ -147,7 +147,7 @@
 
 {{-- MODAL --}}
 <div class="modal fade" id="checkoutModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content border-0 shadow">
             <div class="modal-body p-4">
                 <h6 class="text-center text-muted fw-bold mb-3">PAYMENT METHOD</h6>

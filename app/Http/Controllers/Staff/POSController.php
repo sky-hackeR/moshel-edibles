@@ -55,6 +55,9 @@ class POSController extends Controller
                 'discount_amount' => $request->discount_amount ?? 0,
                 'payable_amount'  => $request->payable_amount,
                 'payment_method'  => $request->payment_method,
+                'order_status'    => 'completed',
+                'payment_status'  => 'paid',
+                'paid_at'         => now(),
                 'notes'           => $request->notes,
             ]);
 
@@ -113,7 +116,8 @@ class POSController extends Controller
                 'sale' => [
                     'reference_no' => $sale->reference_no,
                     'total_amount' => $sale->total_amount,
-                    'staff_name'     => $sale->seller_name,
+                        'staff_name'     => $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name,
+                        'merchant_name'  => $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name,
                     'payable_amount' => $sale->payable_amount,
                     'payment_method' => $sale->payment_method,
                     'created_at' => $sale->created_at->format('d M, Y H:i'),

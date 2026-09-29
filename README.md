@@ -44,6 +44,14 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 - **[DevSquad](https://devsquad.com)**
 - **[OP.GG](https://op.gg)**
 
+## Production Deployment
+
+Use PHP 8.2 or newer. Configure a private production `.env` with the real HTTPS `APP_URL`, a generated `APP_KEY`, `APP_DEBUG=false`, production database credentials, Paystack live keys, and a verified SMTP provider. Never deploy the example credentials as-is.
+
+Run database migrations with `php artisan migrate --force`. Keep a supervised queue worker running with `php artisan queue:work database --queue=mail,default --sleep=3 --timeout=60`; the worker timeout must remain below the queue connection's `retry_after`. Run Laravel's scheduler every minute so the daily business and inventory commands execute.
+
+After deployment, clear and rebuild configuration, route, and view caches. Monitor failed jobs, application logs, Paystack webhook delivery, mail delivery, and orders in `payment_review`. Test a real low-value Paystack transaction and password-reset email in the production environment before opening the store.
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

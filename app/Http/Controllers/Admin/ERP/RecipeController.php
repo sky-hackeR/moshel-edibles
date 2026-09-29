@@ -188,7 +188,6 @@ class RecipeController extends Controller
             Log::error("Recipe Update Failed: " . $e->getMessage());
             alert()->error('Error', 'Update failed: ' . $e->getMessage())->persistent('Close');
         }
-
         return redirect()->back();
     }
 }

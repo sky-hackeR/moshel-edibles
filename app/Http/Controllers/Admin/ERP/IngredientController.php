@@ -56,6 +56,7 @@ class IngredientController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:ingredients,name',
             'base_unit_id' => 'required|exists:units,id',
+            'reorder_level' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -70,6 +71,7 @@ class IngredientController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'base_unit_id' => $request->base_unit_id,
+            'reorder_level' => $request->input('reorder_level'),
             'is_active' => $request->has('is_active'),
         ]);
 
@@ -102,6 +104,7 @@ class IngredientController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:ingredients,name,' . $ingredient->id,
             'base_unit_id' => 'required|exists:units,id',
+            'reorder_level' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -113,6 +116,7 @@ class IngredientController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'base_unit_id' => $request->base_unit_id,
+            'reorder_level' => $request->input('reorder_level'),
             'is_active' => $request->has('is_active'),
         ]);
 

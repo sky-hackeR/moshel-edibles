@@ -168,7 +168,6 @@ class ProductionController extends Controller
             return redirect()->back();
         }
     }
-
     /**
      * Notify Admins of successful production completion
      */

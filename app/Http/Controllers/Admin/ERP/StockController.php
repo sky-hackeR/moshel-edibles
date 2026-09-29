@@ -178,32 +178,13 @@ class StockController extends Controller
      */
     private function checkLowStock() {
         try {
-            // Define thresholds based on normalized units (Base Truth)
-            $thresholds = [
-                'gram' => 1000, // Warn at 1kg
-                'ml'   => 1000, // Warn at 1 Litre
-                'pcs'  => 10,   // Warn at 10 units
-            ];
-
             $lowStockItems = Inventory::with(['ingredient.baseUnit'])
                 ->get()
-                ->filter(function($inventory) use ($thresholds) {
+                ->filter(function($inventory) {
                     $ingredient = $inventory->ingredient;
                     if (!$ingredient) return false;
-                    
-                    // Priority 1: Specific reorder level in DB
-                    if ($ingredient->reorder_level > 0) {
-                        return $inventory->quantity <= $ingredient->reorder_level;
-                    }
 
-                    // Priority 2: Base Truth Global Fallback
-                    $unitName = strtolower($ingredient->baseUnit->name ?? '');
-                    if (array_key_exists($unitName, $thresholds)) {
-                        return $inventory->quantity <= $thresholds[$unitName];
-                    }
-
-                    // Priority 3: Final safety fallback
-                    return $inventory->quantity <= 0;
+                    return $inventory->quantity <= $ingredient->effective_reorder_level;
                 });
 
             if ($lowStockItems->isNotEmpty()) {
