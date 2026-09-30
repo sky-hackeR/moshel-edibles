@@ -40,9 +40,9 @@ class CartController extends Controller
         return redirect()->route('store.cart')->with('success', 'Cart updated.');
     }
 
-    public function remove(int $product, CartService $cart)
+    public function remove(Product $product, CartService $cart)
     {
-        $cart->remove($product);
+        $cart->remove($product->id);
         return redirect()->route('store.cart')->with('success', 'Product removed from your cart.');
     }
 }

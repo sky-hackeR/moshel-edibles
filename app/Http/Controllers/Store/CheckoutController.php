@@ -45,9 +45,14 @@ class CheckoutController extends Controller
         $defaultAddress = $customer->address ?: ($lastOrder?->delivery_address ?? '');
         $defaultPhone = $customer->phone ?: ($lastOrder?->delivery_phone ?? '');
 
+        $subtotal = $cart->total();
+        $shippingFee = (float) config('services.store.shipping_fee', 0);
+
         return view('store.checkout.index', [
             'items' => $cart->items(),
-            'total' => $cart->total(),
+            'subtotal' => $subtotal,
+            'shippingFee' => $shippingFee,
+            'total' => round($subtotal + $shippingFee, 2),
             'customer' => $customer,
             'defaultAddress' => $defaultAddress,
             'defaultPhone' => $defaultPhone,
@@ -64,7 +69,9 @@ class CheckoutController extends Controller
         ]);
         $items = $cart->items();
         abort_if($items->isEmpty(), 422, 'Your cart is empty.');
-        $total = (float) $items->sum('subtotal');
+        $subtotal = round((float) $items->sum('subtotal'), 2);
+        $shippingFee = (float) config('services.store.shipping_fee', 0);
+        $total = round($subtotal + $shippingFee, 2);
 
         $customer = auth('customer')->user();
         if ($customer) {
@@ -77,14 +84,15 @@ class CheckoutController extends Controller
             }
         }
 
-        $sale = DB::transaction(function () use ($items, $total, $data) {
+        $sale = DB::transaction(function () use ($items, $subtotal, $shippingFee, $total, $data) {
             $reference = 'MOS-' . strtoupper(Str::random(12));
             $sale = Sale::create([
                 'reference_no' => $reference,
                 'user_id' => auth('customer')->id(),
                 'user_type' => 'customer',
                 'customer_id' => auth('customer')->id(),
-                'total_amount' => $total,
+                'total_amount' => $subtotal,
+                'shipping_fee' => $shippingFee,
                 'discount_amount' => 0,
                 'payable_amount' => $total,
                 'payment_method' => 'Paystack',
@@ -177,6 +185,34 @@ class CheckoutController extends Controller
         return response()->json(['status' => true]);
     }
 
+    public function requery(Sale $sale, PaystackService $paystack)
+    {
+        abort_unless(
+            $sale->customer_id === auth('customer')->id() && $sale->user_type === 'customer',
+            404
+        );
+
+        abort_unless(in_array($sale->payment_status, ['pending', 'failed'], true), 409);
+
+        try {
+            $reference = $sale->paystack_reference ?: $sale->reference_no;
+            $outcome = $this->processVerifiedPayment($sale, $paystack->verify($reference));
+            $message = [
+                'paid' => 'Payment confirmed. Your order is now being processed.',
+                'review' => 'Payment received. Your order needs a review; please do not pay again.',
+                'failed' => 'Paystack confirms that this payment was not completed.',
+                'pending' => 'Paystack has not confirmed this payment yet. You can check again shortly.',
+            ][$outcome];
+
+            return redirect()->route('customer.account.orders.show', $sale->reference_no)
+                ->with($outcome === 'failed' ? 'error' : 'status', $message);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return redirect()->route('customer.account.orders.show', $sale->reference_no)
+                ->with('error', 'Paystack could not be reached. Your order status has not changed; please try again shortly.');
+        }
+    }
+
     public function success(string $reference)
     {
         $sale = Sale::with('items.product')->where('reference_no', $reference)->firstOrFail();
@@ -225,29 +261,42 @@ class CheckoutController extends Controller
                 && $gatewayAmount === (int) round((float) $lockedSale->payable_amount * 100);
             $currencyMatches = $gatewayCurrency === 'NGN';
             $paymentMatchesOrder = $referenceMatches && $amountMatches && $currencyMatches;
+            $legacyInventoryAlreadyDeducted = $lockedSale->payment_status === 'failed'
+                && $lockedSale->paid_at !== null;
+            $inventoryAlreadyDeducted = $lockedSale->inventory_deducted_at !== null
+                || $legacyInventoryAlreadyDeducted;
             $products = [];
             $stockAvailable = $paymentMatchesOrder;
 
-            foreach ($lockedSale->items as $item) {
-                $product = $item->product()->lockForUpdate()->first();
-                if (!$product || !$product->is_active || $product->stock_on_hand < $item->quantity) {
-                    $stockAvailable = false;
-                    break;
+            if ($stockAvailable && !$inventoryAlreadyDeducted) {
+                foreach ($lockedSale->items as $item) {
+                    $product = $item->product()->lockForUpdate()->first();
+                    if (!$product || !$product->is_active || $product->stock_on_hand < $item->quantity) {
+                        $stockAvailable = false;
+                        break;
+                    }
+                    $products[] = [$product, $item->quantity];
                 }
-                $products[] = [$product, $item->quantity];
             }
 
-            if ($stockAvailable) {
+            if ($stockAvailable && !$inventoryAlreadyDeducted) {
                 foreach ($products as [$product, $quantity]) {
                     $product->decrement('stock_on_hand', $quantity);
                 }
             }
 
             $requiresReview = !$paymentMatchesOrder || !$stockAvailable;
+            $inventoryDeductedAt = $lockedSale->inventory_deducted_at;
+            if ($paymentMatchesOrder && $stockAvailable && !$inventoryDeductedAt) {
+                $inventoryDeductedAt = $legacyInventoryAlreadyDeducted
+                    ? $lockedSale->paid_at
+                    : now();
+            }
             $lockedSale->update([
                 'payment_status' => $paymentMatchesOrder ? 'paid' : 'review',
                 'order_status' => $requiresReview ? 'payment_review' : 'processing',
-                'paid_at' => now(),
+                'paid_at' => $lockedSale->paid_at ?: now(),
+                'inventory_deducted_at' => $inventoryDeductedAt,
                 'paystack_reference' => $referenceMatches ? $verifiedReference : $lockedSale->paystack_reference,
                 'paystack_amount' => $gatewayAmount === false ? null : $gatewayAmount,
                 'paystack_currency' => $gatewayCurrency ?: null,
@@ -280,7 +329,7 @@ class CheckoutController extends Controller
     {
         $wasMarkedFailed = DB::transaction(function () use ($sale) {
             $lockedSale = Sale::lockForUpdate()->findOrFail($sale->id);
-            if (in_array($lockedSale->payment_status, ['paid', 'review'], true)) {
+            if (in_array($lockedSale->payment_status, ['paid', 'review', 'failed'], true)) {
                 return false;
             }
 

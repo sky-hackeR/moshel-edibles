@@ -6,6 +6,7 @@ use App\Models\Customer;
 use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
@@ -67,7 +68,29 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            'status' => 'inactive',
         ]);
+    }
+
+    public function register(Request $request)
+    {
+        $validator = $this->validator($request->all());
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('auth_modal', 'register');
+        }
+
+        $data = $validator->validated();
+        $customer = $this->create($data);
+        $customer->sendEmailVerificationNotification();
+
+        return redirect()->back()
+            ->withInput(['email' => $customer->email])
+            ->with('auth_modal', 'login')
+            ->with('verification_sent', true)
+            ->with('verification_email', $customer->email);
     }
 
     /**

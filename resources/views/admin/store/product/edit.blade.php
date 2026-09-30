@@ -284,7 +284,7 @@
                                                 @if(!$image->is_primary)
 
                                                     <form
-                                                        action="{{ url('/admin/store/products/' . $product->slug . '/images/' . $image->id . '/primary') }}"
+                                                        action="{{ url('/admin/store/products/' . $product->slug . '/images/' . $image->uuid . '/primary') }}"
                                                         method="POST"
                                                     >
 
@@ -312,7 +312,7 @@
 
 
                                                 <form
-                                                    action="{{ url('/admin/store/products/' . $product->slug . '/images/' . $image->id . '/delete') }}"
+                                                    action="{{ url('/admin/store/products/' . $product->slug . '/images/' . $image->uuid . '/delete') }}"
                                                     method="POST"
                                                     onsubmit="return confirm('Are you sure you want to delete this image?');"
                                                 >

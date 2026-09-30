@@ -45,6 +45,10 @@
                 @endforeach
 
                 <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top">
+                    <strong style="font-size: 14px;">Shipping:</strong>
+                    <strong style="font-size: 14px;">₦{{ number_format($sale->shipping_fee, 2) }}</strong>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top">
                     <strong style="font-size: 15px; color: var(--primary-color);">Total Paid:</strong>
                     <strong style="font-size: 16px; color: var(--accent-color);">₦{{ number_format($sale->payable_amount, 2) }}</strong>
                 </div>

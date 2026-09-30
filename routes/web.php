@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Route;
     Route::get('/cart', [App\Http\Controllers\Store\CartController::class, 'index'])->name('store.cart');
     Route::post('/cart', [App\Http\Controllers\Store\CartController::class, 'add'])->name('store.cart.add');
     Route::patch('/cart', [App\Http\Controllers\Store\CartController::class, 'update'])->name('store.cart.update');
-    Route::delete('/cart/{product}', [App\Http\Controllers\Store\CartController::class, 'remove'])->name('store.cart.remove');
+    Route::delete('/cart/{product:slug}', [App\Http\Controllers\Store\CartController::class, 'remove'])->name('store.cart.remove');
     Route::get('/paystack/callback', [App\Http\Controllers\Store\CheckoutController::class, 'callback'])->name('store.checkout.callback');
     Route::post('/paystack/webhook', [App\Http\Controllers\Store\CheckoutController::class, 'webhook'])->name('store.checkout.webhook');
     Route::get('/checkout', [App\Http\Controllers\Store\CheckoutController::class, 'index'])->name('store.checkout');
@@ -55,6 +55,8 @@ use Illuminate\Support\Facades\Route;
     Route::post('/password/reset', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class, 'reset'])->name('customer.password.reset');
     Route::get('/password/reset', [App\Http\Controllers\Customer\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('customer.password.request');
     Route::get('/password/reset/{token}', [App\Http\Controllers\Customer\Auth\ResetPasswordController::class, 'showResetForm'])->name('customer.password.reset.form');
+    Route::post('/email/verification-notification', [App\Http\Controllers\Customer\Auth\VerificationController::class, 'resend'])->middleware('throttle:6,1')->name('customer.verification.resend');
+    Route::get('/email/verify/{customer}/{hash}', [App\Http\Controllers\Customer\Auth\VerificationController::class, 'verify'])->middleware(['signed', 'throttle:6,1'])->name('customer.verification.verify');
 
 
     // =====================================================
@@ -64,6 +66,8 @@ use Illuminate\Support\Facades\Route;
     Route::middleware('auth:customer')->group(function () {
 
         Route::get('/account', [App\Http\Controllers\Customer\AccountController::class,'index'])->name('customer.account');
+        Route::get('/account/orders/{sale:reference_no}', [App\Http\Controllers\Customer\AccountController::class, 'showOrder'])->name('customer.account.orders.show');
+        Route::post('/account/orders/{sale:reference_no}/requery', [App\Http\Controllers\Store\CheckoutController::class, 'requery'])->name('customer.account.orders.requery');
         Route::get('/account/profile', [App\Http\Controllers\Customer\AccountController::class,'profile'])->name('customer.account.profile');
         Route::put('/account/profile', [App\Http\Controllers\Customer\AccountController::class,'updateProfile'])->name('customer.account.profile.update');
         Route::get('/account/addresses', [App\Http\Controllers\Customer\AccountController::class,'addresses'])->name('customer.account.addresses');
@@ -133,7 +137,7 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/processSale', [App\Http\Controllers\Admin\ERP\POSController::class, 'processSale'])->name('processSale')->middleware(['auth:admin']);
   Route::get('/salesHistory', [App\Http\Controllers\Admin\ERP\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:admin']);
   Route::post('/sales/void', [App\Http\Controllers\Admin\ERP\POSController::class, 'voidSale'])->name('sales.void')->middleware(['auth:admin']);
-  Route::get('/sales/details/{id}', [App\Http\Controllers\Admin\ERP\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:admin']);
+  Route::get('/sales/details/{reference}', [App\Http\Controllers\Admin\ERP\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:admin']);
   
   Route::get('/adminList', [App\Http\Controllers\Admin\ERP\AdminController::class, 'adminList'])->name('admins')->middleware(['auth:admin']);
   Route::post('/newAdmin', [App\Http\Controllers\Admin\ERP\AdminController::class, 'newAdmin'])->name('newAdmin')->middleware(['auth:admin']);
@@ -144,6 +148,7 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/deleteStaff', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteStaff'])->name('deleteStaff')->middleware(['auth:admin']);
 
   Route::get('/customers', [App\Http\Controllers\Admin\ERP\AdminController::class, 'customers'])->name('customers')->middleware(['auth:admin']);
+  Route::get('/customers/{customer}/orders', [App\Http\Controllers\Admin\ERP\AdminController::class, 'customerOrders'])->name('customers.orders')->middleware(['auth:admin']);
   Route::post('/deleteCustomer', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteCustomer'])->name('deleteCustomer')->middleware(['auth:admin']);
 
   Route::get('/openingStock', [App\Http\Controllers\Admin\ERP\OpeningStockController::class, 'openingStock'])->name('openingStock')->middleware(['auth:admin']);
@@ -156,8 +161,8 @@ Route::group(['prefix' => 'admin'], function () {
   Route::put('/store/products/{product:slug}/update', [App\Http\Controllers\Admin\Store\StoreController::class,'updateProduct'])->name('store.product.update')->middleware(['auth:admin']);
   Route::patch('/store/products/{product:slug}/status', [App\Http\Controllers\Admin\Store\StoreController::class,'updateStatus'])->name('store.product.status')->middleware(['auth:admin']);
   Route::post('/store/products/{product:slug}/images/add', [App\Http\Controllers\Admin\Store\StoreController::class,'addImage'])->name('store.product.image.add')->middleware(['auth:admin']);
-  Route::patch('/store/products/{product:slug}/images/{image}/primary', [App\Http\Controllers\Admin\Store\StoreController::class,'setPrimaryImage'])->name('store.product.image.primary')->middleware(['auth:admin']);
-  Route::delete('/store/products/{product:slug}/images/{image}/delete', [App\Http\Controllers\Admin\Store\StoreController::class,'deleteImage'])->name('store.product.image.delete')->middleware(['auth:admin']);
+  Route::patch('/store/products/{product:slug}/images/{image:uuid}/primary', [App\Http\Controllers\Admin\Store\StoreController::class,'setPrimaryImage'])->name('store.product.image.primary')->middleware(['auth:admin']);
+  Route::delete('/store/products/{product:slug}/images/{image:uuid}/delete', [App\Http\Controllers\Admin\Store\StoreController::class,'deleteImage'])->name('store.product.image.delete')->middleware(['auth:admin']);
 });
 
 Route::group(['prefix' => 'staff'], function () {
@@ -189,5 +194,5 @@ Route::group(['prefix' => 'staff'], function () {
   Route::get('/pos', [App\Http\Controllers\Staff\POSController::class, 'pos'])->name('pos')->middleware(['auth:staff']);
   Route::post('/processSale', [App\Http\Controllers\Staff\POSController::class, 'processSale'])->name('processSale')->middleware(['auth:staff']);
   Route::get('/salesHistory', [App\Http\Controllers\Staff\POSController::class, 'salesHistory'])->name('salesHistory')->middleware(['auth:staff']);
-  Route::get('/sales/details/{id}', [App\Http\Controllers\Staff\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:staff']);
+  Route::get('/sales/details/{reference}', [App\Http\Controllers\Staff\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:staff']);
 });

@@ -110,12 +110,12 @@ class POSController extends Controller
 
     /**
      * Fetch Sale Details JSON for Modal Rendering
-     * Route: GET /admin/sales/details/{id}
+     * Route: GET /admin/sales/details/{reference}
      */
-    public function getSaleDetails($id) 
+    public function getSaleDetails(string $reference)
     {
         try {
-            $sale = \App\Models\Sale::withTrashed()->findOrFail($id);
+            $sale = \App\Models\Sale::withTrashed()->where('reference_no', $reference)->firstOrFail();
 
             // Manual dynamic fallback check to map string values to staff properties securely
             $staffName = 'Unknown Operator';
@@ -142,6 +142,7 @@ class POSController extends Controller
                     'staff_name'      => $staffName,
                     'merchant_name'   => $staffName,
                     'total_amount'    => $sale->total_amount,
+                    'shipping_fee'    => $sale->shipping_fee,
                     'discount_amount' => $sale->discount_amount,
                     'payable_amount'  => $sale->payable_amount,
                     'payment_method'  => $sale->payment_method,

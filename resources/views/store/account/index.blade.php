@@ -55,19 +55,13 @@
 
             @forelse($orders as $order)
                 <article class="store-order-row">
-                    <div>
+                    <div class="store-order-summary">
                         <div class="d-flex align-items-center gap-2">
                             <strong style="font-size: 15px; color: var(--primary-color);">Order #{{ $order->reference_no }}</strong>
-                            @if($order->paystack_reference && $order->paystack_reference !== $order->reference_no)
-                                <small class="text-muted" style="font-size: 11px;">(Ref: {{ $order->paystack_reference }})</small>
-                            @endif
                         </div>
                         <span>
                             <i class="fa-regular fa-calendar me-1"></i> {{ $order->created_at->format('d M, Y \a\t h:i A') }} · 
                             <strong>{{ $order->items->sum('quantity') }} items</strong>
-                            @if($order->delivery_address)
-                                · <i class="fa-solid fa-location-dot ms-1 me-1 text-muted"></i> {{ \Illuminate\Support\Str::limit($order->delivery_address, 40) }}
-                            @endif
                         </span>
                     </div>
                     <div class="store-order-status">
@@ -75,7 +69,21 @@
                             <i class="fa-solid fa-circle-dot me-1" style="font-size: 8px;"></i>
                             {{ ucfirst(str_replace('_', ' ', $order->payment_status)) }}
                         </span>
+                        <small class="text-muted mt-1">{{ ucfirst(str_replace('_', ' ', $order->order_status)) }}</small>
                         <strong class="mt-1" style="font-size: 16px; color: var(--accent-color);">₦{{ number_format($order->payable_amount, 2) }}</strong>
+                    </div>
+                    <div class="store-order-actions">
+                        <a href="{{ route('customer.account.orders.show', $order->reference_no) }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fa-regular fa-file-lines me-1"></i> Details
+                        </a>
+                        @if(in_array($order->payment_status, ['pending', 'failed'], true))
+                            <form method="POST" action="{{ route('customer.account.orders.requery', $order->reference_no) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-rotate me-1"></i> Check payment
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </article>
             @empty

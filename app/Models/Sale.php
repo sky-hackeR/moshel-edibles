@@ -15,6 +15,7 @@ class Sale extends Model
         'user_id',
         'user_type',
         'total_amount',
+        'shipping_fee',
         'discount_amount',
         'payable_amount',
         'payment_method',
@@ -26,12 +27,14 @@ class Sale extends Model
         'paystack_amount',
         'paystack_currency',
         'paid_at',
+        'inventory_deducted_at',
         'delivery_address',
         'delivery_phone',
     ];
 
     protected $casts = [
         'paid_at' => 'datetime',
+        'inventory_deducted_at' => 'datetime',
         'paystack_amount' => 'integer',
     ];
 

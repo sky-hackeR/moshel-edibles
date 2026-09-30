@@ -51,7 +51,7 @@
                     <a href="{{ url('/admin/home') }}" class="logo logo-dark">
                         <span class="logo-sm">
                             <img src="{{ asset($pageGlobalData->setting?->favicon) }}" alt="Favicon" 
-                                style="height: 30px; width: auto; object-fit: contain; vertical-align: middle;">
+                                style="height: 30px; width: 44px; object-fit: contain; vertical-align: middle;">
                         </span>
                         <span class="logo-lg">
                             <img src="{{ asset($pageGlobalData->setting?->logo) }}" alt="Logo" 
@@ -62,7 +62,7 @@
                     <a href="{{ url('/admin/home') }}" class="logo logo-light">
                         <span class="logo-sm">
                             <img src="{{ asset($pageGlobalData->setting?->favicon) }}" alt="Favicon" 
-                                style="height: 30px; width: auto; object-fit: contain; vertical-align: middle;">
+                                style="height: 30px; width: 10px; object-fit: contain; vertical-align: middle;">
                         </span>
                         <span class="logo-lg">
                             <img src="{{ asset($pageGlobalData->setting?->logo) }}" alt="Logo" 

@@ -48,6 +48,8 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 
 Use PHP 8.2 or newer. Configure a private production `.env` with the real HTTPS `APP_URL`, a generated `APP_KEY`, `APP_DEBUG=false`, production database credentials, Paystack live keys, and a verified SMTP provider. Never deploy the example credentials as-is.
 
+Set `STORE_SHIPPING_FEE` to the flat NGN delivery charge before opening checkout. It currently defaults to `0` (free shipping); this is one flat rate and does not vary by city or delivery zone. Existing orders keep the fee recorded when they were placed.
+
 Run database migrations with `php artisan migrate --force`. Keep a supervised queue worker running with `php artisan queue:work database --queue=mail,default --sleep=3 --timeout=60`; the worker timeout must remain below the queue connection's `retry_after`. Run Laravel's scheduler every minute so the daily business and inventory commands execute.
 
 After deployment, clear and rebuild configuration, route, and view caches. Monitor failed jobs, application logs, Paystack webhook delivery, mail delivery, and orders in `payment_review`. Test a real low-value Paystack transaction and password-reset email in the production environment before opening the store.

@@ -11,8 +11,23 @@ class AccountController extends Controller
 {
     public function index()
     {
-        $orders = Sale::where('customer_id', auth('customer')->id())->with('items.product')->latest()->get();
+        $orders = Sale::where('customer_id', auth('customer')->id())
+            ->with('items.product.storeProduct')
+            ->latest()
+            ->get();
         return view('store.account.index', compact('orders'));
+    }
+
+    public function showOrder(Sale $sale)
+    {
+        abort_unless(
+            $sale->customer_id === auth('customer')->id() && $sale->user_type === 'customer',
+            404
+        );
+
+        $order = $sale->load('items.product.storeProduct');
+
+        return view('store.account.order', compact('order'));
     }
 
     public function profile()
@@ -45,6 +60,8 @@ class AccountController extends Controller
 
         $data = $request->validate($rules);
 
+        $emailChanged = $customer->email !== $data['email'];
+
         $customer->name = $data['name'];
         $customer->email = $data['email'];
         $customer->phone = !empty($data['phone']) ? $data['phone'] : null;
@@ -54,7 +71,24 @@ class AccountController extends Controller
             $customer->password = Hash::make($data['password']);
         }
 
+        if ($emailChanged) {
+            $customer->email_verified_at = null;
+            $customer->status = 'inactive';
+        }
+
         $customer->save();
+
+        if ($emailChanged) {
+            $customer->sendEmailVerificationNotification();
+            auth('customer')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('store.welcome')
+                ->with('auth_modal', 'login')
+                ->with('verification_sent', true)
+                ->with('verification_email', $customer->email);
+        }
 
         return redirect()->route('customer.account.profile')->with('success', 'Your profile details have been saved successfully.');
     }

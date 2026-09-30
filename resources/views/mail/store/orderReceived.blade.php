@@ -6,6 +6,7 @@
 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
     <tr><td style="padding: 8px 0; font-weight: 700;">Reference</td><td style="padding: 8px 0; text-align: right;">{{ $sale->reference_no }}</td></tr>
     <tr><td style="padding: 8px 0; font-weight: 700;">Customer</td><td style="padding: 8px 0; text-align: right;">{{ optional($sale->customer)->name ?: 'Customer account unavailable' }} ({{ optional($sale->customer)->email ?: 'no email on record' }})</td></tr>
+    <tr><td style="padding: 8px 0; font-weight: 700;">Shipping</td><td style="padding: 8px 0; text-align: right;">NGN {{ number_format($sale->shipping_fee, 2) }}</td></tr>
     <tr><td style="padding: 8px 0; font-weight: 700;">Total</td><td style="padding: 8px 0; text-align: right;">NGN {{ number_format($sale->payable_amount, 2) }}</td></tr>
     <tr><td style="padding: 8px 0; font-weight: 700;">Order status</td><td style="padding: 8px 0; text-align: right;">{{ ucfirst(str_replace('_', ' ', $sale->order_status)) }}</td></tr>
     @if($sale->paystack_amount !== null)

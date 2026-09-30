@@ -105,9 +105,11 @@ class POSController extends Controller
         return view('staff.salesHistory', ['sales' => $sales]);
     }
 
-    public function getSaleDetails($id) {
+    public function getSaleDetails(string $reference) {
         try {
-            $sale = Sale::with(['items.product', 'staff', 'admin'])->find($id);
+            $sale = Sale::with(['items.product', 'staff', 'admin'])
+                ->where('reference_no', $reference)
+                ->first();
         
             if (!$sale) return response()->json(['success' => false, 'message' => 'Not found'], 404);
 

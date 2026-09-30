@@ -56,7 +56,7 @@
                                 @endif
                             </td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails({{ $sale->id }})">
+                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails(@json($sale->reference_no))">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
                                 @if($sale->user_type !== 'customer')
@@ -124,7 +124,7 @@
 </div>
 
 <script>
-    async function viewSaleDetails(saleId) {
+    async function viewSaleDetails(saleReference) {
         const modal = new bootstrap.Modal(document.getElementById('saleDetailsModal'));
         const content = document.getElementById('saleDetailsContent');
         
@@ -132,7 +132,7 @@
         modal.show();
 
         try {
-            const response = await fetch("{{ url('admin/sales/details') }}/" + saleId);
+            const response = await fetch("{{ url('admin/sales/details') }}/" + encodeURIComponent(saleReference));
             const data = await response.json();
 
             if (data.success) {
@@ -166,6 +166,7 @@
                         </table>
                         <div class="border-top pt-3 mt-2">
                             <div class="d-flex justify-content-between small"><span>Subtotal:</span><span>₦${parseFloat(data.sale.total_amount).toLocaleString()}</span></div>
+                            <div class="d-flex justify-content-between small"><span>Shipping:</span><span>₦${parseFloat(data.sale.shipping_fee || 0).toLocaleString()}</span></div>
                             <div class="d-flex justify-content-between small"><span>Discount:</span><span class="text-danger">-₦${parseFloat(data.sale.discount_amount).toLocaleString()}</span></div>
                             <div class="d-flex justify-content-between fw-bold h5 mt-2"><span>Total:</span><span class="text-primary">₦${parseFloat(data.sale.payable_amount).toLocaleString()}</span></div>
                         </div>

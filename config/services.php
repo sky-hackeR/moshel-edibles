@@ -37,4 +37,8 @@ return [
         'admin_email' => env('ADMIN_ORDER_EMAIL'),
     ],
 
+    'store' => [
+        'shipping_fee' => max(0, (float) env('STORE_SHIPPING_FEE', 0)),
+    ],
+
 ];

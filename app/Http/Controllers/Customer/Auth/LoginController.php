@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Customer\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Customer;
 use AlAminFirdows\LaravelMultiAuth\Traits\LogsoutGuard;
 
 class LoginController extends Controller
@@ -59,5 +62,40 @@ class LoginController extends Controller
     protected function guard()
     {
         return Auth::guard('customer');
+    }
+
+    protected function credentials(Request $request)
+    {
+        return $request->only($this->username(), 'password') + ['status' => 'active'];
+    }
+
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        $email = $request->input($this->username());
+        $customer = Customer::where($this->username(), $email)->first();
+
+        if (!$customer) {
+            return redirect()->back()
+                ->withInput($request->only($this->username()))
+                ->with('auth_modal', 'login')
+                ->with('customer_not_found', true)
+                ->withErrors([$this->username() => 'No customer account was found for this email address.']);
+        }
+
+        if (
+            Hash::check($request->input('password', ''), $customer->password) &&
+            ($customer->status !== 'active' || !$customer->email_verified_at)
+        ) {
+            return redirect()->back()
+                ->withInput($request->only($this->username()))
+                ->with('auth_modal', 'login')
+                ->with('verification_pending', $customer->email)
+                ->withErrors([$this->username() => 'Your password is correct, but this account needs email verification before you can sign in.']);
+        }
+
+        return redirect()->back()
+            ->withInput($request->only($this->username()))
+            ->with('auth_modal', 'login')
+            ->withErrors([$this->username() => trans('auth.failed')]);
     }
 }

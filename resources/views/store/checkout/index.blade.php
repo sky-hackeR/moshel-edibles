@@ -141,8 +141,16 @@
                         @endforeach
                     </div>
 
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Items subtotal</span>
+                        <strong>₦{{ number_format($subtotal, 2) }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Flat shipping</span>
+                        <strong>{{ $shippingFee > 0 ? '₦' . number_format($shippingFee, 2) : 'Free' }}</strong>
+                    </div>
                     <div class="store-summary-total d-flex justify-content-between align-items-center py-3 my-2 border-bottom">
-                        <span style="font-size: 16px; font-weight: 600;">Grand Total</span>
+                        <span style="font-size: 16px; font-weight: 600;">Total</span>
                         <strong style="font-size: 20px; color: var(--accent-color);">₦{{ number_format($total, 2) }}</strong>
                     </div>
 

@@ -1533,6 +1533,10 @@
     margin-bottom: 14px;
     padding: 18px 22px;
 }
+.store-order-summary {
+    min-width: 0;
+    flex: 1 1 280px;
+}
 /* .store-order-row div {
     display: flex;
     flex-direction: column;
@@ -1543,7 +1547,20 @@
     font-size: 13px;
 }
 .store-order-status {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     align-items: flex-end !important;
+}
+.store-order-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.store-order-actions form {
+    margin: 0;
 }
 .store-status {
     padding: 5px 12px;
@@ -1560,6 +1577,10 @@
 .store-status-pending_payment {
     background: #fff8e1;
     color: #f57f17 !important;
+}
+.store-status-review {
+    background: #fff3e0;
+    color: #e65100 !important;
 }
 .store-status-failed,
 .store-status-payment_failed {
@@ -1602,6 +1623,18 @@
     .store-account-heading {
         align-items: flex-start;
         flex-direction: column;
+    }
+    .store-order-row {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 16px;
+    }
+    .store-order-status {
+        align-items: flex-start !important;
+    }
+    .store-order-actions {
+        width: 100%;
+        justify-content: flex-start;
     }
     .store-account-nav {
         overflow-x: auto;

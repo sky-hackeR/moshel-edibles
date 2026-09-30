@@ -185,7 +185,18 @@
                     </tr>
                     <tr>
                         <td align="center" style="padding: 24px 24px 20px; background-color: #ffffff;">
-                            <img class="email-logo" src="{{ asset('uploads/siteInfo/logo.png') }}" width="230" alt="{{ config('app.name', 'Moshel Edibles') }}" style="display: block; width: 230px; max-width: 100%; height: auto;">
+                            @php
+                                $logoPath = data_get($pageGlobalData ?? null, 'setting.logo');
+                                $logoPath = $logoPath ? ltrim(str_replace('\\', '/', $logoPath), '/') : null;
+                                $logoPath = $logoPath ? preg_replace('#^public/#i', '', $logoPath) : null;
+                                $logoFile = $logoPath ? public_path($logoPath) : null;
+                                $logoSource = $logoFile && is_file($logoFile) && isset($message) && method_exists($message, 'embed')
+                                    ? $message->embed($logoFile)
+                                    : ($logoPath ? asset($logoPath) : null);
+                            @endphp
+                            @if($logoSource)
+                                <img src="{{ $logoSource }}" width="230" alt="{{ config('app.name', 'Moshel Edibles') }}" style="display: block; width: 230px; max-width: 100%; height: auto;">
+                            @endif
                             <p style="margin: 14px 0 0; color: #8b748e; font-size: 10px; font-weight: 700; letter-spacing: 1px; line-height: 1.4; text-transform: uppercase;">Business communication</p>
                         </td>
                     </tr>

@@ -160,8 +160,20 @@
             <div class="modal fade store-auth-modal" id="customerLoginModal" tabindex="-1" aria-labelledby="customerLoginModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><div><span class="store-summary-kicker">Welcome back</span><h2 class="modal-title" id="customerLoginModalLabel">Sign in to Moshel</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body">
                     @if(session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
+                    @if(session('verification_pending'))
+                        <div class="alert alert-warning">Your account exists and your password is correct, but the email address has not been verified. Send a verification email to activate the account.</div>
+                        <form method="POST" action="{{ route('customer.verification.resend') }}" class="mb-3">@csrf<input type="hidden" name="email" value="{{ session('verification_pending') }}"><button type="submit" class="btn-default w-100">Send verification email</button></form>
+                    @elseif(session('verification_sent'))
+                        <div class="alert alert-success">A verification link has been sent. Check your email to activate your account.</div>
+                        <form method="POST" action="{{ route('customer.verification.resend') }}" class="mb-3">@csrf<input type="hidden" name="email" value="{{ session('verification_email') }}"><button type="submit" class="btn btn-link w-100">Resend verification email</button></form>
+                    @elseif(session('customer_not_found'))
+                        <div class="alert alert-info">No customer account was found for this email. You can create one now.</div>
+                        <p><a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerRegisterModal" data-bs-dismiss="modal">Create an account</a></p>
+                    @elseif($errors->has('email'))
+                        <div class="alert alert-danger">{{ $errors->first('email') }}</div>
+                    @endif
                     <form method="POST" action="{{ route('customer.login.submit') }}">@csrf
-                        <div class="store-form-field"><label for="modal-login-email">Email address</label><input id="modal-login-email" type="email" name="email" value="{{ old('email') }}" required></div>
+                        <div class="store-form-field"><label for="modal-login-email">Email address</label><input id="modal-login-email" type="email" name="email" value="{{ old('email', session('verification_email')) }}" required></div>
                         <div class="store-form-field"><label for="modal-login-password">Password</label><input id="modal-login-password" type="password" name="password" required></div>
                         <div class="d-flex justify-content-between align-items-center mb-4"><label class="store-check"><input type="checkbox" name="remember"> Remember me</label><a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerPasswordModal" data-bs-dismiss="modal">Forgot password?</a></div>
                         <button type="submit" class="btn-default w-100">Sign in</button>
@@ -339,12 +351,13 @@
             });
         </script>
 
-        @if(session('auth_modal') === 'login')
+        @if(in_array(session('auth_modal'), ['login', 'register'], true))
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
-                    var loginModal = document.getElementById('customerLoginModal');
-                    if (loginModal && window.bootstrap) {
-                        bootstrap.Modal.getOrCreateInstance(loginModal).show();
+                    var authModalId = @json(session('auth_modal') === 'register' ? 'customerRegisterModal' : 'customerLoginModal');
+                    var authModal = document.getElementById(authModalId);
+                    if (authModal && window.bootstrap) {
+                        bootstrap.Modal.getOrCreateInstance(authModal).show();
                     }
                 });
             </script>

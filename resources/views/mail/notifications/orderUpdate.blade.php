@@ -29,6 +29,10 @@
                 <td>{{ $sale->reference_no }}</td>
             </tr>
             <tr>
+                <th scope="row">Shipping</th>
+                <td>NGN {{ number_format($sale->shipping_fee, 2) }}</td>
+            </tr>
+            <tr>
                 <th scope="row">Order total</th>
                 <td>NGN {{ number_format($sale->payable_amount, 2) }}</td>
             </tr>
