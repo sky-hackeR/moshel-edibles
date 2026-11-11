@@ -47,7 +47,7 @@
                                 <span class="badge bg-soft-{{ $color }} text-{{ $color }}">{{ $sale->payment_method }}</span>
                             </td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails(@json($sale->reference_no))">
+                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails('{{ addslashes($sale->reference_no) }}')">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
                             </td>

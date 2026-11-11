@@ -56,7 +56,7 @@
                                 @endif
                             </td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails(@json($sale->reference_no))">
+                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails('{{ addslashes($sale->reference_no) }}')">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
                                 @if($sale->user_type !== 'customer')
@@ -225,4 +225,5 @@
         printWindow.document.close();
     }
 </script>
+
 @endsection

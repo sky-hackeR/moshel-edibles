@@ -46,9 +46,54 @@ class AdminController extends Controller
 {
     public function index(){
         $today = Carbon::today();
+        $weekStart = $today->copy()->subDays(6);
+        $previousWeekStart = $weekStart->copy()->subDays(7);
+        $previousWeekEnd = $weekStart->copy()->subSecond();
+        $endOfToday = $today->copy()->endOfDay();
+
+        $revenueByDate = Sale::where('payment_status', 'paid')
+            ->whereBetween('created_at', [$previousWeekStart, $endOfToday])
+            ->selectRaw('DATE(created_at) as sale_date, SUM(payable_amount) as revenue')
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->pluck('revenue', 'sale_date');
+
+        $chartDays = [];
+        $chartRevenues = [];
+        $previousWeekRevenues = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = $weekStart->copy()->addDays($i);
+            $previousDate = $date->copy()->subDays(7);
+            $chartDays[] = $date->format('D, d M');
+            $chartRevenues[] = (float) $revenueByDate->get($date->toDateString(), 0);
+            $previousWeekRevenues[] = (float) $revenueByDate->get($previousDate->toDateString(), 0);
+        }
+
+        $todayRevenue = end($chartRevenues) ?: 0;
+        $yesterdayRevenue = (float) $revenueByDate->get($today->copy()->subDay()->toDateString(), 0);
+        $weeklyRevenue = array_sum($chartRevenues);
+        $previousWeeklyRevenue = array_sum($previousWeekRevenues);
+        $weeklyProductionCost = Production::whereBetween('produced_at', [$weekStart, $endOfToday])->sum('total_cost');
+        $previousWeeklyProductionCost = Production::whereBetween('produced_at', [$previousWeekStart, $previousWeekEnd])->sum('total_cost');
+        $weeklyOperatingBalance = $weeklyRevenue - $weeklyProductionCost;
+        $previousWeeklyOperatingBalance = $previousWeeklyRevenue - $previousWeeklyProductionCost;
+        $weeklyOperatingChange = $weeklyOperatingBalance - $previousWeeklyOperatingBalance;
+        $weeklyRevenueChange = $previousWeeklyRevenue > 0
+            ? (($weeklyRevenue - $previousWeeklyRevenue) / $previousWeeklyRevenue) * 100
+            : null;
+        $weeklyOrdersCount = Sale::whereBetween('created_at', [$weekStart, $endOfToday])->count();
+        $weeklyPaidOrdersCount = Sale::whereBetween('created_at', [$weekStart, $endOfToday])
+            ->where('payment_status', 'paid')
+            ->count();
+        $paymentSuccessRate = $weeklyOrdersCount > 0
+            ? ($weeklyPaidOrdersCount / $weeklyOrdersCount) * 100
+            : 0;
+        $averagePaidOrderValue = $weeklyPaidOrdersCount > 0
+            ? $weeklyRevenue / $weeklyPaidOrdersCount
+            : 0;
+        $lowStockCount = Product::where('stock_on_hand', '<=', 10)->where('is_active', true)->count();
+        $criticalStockCount = Product::where('stock_on_hand', '<=', 3)->where('is_active', true)->count();
         
         // 1. Core Stats
-        $todayRevenue = Sale::whereDate('created_at', $today)->sum('payable_amount');
         $todayPurchases = StockInItem::whereDate('created_at', $today)->sum('total_price');
         $todayProductionCost = Production::whereDate('produced_at', $today)->sum('total_cost');
         
@@ -56,17 +101,11 @@ class AdminController extends Controller
         $todayProfit = $todayRevenue - $todaySpent;
         $todaySalesCount = Sale::whereDate('created_at', $today)->count();
 
-        // 2. Charts Data (Last 7 Days)
-        $chartDays = [];
-        $chartRevenues = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $chartDays[] = $date->format('D, d M');
-            $chartRevenues[] = (float) Sale::whereDate('created_at', $date->toDateString())->sum('payable_amount');
-        }
-
         // 3. Tables Data
         $topProducts = SaleItem::with('product')
+            ->whereHas('sale', function ($query) {
+                $query->where('payment_status', 'paid');
+            })
             ->select('product_id', DB::raw('SUM(quantity) as total_qty'), DB::raw('SUM(quantity * unit_price) as total_revenue'))
             ->groupBy('product_id')
             ->orderBy('total_qty', 'desc')
@@ -91,8 +130,24 @@ class AdminController extends Controller
             'todaySpent'          => $todaySpent,
             'todayProfit'         => $todayProfit,
             'todaySalesCount'     => $todaySalesCount,
+            'yesterdayRevenue'    => $yesterdayRevenue,
+            'weeklyRevenue'       => $weeklyRevenue,
+            'previousWeeklyRevenue' => $previousWeeklyRevenue,
+            'weeklyProductionCost' => $weeklyProductionCost,
+            'previousWeeklyProductionCost' => $previousWeeklyProductionCost,
+            'weeklyOperatingBalance' => $weeklyOperatingBalance,
+            'previousWeeklyOperatingBalance' => $previousWeeklyOperatingBalance,
+            'weeklyOperatingChange' => $weeklyOperatingChange,
+            'weeklyRevenueChange' => $weeklyRevenueChange,
+            'weeklyOrdersCount'   => $weeklyOrdersCount,
+            'weeklyPaidOrdersCount' => $weeklyPaidOrdersCount,
+            'paymentSuccessRate'  => $paymentSuccessRate,
+            'averagePaidOrderValue' => $averagePaidOrderValue,
+            'lowStockCount'       => $lowStockCount,
+            'criticalStockCount'  => $criticalStockCount,
             'chartDays'           => $chartDays,
             'chartRevenues'       => $chartRevenues,
+            'previousWeekRevenues' => $previousWeekRevenues,
             'topProducts'         => $topProducts,
             'lowStockProducts'    => $lowStockProducts,
             'paymentLabels'       => $paymentData->pluck('payment_method')->toArray(),
