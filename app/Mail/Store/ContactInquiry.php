@@ -6,6 +6,8 @@ use App\Mail\QueuedMailable;
 
 class ContactInquiry extends QueuedMailable
 {
+    public $mailer = 'info';
+
     public $payload;
 
     public function __construct(array $payload)

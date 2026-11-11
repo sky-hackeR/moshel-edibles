@@ -151,6 +151,11 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/customers/{customer}/orders', [App\Http\Controllers\Admin\ERP\AdminController::class, 'customerOrders'])->name('customers.orders')->middleware(['auth:admin']);
   Route::post('/deleteCustomer', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteCustomer'])->name('deleteCustomer')->middleware(['auth:admin']);
 
+  // Audit Log & Activity Sessions
+  Route::get('/audit-logs', [App\Http\Controllers\Admin\ERP\AuditLogController::class, 'index'])->name('admin.auditLogs.index')->middleware(['auth:admin']);
+  Route::get('/audit-logs/session/{auditSession}', [App\Http\Controllers\Admin\ERP\AuditLogController::class, 'show'])->name('admin.auditLogs.show')->middleware(['auth:admin']);
+  Route::get('/audit-logs/item/{auditLog}', [App\Http\Controllers\Admin\ERP\AuditLogController::class, 'logDetails'])->name('admin.auditLogs.details')->middleware(['auth:admin']);
+
   Route::get('/openingStock', [App\Http\Controllers\Admin\ERP\OpeningStockController::class, 'openingStock'])->name('openingStock')->middleware(['auth:admin']);
   Route::post('/addProductOpeningStock', [App\Http\Controllers\Admin\ERP\OpeningStockController::class, 'addProductStock'])->name('addProductOpeningStock')->middleware(['auth:admin']);
   Route::post('/addIngredientOpeningStock', [App\Http\Controllers\Admin\ERP\OpeningStockController::class, 'addIngredientStock'])->name('addIngredientOpeningStock')->middleware(['auth:admin']);

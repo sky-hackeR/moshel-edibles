@@ -24,9 +24,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
-        $schedule->command('report:daily')->dailyAt('21:45');
-        $schedule->command('inventory:check')->dailyAt('08:00');
+        $timezone = config('app.timezone', 'Africa/Lagos');
+
+        // Daily Business & Performance Report at 10:00 PM (22:00)
+        $schedule->command('report:daily')
+            ->dailyAt('22:00')
+            ->timezone($timezone);
+
+        // Daily Morning Inventory Level Scan at 8:00 AM
+        $schedule->command('inventory:check')
+            ->dailyAt('08:00')
+            ->timezone($timezone);
     }
 
     /**

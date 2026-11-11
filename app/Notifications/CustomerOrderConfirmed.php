@@ -27,6 +27,7 @@ class CustomerOrderConfirmed extends Notification implements ShouldQueue, Should
     public function toMail($notifiable)
     {
         return (new MailMessage)
+            ->mailer('order')
             ->subject(($this->sale->order_status === 'payment_review' ? 'Payment received, order under review: ' : 'Order confirmed: ') . $this->sale->reference_no)
             ->view('mail.notifications.orderUpdate', [
                 'name' => $notifiable->name,

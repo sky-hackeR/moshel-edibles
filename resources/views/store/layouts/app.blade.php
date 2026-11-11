@@ -276,7 +276,7 @@
                                         <a href="tel:+2348082574927" title="Call Us"><i class="fa-solid fa-phone"></i></a>
                                     </li>
                                     <li>
-                                        <a href="mailto:hello@moshedibles.com" title="Email"><i class="fa-regular fa-envelope"></i></a>
+                                        <a href="mailto:info@moshedibles.com" title="Email"><i class="fa-regular fa-envelope"></i></a>
                                     </li>
                                 </ul>
                             </div>
