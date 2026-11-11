@@ -61,4 +61,12 @@ class Product extends Model
     {
         return $this->stock_on_hand <= $threshold;
     }
+
+    /**
+     * Linking the ERP part to the Store Front
+     */
+    public function storeProduct()
+    {
+        return $this->hasOne(StoreProduct::class);
+    }
 }

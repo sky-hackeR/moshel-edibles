@@ -1,11 +1,8 @@
 <?php
 namespace App\Mail\Finance;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class DailyPerformance extends Mailable {
-    use Queueable, SerializesModels;
+class DailyPerformance extends QueuedMailable {
     public $stats;
 
     public function __construct($stats) { $this->stats = $stats; }

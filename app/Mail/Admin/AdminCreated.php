@@ -1,11 +1,8 @@
 <?php
 namespace App\Mail\Admin;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class AdminCreated extends Mailable {
-    use Queueable, SerializesModels;
+class AdminCreated extends QueuedMailable {
     public $newAdmin;
     public $creator;
 

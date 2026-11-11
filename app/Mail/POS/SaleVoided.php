@@ -2,14 +2,10 @@
 
 namespace App\Mail\POS;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class SaleVoided extends Mailable
+class SaleVoided extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $saleReference, $amount, $user, $reason;
 
     public function __construct($saleReference, $amount, $user, $reason)

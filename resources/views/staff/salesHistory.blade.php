@@ -38,7 +38,7 @@
                         <tr>
                             <td>{{ $sale->created_at->format('d M, Y H:i') }}</td>
                             <td><span class="fw-bold text-primary">{{ $sale->reference_no }}</span></td>
-                            <td>{{ $sale->seller_name }}</td>
+                                <td>{{ $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name }}</td>
                             <td>₦{{ number_format($sale->payable_amount, 2) }}</td>
                             <td>
                                 @php
@@ -47,7 +47,7 @@
                                 <span class="badge bg-soft-{{ $color }} text-{{ $color }}">{{ $sale->payment_method }}</span>
                             </td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails({{ $sale->id }})">
+                                <button class="btn btn-primary btn-sm" onclick="viewSaleDetails('{{ addslashes($sale->reference_no) }}')">
                                     <i class="mdi mdi-eye me-1"></i> View
                                 </button>
                             </td>
@@ -81,7 +81,7 @@
 </div>
 
 <script>
-    async function viewSaleDetails(saleId) {
+    async function viewSaleDetails(saleReference) {
         const modal = new bootstrap.Modal(document.getElementById('saleDetailsModal'));
         const content = document.getElementById('saleDetailsContent');
         
@@ -89,7 +89,7 @@
         modal.show();
 
         try {
-            const response = await fetch("{{ url('staff/sales/details') }}/" + saleId);
+            const response = await fetch("{{ url('staff/sales/details') }}/" + encodeURIComponent(saleReference));
             const data = await response.json();
 
             if (data.success) {
@@ -105,7 +105,7 @@
                         </tr>`;
                 });
 
-                const fullName = data.sale.staff_name || data.sale.seller_name || 'System';
+                const fullName = data.sale.merchant_name || data.sale.staff_name || data.sale.seller_name || 'System';
                 const recordedBy = fullName.split(' ')[0];
                 const discount = parseFloat(data.sale.discount_amount || 0);
                 const subtotal = parseFloat(data.sale.total_amount || 0);

@@ -2,14 +2,10 @@
 
 namespace App\Mail\Stock;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class LowStockAlert extends Mailable
+class LowStockAlert extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $lowStockItems;
 
     public function __construct($lowStockItems)

@@ -2,14 +2,10 @@
 
 namespace App\Mail\Inventory;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use App\Mail\QueuedMailable;
 
-class IngredientCreated extends Mailable
+class IngredientCreated extends QueuedMailable
 {
-    use Queueable, SerializesModels;
-
     public $ingredient;
     public $creator;
 

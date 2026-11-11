@@ -2,11 +2,16 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\QueuesOutboundMail;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class StaffResetPassword extends Notification
+class StaffResetPassword extends Notification implements ShouldQueue, ShouldBeEncrypted
 {
+    use QueuesOutboundMail;
+
     /**
      * The password reset token.
      *
@@ -44,8 +49,11 @@ class StaffResetPassword extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', url('staff/password/reset', $this->token))
-            ->line('If you did not request a password reset, no further action is required.');
+            ->subject('Set up your staff password')
+            ->view('mail.notifications.passwordReset', [
+                'name' => $notifiable->name,
+                'portalName' => 'staff',
+                'resetUrl' => url('/staff/password/reset/' . $this->token . '?email=' . urlencode($notifiable->email)),
+            ]);
     }
 }

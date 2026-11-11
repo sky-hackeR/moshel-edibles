@@ -62,19 +62,13 @@ class StaffController extends Controller
         $overallSalesCount = Sale::whereDate('created_at', $today)->count();
         $overallSalesTotal = Sale::whereDate('created_at', $today)->sum('payable_amount');
 
-        $thresholds = ['gram' => 1000, 'ml' => 1000, 'pcs' => 10];
         $lowStockCount = Inventory::with(['ingredient.baseUnit'])
             ->get()
-            ->filter(function($inventory) use ($thresholds) {
+            ->filter(function($inventory) {
                 $ingredient = $inventory->ingredient;
                 if (!$ingredient) return false;
-                
-                if ($ingredient->reorder_level > 0) {
-                    return $inventory->quantity <= $ingredient->reorder_level;
-                }
 
-                $unitName = strtolower($ingredient->baseUnit->name ?? '');
-                return $inventory->quantity <= ($thresholds[$unitName] ?? 0);
+                return $inventory->quantity <= $ingredient->effective_reorder_level;
             })->count();
 
         $recentProductions = Production::with('product')

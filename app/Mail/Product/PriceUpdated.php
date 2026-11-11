@@ -1,8 +1,8 @@
 <?php
 namespace App\Mail\Product;
-use Illuminate\Mail\Mailable;
+use App\Mail\QueuedMailable;
 
-class PriceUpdated extends Mailable {
+class PriceUpdated extends QueuedMailable {
     public $product;
     public $oldPrice;
     public $user;

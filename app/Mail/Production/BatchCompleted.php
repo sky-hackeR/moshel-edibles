@@ -1,8 +1,8 @@
 <?php
 namespace App\Mail\Production;
-use Illuminate\Mail\Mailable;
+use App\Mail\QueuedMailable;
 
-class BatchCompleted extends Mailable {
+class BatchCompleted extends QueuedMailable {
     public $production;
     public function __construct($production) { $this->production = $production; }
 

@@ -34,29 +34,13 @@ class CheckInventoryLevels extends Command
         $this->info('Starting inventory scan...');
 
         try {
-            // Your Base Truth Thresholds
-            $thresholds = [
-                'gram' => 1000, 
-                'ml'   => 1000, 
-                'pcs'  => 10,
-            ];
-
             $lowStockItems = Inventory::with(['ingredient.baseUnit'])
                 ->get()
-                ->filter(function($inventory) use ($thresholds) {
+                ->filter(function($inventory) {
                     $ingredient = $inventory->ingredient;
                     if (!$ingredient) return false;
-                    
-                    if ($ingredient->reorder_level > 0) {
-                        return $inventory->quantity <= $ingredient->reorder_level;
-                    }
 
-                    $unitName = strtolower($ingredient->baseUnit->name ?? '');
-                    if (array_key_exists($unitName, $thresholds)) {
-                        return $inventory->quantity <= $thresholds[$unitName];
-                    }
-
-                    return $inventory->quantity <= 0;
+                    return $inventory->quantity <= $ingredient->effective_reorder_level;
                 });
 
             if ($lowStockItems->isNotEmpty()) {
