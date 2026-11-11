@@ -53,7 +53,9 @@ class ContactController extends Controller
             'specifications' => $data['specifications']
         ];
 
-        Mail::to('hello@moshedibles.com')->queue(new ContactInquiry($mailPayload));
+        $inquiryRecipient = config('mail.contacts.inquiry', env('INFO_RECEIVING_EMAIL', 'info@moshedibles.com'));
+
+        Mail::mailer('info')->to($inquiryRecipient)->send(new ContactInquiry($mailPayload));
 
         return redirect()->back()->with('success', 'Your inquiry has been logged successfully! Our team will review your specs or new product request and reach out shortly.');
     }

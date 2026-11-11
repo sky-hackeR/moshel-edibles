@@ -6,6 +6,8 @@ use App\Mail\QueuedMailable;
 
 class OrderReceived extends QueuedMailable
 {
+    public $mailer = 'order';
+
     public $sale;
 
     public function __construct($sale)

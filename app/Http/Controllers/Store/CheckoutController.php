@@ -314,10 +314,10 @@ class CheckoutController extends Controller
                 $this->notifyCustomer($sale, new CustomerOrderConfirmed($sale));
             });
 
-            $adminEmail = config('services.paystack.admin_email', config('mail.from.address'));
+            $adminEmail = config('services.paystack.admin_email', config('mail.contacts.order', config('mail.from.address')));
             if ($adminEmail) {
                 $this->notifySafely(function () use ($adminEmail, $sale) {
-                    Mail::to($adminEmail)->send(new OrderReceived($sale));
+                    Mail::mailer('order')->to($adminEmail)->send(new OrderReceived($sale));
                 });
             }
         }

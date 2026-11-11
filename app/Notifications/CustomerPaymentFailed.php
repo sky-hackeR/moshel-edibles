@@ -27,6 +27,7 @@ class CustomerPaymentFailed extends Notification implements ShouldQueue, ShouldB
     public function toMail($notifiable)
     {
         return (new MailMessage)
+            ->mailer('order')
             ->subject('Payment needs attention: ' . $this->sale->reference_no)
             ->view('mail.notifications.paymentFailed', [
                 'name' => $notifiable->name,

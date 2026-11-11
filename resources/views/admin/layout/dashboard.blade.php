@@ -193,6 +193,14 @@
                         <a href="{{ url('/admin/customers') }}"><i class="bx bxs-user-detail"></i><span>Customers</span></a>
                     </li>
 
+                    <li class="menu-title">Security & Governance</li>
+                    <li>
+                        <a href="{{ route('admin.auditLogs.index') }}">
+                            <i class="bx bx-shield-quarter"></i>
+                            <span>Audit Log</span>
+                        </a>
+                    </li>
+
                     <br>
 
                     <li>

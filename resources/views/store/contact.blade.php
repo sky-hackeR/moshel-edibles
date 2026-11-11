@@ -100,7 +100,7 @@
                         </div>
                         <div>
                             <span class="d-block text-uppercase text-muted" style="font-size: 11px; font-weight: 700;">Email Inquiries</span>
-                            <a href="mailto:hello@moshedibles.com" class="fw-bold text-dark d-block text-decoration-none" style="font-size: 15px;">hello@moshedibles.com</a>
+                            <a href="mailto:info@moshedibles.com" class="fw-bold text-dark d-block text-decoration-none" style="font-size: 15px;">info@moshedibles.com</a>
                             <small class="text-muted">Catering & Corporate Orders</small>
                         </div>
                     </div>
