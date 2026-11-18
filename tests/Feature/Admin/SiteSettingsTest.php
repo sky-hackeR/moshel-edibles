@@ -105,4 +105,15 @@ class SiteSettingsTest extends TestCase
             File::deleteDirectory($testingDir);
         }
     }
+
+    public function test_preview_iframe_inherits_secure_scheme_when_rendered_on_https()
+    {
+        $admin = $this->createAdmin();
+
+        $response = $this->actingAs($admin, 'admin')->get('https://localhost/admin/siteSettings');
+
+        $response->assertStatus(200);
+        $response->assertSee('<iframe src="https://localhost"', false);
+        $response->assertDontSee('<iframe src="http://', false);
+    }
 }

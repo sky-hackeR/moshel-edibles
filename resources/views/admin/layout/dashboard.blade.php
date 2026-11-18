@@ -125,31 +125,53 @@
                     window.tinymce = editorLib;
                 }
 
-                var targetSelector = 'textarea.hugerte-editor, textarea.tinymce-editor, textarea[name="description"]:not(.no-editor):not(#inputDescription), textarea[name="body"], textarea.rich-editor';
+                // Check if currently on the Store Management Product Edit view
+                var isStoreProductEdit = document.querySelector('#storeProductUpdateForm') !== null
+                    || window.location.pathname.indexOf('/store/products/') !== -1;
+
+                var targetSelector;
+                if (isStoreProductEdit) {
+                    // On Store Management product edit: only attach to designated .hugerte-editor (leaving short_description & meta_description plain)
+                    targetSelector = 'textarea.hugerte-editor';
+                } else {
+                    // On all other admin pages: attach to all textareas except explicit .no-editor
+                    targetSelector = 'textarea:not(.no-editor):not([data-no-editor])';
+                }
+
                 var elements = document.querySelectorAll(targetSelector);
                 if (elements.length > 0) {
-                    editorLib.init({
-                        selector: targetSelector,
-                        height: 380,
-                        menubar: 'file edit view insert format tools table help',
-                        plugins: [
-                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
-                        ],
-                        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | numlist bullist outdent indent | link image media table | emoticons charmap | removeformat | code fullscreen preview',
-                        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
-                        branding: false,
-                        promotion: false,
-                        setup: function(editor) {
-                            editor.on('change input', function() {
-                                editor.save();
-                            });
-                        }
+                    elements.forEach(function (el) {
+                        if (el.dataset.hugerteInitialized) return;
+                        el.dataset.hugerteInitialized = 'true';
+
+                        var rows = el.getAttribute('rows');
+                        var calcHeight = rows && parseInt(rows, 10) <= 3 ? 220 : 340;
+
+                        editorLib.init({
+                            target: el,
+                            height: calcHeight,
+                            menubar: 'file edit view insert format tools table help',
+                            plugins: [
+                                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
+                            ],
+                            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | numlist bullist outdent indent | link image media table | emoticons charmap | removeformat | code fullscreen preview',
+                            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
+                            branding: false,
+                            promotion: false,
+                            setup: function(editor) {
+                                editor.on('change input paste keyup', function() {
+                                    editor.save();
+                                });
+                            }
+                        });
                     });
 
                     // Ensure contents are synchronized back to textareas before form submissions
                     document.querySelectorAll('form').forEach(function(form) {
+                        if (form.dataset.hugerteBound) return;
+                        form.dataset.hugerteBound = 'true';
                         form.addEventListener('submit', function() {
                             if (window.hugerte && window.hugerte.triggerSave) {
                                 window.hugerte.triggerSave();
@@ -161,12 +183,26 @@
                 }
             }
 
+            // Prevent Bootstrap modal from blocking focus inside HugeRTE popups/dialogs
+            document.addEventListener('focusin', function(e) {
+                if (e.target && e.target.closest && e.target.closest('.tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-floorpane, .hugerte')) {
+                    e.stopImmediatePropagation();
+                }
+            });
+
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initHugeRTE);
             } else {
                 initHugeRTE();
             }
             window.addEventListener('load', initHugeRTE);
+
+            // Re-initialize when Bootstrap modals are opened
+            if (window.jQuery) {
+                $(document).on('shown.bs.modal', function() {
+                    initHugeRTE();
+                });
+            }
         })();
     </script>
 </head>
