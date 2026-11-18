@@ -66,10 +66,19 @@
                     <li class="breadcrumb-item active">Ingredients & Raw Materials</li>
                 </ol>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center flex-wrap gap-2">
                 <button type="button" class="btn btn-primary rounded-pill px-3 py-1.5 font-size-12 fw-medium shadow-sm" data-bs-toggle="modal" data-bs-target="#addIngredient">
                     <i class="bx bx-plus me-1 font-size-14"></i> Add Ingredient
                 </button>
+                <a href="{{ route('admin.ingredients.stock') }}" class="btn btn-outline-danger rounded-pill px-3 py-1.5 font-size-12 fw-medium">
+                    <i class="bx bx-error-alt me-1"></i> Stock Danger Zone
+                </a>
+                <a href="{{ route('openingStock') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 font-size-12 fw-medium">
+                    <i class="bx bx-archive-in me-1"></i> Opening Stock
+                </a>
+                <a href="{{ route('inventory') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1.5 font-size-12 fw-medium">
+                    <i class="bx bx-layer me-1"></i> Inventory Batches
+                </a>
             </div>
         </div>
     </div>
