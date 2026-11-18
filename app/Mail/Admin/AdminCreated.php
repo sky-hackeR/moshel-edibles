@@ -3,6 +3,7 @@ namespace App\Mail\Admin;
 use App\Mail\QueuedMailable;
 
 class AdminCreated extends QueuedMailable {
+    public $mailer = 'admin';
     public $newAdmin;
     public $creator;
 

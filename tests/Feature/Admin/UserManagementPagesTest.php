@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Mail\Admin\AdminCreated;
 use App\Models\Admin;
 use App\Models\Staff;
 use App\Notifications\AdminResetPassword;
 use App\Notifications\StaffResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -157,5 +159,171 @@ class UserManagementPagesTest extends TestCase
         $this->assertSoftDeleted('staff', [
             'id' => $staff->id,
         ]);
+    }
+
+    public function test_admin_creation_dispatches_security_alert_to_creator_and_reset_link_to_new_admin()
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $creator = $this->createAdmin('Authorizing Admin', 'authorizer@example.test');
+
+        $response = $this->actingAs($creator, 'admin')->post(url('admin/newAdmin'), [
+            'name'  => 'Ibrahim Musa',
+            'email' => 'ibrahim@example.test',
+        ]);
+
+        $response->assertRedirect();
+
+        $newAdmin = Admin::where('email', 'ibrahim@example.test')->firstOrFail();
+
+        // 1. Password setup reset link is sent to the new admin
+        Notification::assertSentTo($newAdmin, AdminResetPassword::class);
+
+        // 2. Security alert email is sent to the creator/authorizer admin
+        Mail::assertSent(AdminCreated::class, function ($mail) use ($creator, $newAdmin) {
+            return $mail->hasTo($creator->email)
+                && $mail->newAdmin->id === $newAdmin->id
+                && $mail->creator->id === $creator->id;
+        });
+    }
+
+    public function test_admin_created_mailable_has_expected_subject_and_renders_audit_content()
+    {
+        $creator = $this->createAdmin('Audit Creator', 'audit-creator@example.test');
+        $newAdmin = Admin::create([
+            'name'     => 'New Super Admin',
+            'email'    => 'new-super@example.test',
+            'password' => bcrypt('randompass'),
+        ]);
+
+        $mailable = new AdminCreated($newAdmin, $creator);
+        $mailable->build();
+
+        $this->assertSame('Security Alert: New Admin Added', $mailable->subject);
+
+        $rendered = $mailable->render();
+        $this->assertStringContainsString('Security Audit Alert', $rendered);
+        $this->assertStringContainsString('New Super Admin', $rendered);
+        $this->assertStringContainsString('new-super@example.test', $rendered);
+        $this->assertStringContainsString('Audit Creator', $rendered);
+        $this->assertStringContainsString('Authorized By', $rendered);
+    }
+
+    public function test_unauthorized_user_cannot_create_admin_or_trigger_emails()
+    {
+        Mail::fake();
+        Notification::fake();
+
+        // Guest attempt
+        $guestResponse = $this->post(url('admin/newAdmin'), [
+            'name'  => 'Unauthorized Guest Attempt',
+            'email' => 'guest-admin@example.test',
+        ]);
+        $guestResponse->assertRedirect(route('admin.login'));
+        $this->assertDatabaseMissing('admins', ['email' => 'guest-admin@example.test']);
+
+        // Staff attempt (forbidden from admin management)
+        $staff = Staff::create([
+            'name'     => 'Staff Cashier',
+            'email'    => 'cashier@example.test',
+            'password' => bcrypt('password123'),
+        ]);
+
+        $staffResponse = $this->actingAs($staff, 'staff')->post(url('admin/newAdmin'), [
+            'name'  => 'Staff Escalation Attempt',
+            'email' => 'escalation@example.test',
+        ]);
+        $staffResponse->assertRedirect(route('admin.login'));
+        $this->assertDatabaseMissing('admins', ['email' => 'escalation@example.test']);
+
+        Mail::assertNothingSent();
+        Notification::assertNothingSent();
+    }
+
+    public function test_failed_admin_creation_does_not_dispatch_security_alert_or_reset_link()
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $creator = $this->createAdmin('Current Admin', 'admin@example.test');
+        $existingAdmin = $this->createAdmin('Existing Admin', 'duplicate@example.test');
+
+        // Attempt creation with duplicate email
+        $response = $this->actingAs($creator, 'admin')->post(url('admin/newAdmin'), [
+            'name'  => 'Duplicate Name',
+            'email' => 'duplicate@example.test',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertEquals(2, Admin::count());
+
+        Mail::assertNothingSent();
+        Notification::assertNothingSent();
+    }
+
+    public function test_security_alert_failure_does_not_prevent_admin_creation_or_password_setup()
+    {
+        Notification::fake();
+        \Illuminate\Support\Facades\Log::shouldReceive('error')
+            ->once()
+            ->with(\Mockery::pattern('/Admin creation security alert email failed:/'));
+
+        \Illuminate\Support\Facades\Mail::shouldReceive('to')
+            ->once()
+            ->andReturnSelf();
+        \Illuminate\Support\Facades\Mail::shouldReceive('send')
+            ->once()
+            ->andThrow(new \RuntimeException('SMTP 550 relay not permitted_AUTH'));
+
+        $creator = $this->createAdmin('Creator Admin', 'creator-sim@example.test');
+
+        $response = $this->actingAs($creator, 'admin')->post(url('admin/newAdmin'), [
+            'name'  => 'New Success Admin',
+            'email' => 'new-success@example.test',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('admins', [
+            'email' => 'new-success@example.test',
+            'name'  => 'New Success Admin',
+        ]);
+
+        $created = Admin::where('email', 'new-success@example.test')->firstOrFail();
+        Notification::assertSentTo($created, AdminResetPassword::class);
+    }
+
+    public function test_password_setup_failure_does_not_prevent_admin_creation_or_security_alert()
+    {
+        Mail::fake();
+        \Illuminate\Support\Facades\Log::shouldReceive('error')
+            ->once()
+            ->with(\Mockery::pattern('/Admin password setup email failed:/'));
+
+        \Illuminate\Support\Facades\Password::shouldReceive('broker')
+            ->with('admins')
+            ->once()
+            ->andReturnSelf();
+        \Illuminate\Support\Facades\Password::shouldReceive('sendResetLink')
+            ->once()
+            ->andReturn('passwords.throttled');
+
+        $creator = $this->createAdmin('Creator Admin', 'creator-broker@example.test');
+
+        $response = $this->actingAs($creator, 'admin')->post(url('admin/newAdmin'), [
+            'name'  => 'Broker Fail Admin',
+            'email' => 'broker-fail@example.test',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('admins', [
+            'email' => 'broker-fail@example.test',
+        ]);
+
+        $created = Admin::where('email', 'broker-fail@example.test')->firstOrFail();
+        Mail::assertSent(AdminCreated::class, function ($mail) use ($creator, $created) {
+            return $mail->hasTo($creator->email)
+                && $mail->newAdmin->id === $created->id;
+        });
     }
 }

@@ -94,15 +94,15 @@ Route::group(['prefix' => 'admin'], function () {
   Route::get('/password/reset', [App\Http\Controllers\Admin\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.reset');
   Route::get('/password/reset/{token}', [App\Http\Controllers\Admin\Auth\ResetPasswordController::class, 'showResetForm']);
 
-  Route::post('/updateSiteInfo', [App\Http\Controllers\Admin\ERP\AdminController::class, 'updateSiteInfo'])->name('updateSiteInfo')->middleware(['auth:admin']);
+  Route::post('/updateSiteInfo', [App\Http\Controllers\Admin\ERP\SiteSettingsController::class, 'updateSiteInfo'])->name('updateSiteInfo')->middleware(['auth:admin']);
 
-  Route::get('/profile', [App\Http\Controllers\Admin\ERP\AdminController::class, 'profile'])->name('profile')->middleware(['auth:admin']);
-  Route::post('/updateProfile', [App\Http\Controllers\Admin\ERP\AdminController::class, 'updateProfile'])->name('updateProfile')->middleware(['auth:admin']);
-  Route::post('/updatePassword', [App\Http\Controllers\Admin\ERP\AdminController::class, 'updatePassword'])->name('updatePassword')->middleware(['auth:admin']);
+  Route::get('/profile', [App\Http\Controllers\Admin\ERP\ProfileController::class, 'profile'])->name('profile')->middleware(['auth:admin']);
+  Route::post('/updateProfile', [App\Http\Controllers\Admin\ERP\ProfileController::class, 'updateProfile'])->name('updateProfile')->middleware(['auth:admin']);
+  Route::post('/updatePassword', [App\Http\Controllers\Admin\ERP\ProfileController::class, 'updatePassword'])->name('updatePassword')->middleware(['auth:admin']);
 
-  Route::get('/home', [App\Http\Controllers\Admin\ERP\AdminController::class, 'index'])->name('home')->middleware(['auth:admin']);
-  Route::get('/send-report', [App\Http\Controllers\Admin\ERP\AdminController::class, 'sendDailyReport'])->name('send.report')->middleware(['auth:admin']);
-  Route::get('/siteSettings', [App\Http\Controllers\Admin\ERP\AdminController::class, 'siteSettings'])->name('siteSettings')->middleware(['auth:admin']);
+  Route::get('/home', [App\Http\Controllers\Admin\ERP\DashboardController::class, 'index'])->name('home')->middleware(['auth:admin']);
+  Route::get('/send-report', [App\Http\Controllers\Admin\ERP\ReportController::class, 'sendDailyReport'])->name('send.report')->middleware(['auth:admin']);
+  Route::get('/siteSettings', [App\Http\Controllers\Admin\ERP\SiteSettingsController::class, 'siteSettings'])->name('siteSettings')->middleware(['auth:admin']);
 
   Route::get('/unitManagement', [App\Http\Controllers\Admin\ERP\UnitController::class, 'unitManagement'])->name('unitManagement')->middleware(['auth:admin']);
   Route::post('/newUnit', [App\Http\Controllers\Admin\ERP\UnitController::class, 'newUnit'])->name('newUnit')->middleware(['auth:admin']);
@@ -145,17 +145,17 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/sales/void', [App\Http\Controllers\Admin\ERP\POSController::class, 'voidSale'])->name('sales.void')->middleware(['auth:admin']);
   Route::get('/sales/details/{reference}', [App\Http\Controllers\Admin\ERP\POSController::class, 'getSaleDetails'])->name('sales.details')->middleware(['auth:admin']);
   
-  Route::get('/adminList', [App\Http\Controllers\Admin\ERP\AdminController::class, 'adminList'])->name('admins')->middleware(['auth:admin']);
-  Route::post('/newAdmin', [App\Http\Controllers\Admin\ERP\AdminController::class, 'newAdmin'])->name('newAdmin')->middleware(['auth:admin']);
-  Route::post('/deleteAdmin', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteAdmin'])->name('deleteAdmin')->middleware(['auth:admin']);
+  Route::get('/adminList', [App\Http\Controllers\Admin\ERP\AdminManagementController::class, 'adminList'])->name('admins')->middleware(['auth:admin']);
+  Route::post('/newAdmin', [App\Http\Controllers\Admin\ERP\AdminManagementController::class, 'newAdmin'])->name('newAdmin')->middleware(['auth:admin']);
+  Route::post('/deleteAdmin', [App\Http\Controllers\Admin\ERP\AdminManagementController::class, 'deleteAdmin'])->name('deleteAdmin')->middleware(['auth:admin']);
 
-  Route::get('/staffList', [App\Http\Controllers\Admin\ERP\AdminController::class, 'staffList'])->name('staffs')->middleware(['auth:admin']);
-  Route::post('/newStaff', [App\Http\Controllers\Admin\ERP\AdminController::class, 'newStaff'])->name('newStaff')->middleware(['auth:admin']);
-  Route::post('/deleteStaff', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteStaff'])->name('deleteStaff')->middleware(['auth:admin']);
+  Route::get('/staffList', [App\Http\Controllers\Admin\ERP\StaffManagementController::class, 'staffList'])->name('staffs')->middleware(['auth:admin']);
+  Route::post('/newStaff', [App\Http\Controllers\Admin\ERP\StaffManagementController::class, 'newStaff'])->name('newStaff')->middleware(['auth:admin']);
+  Route::post('/deleteStaff', [App\Http\Controllers\Admin\ERP\StaffManagementController::class, 'deleteStaff'])->name('deleteStaff')->middleware(['auth:admin']);
 
-  Route::get('/customers', [App\Http\Controllers\Admin\ERP\AdminController::class, 'customers'])->name('customers')->middleware(['auth:admin']);
-  Route::get('/customers/{customer}/orders', [App\Http\Controllers\Admin\ERP\AdminController::class, 'customerOrders'])->name('customers.orders')->middleware(['auth:admin']);
-  Route::post('/deleteCustomer', [App\Http\Controllers\Admin\ERP\AdminController::class, 'deleteCustomer'])->name('deleteCustomer')->middleware(['auth:admin']);
+  Route::get('/customers', [App\Http\Controllers\Admin\ERP\CustomerController::class, 'customers'])->name('customers')->middleware(['auth:admin']);
+  Route::get('/customers/{customer}/orders', [App\Http\Controllers\Admin\ERP\CustomerController::class, 'customerOrders'])->name('customers.orders')->middleware(['auth:admin']);
+  Route::post('/deleteCustomer', [App\Http\Controllers\Admin\ERP\CustomerController::class, 'deleteCustomer'])->name('deleteCustomer')->middleware(['auth:admin']);
 
   // Audit Log & Activity Sessions
   Route::get('/audit-logs', [App\Http\Controllers\Admin\ERP\AuditLogController::class, 'index'])->name('admin.auditLogs.index')->middleware(['auth:admin']);

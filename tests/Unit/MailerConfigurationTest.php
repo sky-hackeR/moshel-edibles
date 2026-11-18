@@ -51,4 +51,13 @@ class MailerConfigurationTest extends TestCase
 
         $this->assertSame('info', $inquiry->mailer);
     }
+
+    public function test_admin_created_mailable_uses_admin_mailer()
+    {
+        $creator = (object) ['id' => 1, 'name' => 'Creator', 'email' => 'creator@example.test'];
+        $newAdmin = (object) ['id' => 2, 'name' => 'New Admin', 'email' => 'newadmin@example.test'];
+
+        $adminCreated = new \App\Mail\Admin\AdminCreated($newAdmin, $creator);
+        $this->assertSame('admin', $adminCreated->mailer);
+    }
 }
