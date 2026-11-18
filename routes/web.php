@@ -114,6 +114,11 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/updateIngredient', [App\Http\Controllers\Admin\ERP\IngredientController::class, 'updateIngredient'])->name('updateIngredient')->middleware(['auth:admin']);
   Route::post('/deleteIngredient', [App\Http\Controllers\Admin\ERP\IngredientController::class, 'deleteIngredient'])->name('deleteIngredient')->middleware(['auth:admin']);
 
+  // Ingredient Stock Control - Sensitive Danger Zone (Admin Only)
+  Route::get('/ingredients/stock', [App\Http\Controllers\Admin\ERP\IngredientStockDangerController::class, 'index'])->name('admin.ingredients.stock')->middleware(['auth:admin']);
+  Route::post('/ingredients/clear-stock', [App\Http\Controllers\Admin\ERP\IngredientStockDangerController::class, 'clearIngredientStock'])->name('admin.ingredients.clearStock')->middleware(['auth:admin']);
+  Route::post('/ingredients/clear-all-stock', [App\Http\Controllers\Admin\ERP\IngredientStockDangerController::class, 'clearAllStock'])->name('admin.ingredients.clearAllStock')->middleware(['auth:admin']);
+
   Route::get('/inventory',[App\Http\Controllers\Admin\ERP\StockController::class, 'inventory'])->name('inventory')->middleware(['auth:admin']);
 
   Route::get('/stockIn',[App\Http\Controllers\Admin\ERP\StockController::class, 'stockIn'])->name('stockIn')->middleware(['auth:admin']);

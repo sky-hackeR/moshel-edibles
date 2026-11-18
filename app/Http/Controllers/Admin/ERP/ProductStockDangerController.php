@@ -22,40 +22,25 @@ class ProductStockDangerController extends Controller
      */
     public function index(Request $request)
     {
-        $search = trim($request->query('search', ''));
-        $status = $request->query('status', 'all');
-
-        $query = Product::with(['recipe', 'storeProduct.primaryImage'])
-            ->orderBy('name', 'asc');
-
-        if (!empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sales_unit', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%");
-            });
-        }
-
-        if ($status === 'in_stock') {
-            $query->where('stock_on_hand', '>', 0);
-        } elseif ($status === 'depleted') {
-            $query->where('stock_on_hand', '<=', 0);
-        } elseif ($status === 'low_stock') {
-            $query->where('stock_on_hand', '>', 0)->where('stock_on_hand', '<=', 10);
-        }
-
-        $products = $query->paginate(25)->withQueryString();
+        $products = Product::with(['recipe', 'storeProduct.primaryImage'])
+            ->orderBy('name', 'asc')
+            ->get();
 
         // Calculate warehouse stock metrics
         $stats = [
-            'total_products'  => Product::count(),
-            'in_stock_count'  => Product::where('stock_on_hand', '>', 0)->count(),
-            'depleted_count'  => Product::where('stock_on_hand', '<=', 0)->count(),
-            'low_stock_count' => Product::where('stock_on_hand', '>', 0)->where('stock_on_hand', '<=', 10)->count(),
-            'total_units'     => (float) Product::sum('stock_on_hand'),
+            'total_products'  => $products->count(),
+            'in_stock_count'  => $products->where('stock_on_hand', '>', 0)->count(),
+            'depleted_count'  => $products->where('stock_on_hand', '<=', 0)->count(),
+            'low_stock_count' => $products->filter(function ($p) {
+                return (float) $p->stock_on_hand > 0 && (float) $p->stock_on_hand <= 10;
+            })->count(),
+            'total_units'     => (float) $products->sum('stock_on_hand'),
+            'total_valuation' => (float) $products->sum(function ($p) {
+                return (float) $p->stock_on_hand * (float) $p->selling_price;
+            }),
         ];
 
-        return view('admin.erp.productStockDanger', compact('products', 'stats', 'search', 'status'));
+        return view('admin.erp.productStockDanger', compact('products', 'stats'));
     }
 
     /**
