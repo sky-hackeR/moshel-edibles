@@ -35,7 +35,11 @@ use Carbon\Carbon;
 class UnitController extends Controller
 {
     public function unitManagement(){
-        $units = Unit::all();
+        $units = Unit::orderByRaw("CASE WHEN symbol IN ('g', 'ml', 'pcs') THEN 0 ELSE 1 END")
+            ->orderBy('unit_type', 'asc')
+            ->orderBy('base_multiplier', 'asc')
+            ->get();
+
         return view('admin.erp.unitManagement', [
             'units' => $units
         ]);
@@ -68,9 +72,8 @@ class UnitController extends Controller
             'is_active'        => true,
         ]);
 
-        $this->notifyUnitChange($unit, 'Created');
-
         alert()->success('Success', 'Unit added successfully');
+        $this->notifyUnitChange($unit, 'Created');
         return redirect()->back();
     }
 
@@ -107,9 +110,8 @@ class UnitController extends Controller
             ]);
         }
 
-        $this->notifyUnitChange($unit, 'Updated');
-
         alert()->success('Updated', 'Unit details updated');
+        $this->notifyUnitChange($unit, 'Updated');
         return redirect()->back();
     }
 
@@ -131,23 +133,31 @@ class UnitController extends Controller
             return redirect()->back();
         }
 
-        $this->notifyUnitChange($unit, 'Deleted');
+        $unitCopy = clone $unit;
         $unit->delete();
 
         alert()->success('Deleted', 'Unit deleted successfully')->persistent('Close');
+        $this->notifyUnitChange($unitCopy, 'Deleted');
         return redirect()->back();
     }
 
     /**
-     * Helper to notify admins about unit changes
+     * Helper to notify admins about unit changes in a single SMTP envelope
      */
     private function notifyUnitChange($unit, $action) {
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new UnitModified($unit, $action, Auth::user()));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new UnitModified($unit, $action, Auth::user());
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
+            if (!empty($adminEmails)) {
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) {
+            $mail->send($mailable);
+        } catch (\Throwable $e) {
             Log::error("Unit Notification Failed: " . $e->getMessage());
         }
     }

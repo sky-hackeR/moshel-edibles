@@ -1,68 +1,69 @@
 @extends('mail.layout.mail')
 
+@section('preheader', 'Price update alert: ' . $product->name . ' changed from ₦' . number_format($oldPrice, 2) . ' to ₦' . number_format($product->selling_price, 2))
+
 @section('content')
-    <div style="text-align: center; margin-bottom: 30px;">
-        <div style="display: inline-block; background-color: #ecfdf5; padding: 15px; border-radius: 50%; margin-bottom: 15px;">
-            <span style="font-size: 30px;">🏷️</span>
-        </div>
-        <h2 style="color: #059669; font-size: 24px; margin: 0;">Price Modification Alert</h2>
-        <p style="color: #718096;">The retail value for a product has been updated in the system.</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <span class="badge-purple" style="display: inline-block; margin-bottom: 10px;">Pricing Update</span>
+        <h2 style="margin: 0 0 6px; font-size: 22px; color: #2a172e; font-weight: 700;">Price Modification Alert</h2>
+        <p style="margin: 0; color: #6c5a70; font-size: 14px;">The retail selling price for a product has been updated in the catalogue.</p>
     </div>
 
-    <div style="background-color: #ffffff; border: 1px solid #edf2f7; border-radius: 12px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-        <div style="padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #edf2f7; text-align: center;">
-            <strong style="color: #2d3748; font-size: 16px;">{{ $product->name }}</strong>
+    <!-- Comparison Card -->
+    <div style="background-color: #ffffff; border: 1px solid #ebddec; border-radius: 12px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(88, 26, 98, 0.04);">
+        <div style="padding: 14px; background-color: #fbf6fc; border-bottom: 1px solid #ebddec; text-align: center;">
+            <strong style="color: #2a172e; font-size: 16px;">{{ $product->name }}</strong>
         </div>
-        <div style="padding: 20px; display: flex; text-align: center;">
-            <table width="100%">
-                <tr>
-                    <td width="50%" style="padding: 10px; border-right: 1px solid #edf2f7;">
-                        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #a0aec0; font-weight: 700;">Previous Price</p>
-                        <h3 style="margin: 5px 0; color: #718096; text-decoration: line-through;">₦{{ number_format($oldPrice, 2) }}</h3>
-                    </td>
-                    <td width="50%" style="padding: 10px;">
-                        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #34c38f; font-weight: 700;">New Selling Price</p>
-                        <h3 style="margin: 5px 0; color: #059669; font-size: 20px; font-weight: 800;">₦{{ number_format($product->selling_price, 2) }}</h3>
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <table width="100%" cellpadding="0" cellspacing="0" style="table-layout: fixed;">
+            <tr>
+                <td width="50%" style="padding: 20px 15px; border-right: 1px solid #ebddec; text-align: center;">
+                    <p style="margin: 0 0 4px; font-size: 11px; text-transform: uppercase; color: #6c5a70; font-weight: 700; letter-spacing: 0.5px;">Previous Price</p>
+                    <h3 style="margin: 0; color: #6c5a70; text-decoration: line-through; font-size: 18px; font-weight: 600;">₦{{ number_format($oldPrice, 2) }}</h3>
+                </td>
+                <td width="50%" style="padding: 20px 15px; text-align: center; background-color: #faf5fb;">
+                    <p style="margin: 0 0 4px; font-size: 11px; text-transform: uppercase; color: #ce278c; font-weight: 700; letter-spacing: 0.5px;">New Price</p>
+                    <h3 style="margin: 0; color: #581a62; font-size: 22px; font-weight: 800;">₦{{ number_format($product->selling_price, 2) }}</h3>
+                </td>
+            </tr>
+        </table>
     </div>
 
-    <table class="data-table">
+    <table class="data-table" style="margin-bottom: 24px;">
         <thead>
             <tr>
-                <th colspan="2">Change Metadata</th>
+                <th colspan="2" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px;">Change Metadata</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td style="color: #718096; width: 40%;">Authorized By</td>
-                <td style="font-weight: 600; color: #2d3748;">{{ $user->name }}</td>
+                <td style="color: #6c5a70; width: 40%; font-weight: 500;">Authorized By</td>
+                <td style="font-weight: 600; color: #2a172e;">{{ $user->name }}</td>
             </tr>
             <tr>
-                <td style="color: #718096;">Effective Date</td>
-                <td style="font-weight: 600; color: #2d3748;">{{ now()->format('d M, Y | h:i A') }}</td>
+                <td style="color: #6c5a70; font-weight: 500;">Effective Timestamp</td>
+                <td style="font-size: 13px; color: #2a172e;">{{ now()->format('d M, Y | h:i A') }}</td>
             </tr>
             <tr>
-                <td style="color: #718096;">Price Difference</td>
-                <td style="font-weight: 700; color: {{ $product->selling_price > $oldPrice ? '#059669' : '#e53e3e' }};">
-                    {{ $product->selling_price > $oldPrice ? '+' : '-' }} 
-                    ₦{{ number_format(abs($product->selling_price - $oldPrice), 2) }}
+                <td style="color: #6c5a70; font-weight: 500;">Price Variance</td>
+                <td style="font-weight: 700; font-size: 15px; color: {{ $product->selling_price > $oldPrice ? '#047857' : '#b91c1c' }};">
+                    {{ $product->selling_price > $oldPrice ? '+' : '-' }}₦{{ number_format(abs($product->selling_price - $oldPrice), 2) }}
+                    <span style="font-size: 12px; font-weight: 500; color: #6c5a70;">
+                        ({{ $oldPrice > 0 ? number_format((($product->selling_price - $oldPrice) / $oldPrice) * 100, 1) : '100' }}%)
+                    </span>
                 </td>
             </tr>
         </tbody>
     </table>
 
-    <div style="background-color: #ebf8ff; padding: 15px; border-radius: 8px; margin-top: 20px;">
-        <p style="margin: 0; font-size: 12px; color: #2b6cb0; text-align: center;">
-            <strong>Note:</strong> This change is live. All new POS transactions and digital receipts will reflect the updated pricing immediately.
+    <div class="alert-box" style="margin-bottom: 28px; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #581a62; line-height: 1.5;">
+            <strong>Immediate Effect:</strong> This update is live across the storefront, POS checkout counters, and receipt generation.
         </p>
     </div>
 
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="{{ url('/admin/products') }}" class="button" style="background-color: #34c38f;">
-            Verify Pricing
+    <div style="text-align: center;">
+        <a href="{{ url('/admin/products') }}" class="button">
+            View Product Catalogue
         </a>
     </div>
 @endsection

@@ -27,6 +27,54 @@ class StoreProduct extends Model
     ];
 
     /**
+     * Accessor: Ensure short description is always clean plain text without HTML tags.
+     */
+    public function getShortDescriptionAttribute($value)
+    {
+        return $value !== null ? trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null;
+    }
+
+    /**
+     * Mutator: Strip all HTML tags before storing short description in the database.
+     */
+    public function setShortDescriptionAttribute($value)
+    {
+        $this->attributes['short_description'] = $value !== null ? trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null;
+    }
+
+    /**
+     * Accessor: Ensure meta description is always clean plain text for SEO.
+     */
+    public function getMetaDescriptionAttribute($value)
+    {
+        return $value !== null ? trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null;
+    }
+
+    /**
+     * Mutator: Strip all HTML tags before storing meta description in the database.
+     */
+    public function setMetaDescriptionAttribute($value)
+    {
+        $this->attributes['meta_description'] = $value !== null ? trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null;
+    }
+
+    /**
+     * Accessor: Ensure meta title is always clean plain text for SEO.
+     */
+    public function getMetaTitleAttribute($value)
+    {
+        return $value !== null ? trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null;
+    }
+
+    /**
+     * Mutator: Strip all HTML tags before storing meta title in the database.
+     */
+    public function setMetaTitleAttribute($value)
+    {
+        $this->attributes['meta_title'] = $value !== null ? trim(html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null;
+    }
+
+    /**
      * The ERP product represented by this storefront product.
      */
     public function product()

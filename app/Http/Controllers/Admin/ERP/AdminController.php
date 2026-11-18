@@ -36,6 +36,8 @@ use App\Models\ProductionItem;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Customer;
+use App\Models\StoreProduct;
+use App\Models\AuditLog;
 
 use SweetAlert;
 use Alert;
@@ -123,6 +125,100 @@ class AdminController extends Controller
             ->groupBy('payment_method')
             ->get();
 
+        // 5. Channel Intelligence (POS vs Online Storefront - Last 7 Days)
+        $posPaidRevenue = (float) Sale::whereBetween('created_at', [$weekStart, $endOfToday])
+            ->where('payment_status', 'paid')
+            ->whereIn('user_type', ['staff', 'admin'])
+            ->sum('payable_amount');
+        $posPaidOrdersCount = Sale::whereBetween('created_at', [$weekStart, $endOfToday])
+            ->where('payment_status', 'paid')
+            ->whereIn('user_type', ['staff', 'admin'])
+            ->count();
+
+        $onlinePaidRevenue = (float) Sale::whereBetween('created_at', [$weekStart, $endOfToday])
+            ->where('payment_status', 'paid')
+            ->where(function ($q) {
+                $q->whereNull('user_type')->orWhere('user_type', 'customer');
+            })
+            ->sum('payable_amount');
+        $onlinePaidOrdersCount = Sale::whereBetween('created_at', [$weekStart, $endOfToday])
+            ->where('payment_status', 'paid')
+            ->where(function ($q) {
+                $q->whereNull('user_type')->orWhere('user_type', 'customer');
+            })
+            ->count();
+
+        $totalChannelRevenue = $posPaidRevenue + $onlinePaidRevenue;
+        $posRevenueShare = $totalChannelRevenue > 0 ? round(($posPaidRevenue / $totalChannelRevenue) * 100, 1) : 0;
+        $onlineRevenueShare = $totalChannelRevenue > 0 ? round(($onlinePaidRevenue / $totalChannelRevenue) * 100, 1) : 0;
+
+        // 6. Order Fulfillment & Pipeline Status
+        $pendingOrdersCount = Sale::where(function ($q) {
+            $q->where('order_status', 'pending')
+              ->orWhere('payment_status', 'pending');
+        })->count();
+        $processingOrdersCount = Sale::where('order_status', 'processing')->count();
+        $completedOrdersCount = Sale::whereIn('order_status', ['completed', 'delivered'])->count();
+        $failedOrdersCount = Sale::where('payment_status', 'failed')
+            ->whereBetween('created_at', [$weekStart, $endOfToday])
+            ->count();
+
+        // 7. Kitchen & Production Operations
+        $todayProductionBatches = Production::whereDate('produced_at', $today)->count();
+        $todayProducedUnits = (float) Production::whereDate('produced_at', $today)->sum('quantity');
+        $weeklyProductionBatches = Production::whereBetween('produced_at', [$weekStart, $endOfToday])->count();
+        $weeklyProducedUnits = (float) Production::whereBetween('produced_at', [$weekStart, $endOfToday])->sum('quantity');
+        $weeklyExpectedRevenue = (float) Production::whereBetween('produced_at', [$weekStart, $endOfToday])->sum('expected_revenue');
+        $weeklyProductionProfit = $weeklyExpectedRevenue - $weeklyProductionCost;
+        $productionMarginPercent = $weeklyExpectedRevenue > 0 ? round(($weeklyProductionProfit / $weeklyExpectedRevenue) * 100, 1) : 0;
+        $totalRecipesCount = Recipe::count();
+
+        // 8. Warehouse Asset Valuation & Procurement
+        $rawMaterialsValuation = (float) Inventory::sum(DB::raw('quantity * average_cost'));
+        $finishedGoodsValuation = (float) Product::where('is_active', true)->sum(DB::raw('stock_on_hand * selling_price'));
+        $totalInventoryValuation = $rawMaterialsValuation + $finishedGoodsValuation;
+        $weeklyPurchases = (float) StockInItem::whereBetween('created_at', [$weekStart, $endOfToday])->sum('total_price');
+
+        // Raw Ingredients stock attention (items at or below reorder level)
+        $lowStockIngredients = Inventory::with(['ingredient.baseUnit'])
+            ->get()
+            ->filter(function ($inventory) {
+                $ingredient = $inventory->ingredient;
+                return $ingredient && $inventory->quantity <= $ingredient->effective_reorder_level;
+            })
+            ->values();
+        $lowStockIngredientsCount = $lowStockIngredients->count();
+        $topLowIngredients = $lowStockIngredients->take(5);
+
+        // 9. Customers & Retention
+        $totalCustomersCount = Customer::count();
+        $weeklyNewCustomersCount = Customer::whereBetween('created_at', [$weekStart, $endOfToday])->count();
+        $verifiedCustomersCount = Customer::whereNotNull('email_verified_at')->count();
+        $customerVerificationRate = $totalCustomersCount > 0 ? round(($verifiedCustomersCount / $totalCustomersCount) * 100, 1) : 0;
+        $topCustomers = Customer::withCount(['sales as paid_orders_count' => function ($q) {
+                $q->where('payment_status', 'paid');
+            }])
+            ->withSum(['sales as total_spent' => function ($q) {
+                $q->where('payment_status', 'paid');
+            }], 'payable_amount')
+            ->orderByDesc('total_spent')
+            ->take(4)
+            ->get();
+
+        // 10. Storefront Catalog Health
+        $totalStoreProducts = StoreProduct::count();
+        $publishedStoreProducts = StoreProduct::where('is_published', true)->count();
+        $draftStoreProducts = StoreProduct::where('is_published', false)->count();
+        $featuredStoreProducts = StoreProduct::where('is_featured', true)->count();
+        $outOfStockStoreProducts = StoreProduct::whereHas('product', function ($q) {
+            $q->where('stock_on_hand', '<=', 0);
+        })->count();
+
+        // 11. Team & Activity
+        $adminsCount = Admin::count();
+        $staffCount = Staff::count();
+        $todayAuditLogsCount = AuditLog::whereDate('created_at', $today)->count();
+
         return view('admin.erp.home', [
             'todayRevenue'        => $todayRevenue,
             'todayPurchases'      => $todayPurchases,
@@ -152,6 +248,55 @@ class AdminController extends Controller
             'lowStockProducts'    => $lowStockProducts,
             'paymentLabels'       => $paymentData->pluck('payment_method')->toArray(),
             'paymentCounts'       => $paymentData->pluck('count')->toArray(),
+
+            // Multi-Channel & Pipeline
+            'posPaidRevenue'            => $posPaidRevenue,
+            'posPaidOrdersCount'        => $posPaidOrdersCount,
+            'posRevenueShare'           => $posRevenueShare,
+            'onlinePaidRevenue'         => $onlinePaidRevenue,
+            'onlinePaidOrdersCount'     => $onlinePaidOrdersCount,
+            'onlineRevenueShare'        => $onlineRevenueShare,
+            'pendingOrdersCount'        => $pendingOrdersCount,
+            'processingOrdersCount'     => $processingOrdersCount,
+            'completedOrdersCount'      => $completedOrdersCount,
+            'failedOrdersCount'         => $failedOrdersCount,
+
+            // Kitchen & Production
+            'todayProductionBatches'    => $todayProductionBatches,
+            'todayProducedUnits'        => $todayProducedUnits,
+            'weeklyProductionBatches'   => $weeklyProductionBatches,
+            'weeklyProducedUnits'       => $weeklyProducedUnits,
+            'weeklyExpectedRevenue'     => $weeklyExpectedRevenue,
+            'weeklyProductionProfit'    => $weeklyProductionProfit,
+            'productionMarginPercent'   => $productionMarginPercent,
+            'totalRecipesCount'         => $totalRecipesCount,
+
+            // Warehouse & Valuation
+            'rawMaterialsValuation'     => $rawMaterialsValuation,
+            'finishedGoodsValuation'    => $finishedGoodsValuation,
+            'totalInventoryValuation'   => $totalInventoryValuation,
+            'weeklyPurchases'           => $weeklyPurchases,
+            'lowStockIngredientsCount'  => $lowStockIngredientsCount,
+            'topLowIngredients'         => $topLowIngredients,
+
+            // Customer Intelligence
+            'totalCustomersCount'       => $totalCustomersCount,
+            'weeklyNewCustomersCount'   => $weeklyNewCustomersCount,
+            'verifiedCustomersCount'    => $verifiedCustomersCount,
+            'customerVerificationRate'  => $customerVerificationRate,
+            'topCustomers'              => $topCustomers,
+
+            // Storefront Catalog
+            'totalStoreProducts'        => $totalStoreProducts,
+            'publishedStoreProducts'    => $publishedStoreProducts,
+            'draftStoreProducts'        => $draftStoreProducts,
+            'featuredStoreProducts'     => $featuredStoreProducts,
+            'outOfStockStoreProducts'   => $outOfStockStoreProducts,
+
+            // Team & Logs
+            'adminsCount'               => $adminsCount,
+            'staffCount'                => $staffCount,
+            'todayAuditLogsCount'       => $todayAuditLogsCount,
         ]);
     }
 
@@ -283,8 +428,8 @@ class AdminController extends Controller
 
     public function updateSiteInfo(Request $request){
         $validator = Validator::make($request->all(), [
-            'logo' => 'nullable|image',
-            'favicon' => 'nullable|image',
+            'logo' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+            'favicon' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,ico,webp|max:2048',
             'description' => 'nullable|string',
             'site_name' => 'nullable|string',
         ]);
@@ -294,10 +439,12 @@ class AdminController extends Controller
             return redirect()->back();
         }
     
-        $siteInfo = new Setting;
-        if(!empty($request->site_info_id) && !$siteInfo = Setting::find($request->site_info_id)){
-            alert()->error('Oops', 'Invalid Site Information')->persistent('Close');
-            return redirect()->back();
+        $siteInfo = null;
+        if (!empty($request->site_info_id)) {
+            $siteInfo = Setting::find($request->site_info_id);
+        }
+        if (!$siteInfo) {
+            $siteInfo = Setting::first() ?? new Setting;
         }
     
         if (!empty($request->site_name)) {
@@ -308,20 +455,50 @@ class AdminController extends Controller
             $siteInfo->description = $request->description;
         }
     
-        // Save logo
-        $logoUrl = null;
-        if ($request->hasFile('logo')) {
-            $logoUrl = 'uploads/siteInfo/' .'logo'.'.'.$request->file('logo')->getClientOriginalExtension();
-            $logo = $request->file('logo')->move('uploads/siteInfo', $logoUrl);
-            $siteInfo->logo = $logoUrl;
+        // Ensure upload directory exists (isolate testing uploads so real assets are never overwritten)
+        $isTesting = app()->environment('testing');
+        $relativeDir = $isTesting ? 'uploads/siteInfo/testing' : 'uploads/siteInfo';
+        $targetDir = public_path($relativeDir);
+        if (!file_exists($targetDir)) {
+            @mkdir($targetDir, 0755, true);
         }
-    
-        // Save favicon
-        $faviconUrl = null;
-        if ($request->hasFile('favicon')) {
-            $faviconUrl = 'uploads/siteInfo/' .'favicon'.'.'.$request->file('favicon')->getClientOriginalExtension();
-            $favicon = $request->file('favicon')->move('uploads/siteInfo', $faviconUrl);
-            $siteInfo->favicon = $faviconUrl;
+
+        // Save logo with cache-busting unique name and cleanup of previous custom asset
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $ext = strtolower($request->file('logo')->getClientOriginalExtension() ?: 'png');
+            $filename = 'logo_' . time() . '_' . Str::random(8) . '.' . $ext;
+            $dest = $targetDir . DIRECTORY_SEPARATOR . $filename;
+
+            // Delete prior uploaded logo if distinct and not a template default
+            if (!empty($siteInfo->logo) && !str_contains($siteInfo->logo, 'frontAssets')) {
+                $oldPath = public_path($siteInfo->logo);
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+
+            if (@copy($request->file('logo')->getRealPath(), $dest)) {
+                $siteInfo->logo = $relativeDir . '/' . $filename;
+            }
+        }
+
+        // Save favicon with cache-busting unique name and cleanup of previous custom asset
+        if ($request->hasFile('favicon') && $request->file('favicon')->isValid()) {
+            $ext = strtolower($request->file('favicon')->getClientOriginalExtension() ?: 'png');
+            $filename = 'favicon_' . time() . '_' . Str::random(8) . '.' . $ext;
+            $dest = $targetDir . DIRECTORY_SEPARATOR . $filename;
+
+            // Delete prior uploaded favicon if distinct and not a template default
+            if (!empty($siteInfo->favicon) && !str_contains($siteInfo->favicon, 'frontAssets')) {
+                $oldFavPath = public_path($siteInfo->favicon);
+                if (file_exists($oldFavPath)) {
+                    @unlink($oldFavPath);
+                }
+            }
+
+            if (@copy($request->file('favicon')->getRealPath(), $dest)) {
+                $siteInfo->favicon = $relativeDir . '/' . $filename;
+            }
         }
     
         if($siteInfo->save()){
@@ -496,7 +673,7 @@ class AdminController extends Controller
             ->with('items.product.storeProduct')
             ->latest('created_at')
             ->latest('id')
-            ->paginate(25);
+            ->get();
 
         return view('admin.erp.customerOrders', compact('customer', 'orders'));
     }

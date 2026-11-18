@@ -1,49 +1,81 @@
 @extends('mail.layout.mail')
 
-@section('preheader', 'Payment update for order ' . $sale->reference_no)
+@section('preheader', 'Order update for ' . $sale->reference_no)
 
 @section('content')
     @if($sale->payment_status === 'review')
-        <h2>Payment Requires Review</h2>
-        <p>Hello {{ $name }}, Paystack reported a successful transaction, but the amount or currency did not match this order. Our team must verify the transaction before fulfillment.</p>
-        <div class="alert-box">
-            <p style="margin: 0; color: #64236f; font-weight: 700;">Please do not send another payment yet.</p>
-            <p style="margin: 6px 0 0;">We will contact you after reviewing the transaction.</p>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="badge badge-warning" style="margin-bottom: 12px; font-size: 11px;">⚠️ Verification Pending</span>
+            <h1 style="margin: 8px 0 10px; color: #4a1253;">Payment Requires Review</h1>
+            <p style="color: #6d5d70; font-size: 15px; margin: 0 auto; max-width: 480px;">
+                Hello <strong>{{ $name }}</strong>, Paystack reported a successful transaction, but the amount or currency did not match this order. Our team must verify the transaction before fulfillment.
+            </p>
+        </div>
+
+        <div class="alert-box alert-box-warning">
+            <p style="margin: 0; font-weight: 700; color: #92400e;">Please do not send another payment yet.</p>
+            <p style="margin: 6px 0 0; font-size: 13px; color: #78350f;">
+                We will contact you after reviewing the transaction to ensure everything is resolved smoothly.
+            </p>
         </div>
     @elseif($sale->order_status === 'payment_review')
-        <h2>Payment received, order under review</h2>
-        <p>Hello {{ $name }}, we received your payment, but one or more items need an availability check before we can confirm fulfillment.</p>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="badge badge-purple" style="margin-bottom: 12px; font-size: 11px;">🔍 Order Under Review</span>
+            <h1 style="margin: 8px 0 10px; color: #4a1253;">Payment Received, Order Under Review</h1>
+            <p style="color: #6d5d70; font-size: 15px; margin: 0 auto; max-width: 480px;">
+                Hello <strong>{{ $name }}</strong>, we received your payment, but one or more items need an availability check before we can confirm fulfillment.
+            </p>
+        </div>
+
         <div class="alert-box">
-            <p style="margin: 0; color: #64236f; font-weight: 700;">No further payment is needed.</p>
-            <p style="margin: 6px 0 0;">Our team will review this order and contact you about the next step.</p>
+            <p style="margin: 0; font-weight: 700; color: #581a62;">No further payment is needed.</p>
+            <p style="margin: 6px 0 0; font-size: 13px; color: #736277;">
+                Our team will review this order and contact you about the next step shortly.
+            </p>
         </div>
     @else
-        <h2>Your order is confirmed</h2>
-        <p>Thank you, {{ $name }}. Your payment was confirmed and your order is being prepared.</p>
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span class="badge badge-success" style="margin-bottom: 12px; font-size: 11px;">🎉 Order Confirmed</span>
+            <h1 style="margin: 8px 0 10px; color: #4a1253;">Your Order Is Confirmed</h1>
+            <p style="color: #6d5d70; font-size: 15px; margin: 0 auto; max-width: 480px;">
+                Thank you, <strong>{{ $name }}</strong>! Your payment was confirmed and our bakery team has begun preparing your freshly baked order.
+            </p>
+        </div>
     @endif
 
     <table class="data-table">
+        <thead>
+            <tr>
+                <th colspan="2">Order Summary</th>
+            </tr>
+        </thead>
         <tbody>
             <tr>
-                <th scope="row">Order reference</th>
-                <td>{{ $sale->reference_no }}</td>
+                <td style="color: #8a7b8e; width: 45%;">Order Reference</td>
+                <td style="font-weight: 700; color: #2a172e; font-family: monospace; font-size: 15px;">{{ $sale->reference_no }}</td>
             </tr>
             <tr>
-                <th scope="row">Shipping</th>
-                <td>NGN {{ number_format($sale->shipping_fee, 2) }}</td>
+                <td style="color: #8a7b8e;">Shipping Fee</td>
+                <td style="font-weight: 600; color: #2a172e;">₦{{ number_format($sale->shipping_fee, 2) }}</td>
             </tr>
             <tr>
-                <th scope="row">Order total</th>
-                <td>NGN {{ number_format($sale->payable_amount, 2) }}</td>
+                <td style="color: #8a7b8e;">Order Total</td>
+                <td style="font-weight: 800; color: #581a62; font-size: 16px;">₦{{ number_format($sale->payable_amount, 2) }}</td>
             </tr>
             <tr>
-                <th scope="row">Payment status</th>
-                <td>{{ ucfirst($sale->payment_status) }}</td>
+                <td style="color: #8a7b8e;">Payment Status</td>
+                <td>
+                    <span class="badge {{ $sale->payment_status === 'paid' ? 'badge-success' : 'badge-warning' }}">
+                        {{ ucfirst($sale->payment_status) }}
+                    </span>
+                </td>
             </tr>
         </tbody>
     </table>
 
-    <div style="margin: 28px 0 8px; text-align: center;">
-        <a href="{{ $accountUrl }}" class="button">View your account</a>
+    <div style="margin: 32px 0 12px; text-align: center;">
+        <a href="{{ $accountUrl }}" class="button" target="_blank">
+            View Order in Account &rarr;
+        </a>
     </div>
 @endsection

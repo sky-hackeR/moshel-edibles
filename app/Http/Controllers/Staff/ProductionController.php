@@ -27,18 +27,69 @@ class ProductionController extends Controller
      * Show the staff production form
      */
     public function production() {
-        $products = Product::with('recipe')->where('is_active', true)->get();
-        
+        $products = Product::with([
+            'recipe.items.ingredient.baseUnit',
+            'recipe.items.unit',
+        ])->where('is_active', true)->get();
+
+        $inventories = Inventory::with('ingredient.baseUnit')->get()->keyBy('ingredient_id');
+
+        $productionMatrix = $products->mapWithKeys(function ($product) use ($inventories) {
+            $recipe = $product->recipe;
+            $items = [];
+            $hasRecipe = $recipe && $recipe->items->isNotEmpty();
+
+            if ($hasRecipe) {
+                foreach ($recipe->items as $item) {
+                    $baseQtyPerUnit = $item->unit ? $item->unit->toBase($item->quantity) : (float) $item->quantity;
+                    $inv = $inventories->get($item->ingredient_id);
+                    $stockAvailable = $inv ? (float) $inv->quantity : 0.0;
+                    $avgCost = $inv ? (float) $inv->average_cost : 0.0;
+                    $baseSymbol = $item->ingredient->baseUnit->symbol ?? ($item->unit->symbol ?? 'units');
+
+                    $items[] = [
+                        'ingredient_id' => $item->ingredient_id,
+                        'name' => $item->ingredient->name ?? 'Unknown Ingredient',
+                        'recipe_qty' => (float) $item->quantity,
+                        'recipe_unit' => $item->unit->symbol ?? '',
+                        'base_qty_per_unit' => (float) $baseQtyPerUnit,
+                        'base_unit' => $baseSymbol,
+                        'stock_available' => (float) $stockAvailable,
+                        'average_cost' => (float) $avgCost,
+                    ];
+                }
+            }
+
+            return [$product->id => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sales_unit' => $product->sales_unit ?? 'Units',
+                'selling_price' => (float) ($product->selling_price ?? 0),
+                'stock_on_hand' => (float) ($product->stock_on_hand ?? 0),
+                'has_recipe' => $hasRecipe,
+                'items' => $items,
+            ]];
+        });
+
         $stats = [
             'today_production' => Production::where('staff_id', Auth::guard('staff')->id())
                                         ->whereDate('created_at', today())
                                         ->count()
         ];
 
-        // Passing via explicit array per your convention
         return view('staff.production', [
             'products' => $products,
             'stats' => $stats,
+            'productionMatrix' => $productionMatrix,
+        ]);
+    }
+
+    public function liveInventoryStatus() {
+        $inventories = Inventory::select('ingredient_id', 'quantity', 'average_cost')->get()->keyBy('ingredient_id');
+        return response()->json([
+            'status' => 'success',
+            'timestamp' => now()->format('h:i:s A'),
+            'inventories' => $inventories,
         ]);
     }
 
@@ -163,15 +214,22 @@ class ProductionController extends Controller
     }
 
     /**
-     * Notify Admins of successful production completion
+     * Notify Admins of successful production completion via single SMTP envelope
      */
     private function notifyProductionSuccess($production) {
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new BatchCompleted($production));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new BatchCompleted($production);
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
+            if (!empty($adminEmails)) {
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) {
+            $mail->send($mailable);
+        } catch (\Throwable $e) {
             Log::error("Staff Production Success Mail failed: " . $e->getMessage());
         }
     }
@@ -181,11 +239,18 @@ class ProductionController extends Controller
      */
     private function notifyStockFailure($product, $ingredientName, $needed) {
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new InsufficientStock($product, $ingredientName, $needed));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new InsufficientStock($product, $ingredientName, $needed);
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
+            if (!empty($adminEmails)) {
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) {
+            $mail->send($mailable);
+        } catch (\Throwable $e) {
             Log::error("Staff Production Failure Mail failed: " . $e->getMessage());
         }
     }

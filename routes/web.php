@@ -124,11 +124,17 @@ Route::group(['prefix' => 'admin'], function () {
   Route::post('/updateProduct', [App\Http\Controllers\Admin\ERP\ProductController::class, 'updateProduct'])->name('updateProduct')->middleware(['auth:admin']);
   Route::post('/deleteProduct', [App\Http\Controllers\Admin\ERP\ProductController::class, 'deleteProduct'])->name('deleteProduct')->middleware(['auth:admin']);
 
+  // Product Stock Control - Sensitive Danger Zone (Admin Only)
+  Route::get('/products/stock', [App\Http\Controllers\Admin\ERP\ProductStockDangerController::class, 'index'])->name('admin.products.stock')->middleware(['auth:admin']);
+  Route::post('/products/clear-stock', [App\Http\Controllers\Admin\ERP\ProductStockDangerController::class, 'clearProductStock'])->name('admin.products.clearStock')->middleware(['auth:admin']);
+  Route::post('/products/clear-all-stock', [App\Http\Controllers\Admin\ERP\ProductStockDangerController::class, 'clearAllStock'])->name('admin.products.clearAllStock')->middleware(['auth:admin']);
+
   Route::get('/recipes', [App\Http\Controllers\Admin\ERP\RecipeController::class, 'recipes'])->name('recipes')->middleware(['auth:admin']);
   Route::post('/newRecipe', [App\Http\Controllers\Admin\ERP\RecipeController::class, 'newRecipe'])->name('newRecipe')->middleware(['auth:admin']);
   Route::post('/updateRecipe', [App\Http\Controllers\Admin\ERP\RecipeController::class, 'updateRecipe'])->name('updateRecipe')->middleware(['auth:admin']);
   Route::post('/deleteRecipe', [App\Http\Controllers\Admin\ERP\RecipeController::class, 'deleteRecipe'])->name('deleteRecipe')->middleware(['auth:admin']);
 
+  Route::get('/production/inventory-status', [App\Http\Controllers\Admin\ERP\ProductionController::class, 'liveInventoryStatus'])->name('admin.production.inventoryStatus')->middleware(['auth:admin']);
   Route::get('/production', [App\Http\Controllers\Admin\ERP\ProductionController::class, 'production'])->name('production')->middleware(['auth:admin']);
   Route::post('/produce', [App\Http\Controllers\Admin\ERP\ProductionController::class, 'recordProduction'])->name('produce')->middleware(['auth:admin']);
   Route::get('/productionHistory', [App\Http\Controllers\Admin\ERP\ProductionController::class, 'productionHistory'])->name('productionHistory')->middleware(['auth:admin']);
@@ -190,6 +196,7 @@ Route::group(['prefix' => 'staff'], function () {
   Route::post('/updateProfile', [App\Http\Controllers\Staff\StaffController::class, 'updateProfile'])->name('updateProfile')->middleware(['auth:staff']);
   Route::post('/updatePassword', [App\Http\Controllers\Staff\StaffController::class, 'updatePassword'])->name('updatePassword')->middleware(['auth:staff']);
 
+  Route::get('/production/inventory-status', [App\Http\Controllers\Staff\ProductionController::class, 'liveInventoryStatus'])->name('staff.production.inventoryStatus')->middleware(['auth:staff']);
   Route::get('/production', [App\Http\Controllers\Staff\ProductionController::class, 'production'])->name('production')->middleware(['auth:staff']);
   Route::post('/produce', [App\Http\Controllers\Staff\ProductionController::class, 'recordProduction'])->name('produce')->middleware(['auth:staff']);
   Route::get('/productionHistory', [App\Http\Controllers\Staff\ProductionController::class, 'productionHistory'])->name('productionHistory')->middleware(['auth:staff']);

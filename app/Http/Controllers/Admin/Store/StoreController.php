@@ -118,6 +118,12 @@ class StoreController extends Controller
             return redirect()->back();
         }
 
+        $request->merge([
+            'short_description' => $request->short_description !== null ? trim(html_entity_decode(strip_tags($request->short_description), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null,
+            'meta_description'  => $request->meta_description !== null ? trim(html_entity_decode(strip_tags($request->meta_description), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null,
+            'meta_title'        => $request->meta_title !== null ? trim(html_entity_decode(strip_tags($request->meta_title), ENT_QUOTES | ENT_HTML5, 'UTF-8')) : null,
+        ]);
+
         $validated = $request->validate([
             'store_title' => [
                 'required',
@@ -257,6 +263,10 @@ class StoreController extends Controller
         * uploads/store/products/bread/
         */
         $directory = 'uploads/store/products/' . $product->slug;
+        $targetDirectory = public_path($directory);
+        if (!file_exists($targetDirectory)) {
+            @mkdir($targetDirectory, 0755, true);
+        }
 
         /*
         * Path stored in the database.
@@ -265,14 +275,18 @@ class StoreController extends Controller
         * uploads/store/products/bread/1756712345_abc123.jpg
         */
         $imagePath = $directory . '/' . $filename;
+        $destination = $targetDirectory . DIRECTORY_SEPARATOR . $filename;
 
         /*
         * Move the uploaded image into the product's directory.
+        * Uses copy() fallback for cross-platform Windows compatibility.
         */
-        $request->file('image')->move(
-            public_path($directory),
-            $filename
-        );
+        if (!@copy($request->file('image')->getRealPath(), $destination)) {
+            $request->file('image')->move(
+                $targetDirectory,
+                $filename
+            );
+        }
 
         /*
         * Check whether this is the first image.

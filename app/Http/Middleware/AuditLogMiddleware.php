@@ -67,7 +67,7 @@ class AuditLogMiddleware
 
             // Admin & Staff key GET actions
             $isAdminStaffKeyGet = $method === 'GET' && (
-                $request->is('admin/home', 'admin/salesHistory', 'admin/inventory', 'admin/customers*', 'admin/productionHistory', 'staff/home', 'staff/salesHistory', 'staff/productionHistory')
+                $request->is('admin/home', 'admin/salesHistory', 'admin/inventory', 'admin/products/stock', 'admin/customers*', 'admin/productionHistory', 'staff/home', 'staff/salesHistory', 'staff/productionHistory')
             );
 
             // We log: all mutating actions, all admin/staff key actions, and customer storefront actions
@@ -91,6 +91,11 @@ class AuditLogMiddleware
 
             // Sanitize inputs
             $inputs = $isMutating ? $request->except(['password', 'password_confirmation', '_token', '_method']) : [];
+            foreach ($inputs as $key => $value) {
+                if ($value instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    $inputs[$key] = '[File: ' . $value->getClientOriginalName() . ' (' . round($value->getSize() / 1024, 1) . ' KB)]';
+                }
+            }
 
             // Add contextual storefront query details for GET requests
             if ($method === 'GET' && $userType === 'customer') {
@@ -201,6 +206,9 @@ class AuditLogMiddleware
             'newProduct' => 'Created New Product',
             'updateProduct' => 'Updated Product',
             'deleteProduct' => 'Deleted Product',
+            'admin.products.stock' => 'Viewed Product Stock Control (Danger Zone)',
+            'admin.products.clearStock' => 'Cleared Single Product Inventory',
+            'admin.products.clearAllStock' => 'Cleared All Products Inventory (Emergency Reset)',
             'newRecipe' => 'Created New Recipe',
             'updateRecipe' => 'Updated Recipe',
             'deleteRecipe' => 'Deleted Recipe',

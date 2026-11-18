@@ -26,14 +26,148 @@
 
     <link rel="stylesheet" href="{{ asset('assets/cdn.jsdelivr.net/gh/iconoir-icons/iconoir%40main/css/iconoir.css') }}">
 
-    <!-- TinyMCE -->
-    <script src="https://cdn.tiny.cloud/1/ib771jqvt5joab026vosdy4bkhoad3hty1tycnv696zoka2w/tinymce/7/tinymce.min.js"></script>
+    <!-- Admin Workspace Switcher Styles -->
+    <style>
+        .admin-workspace-switcher {
+            padding: 12px 14px 10px;
+            background: #ffffff;
+            border-bottom: 1px solid #f0e6f2;
+        }
+        .admin-workspace-pill-group {
+            display: flex;
+            background: #f7f3f8;
+            border: 1px solid #ebddec;
+            border-radius: 30px;
+            padding: 3px;
+            gap: 2px;
+        }
+        .admin-workspace-btn {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            border: none;
+            background: transparent;
+            color: #6c5a70;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            outline: none;
+        }
+        .admin-workspace-btn i {
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        .admin-workspace-btn:hover {
+            color: #581a62;
+            background: rgba(88, 26, 98, 0.08);
+        }
+        .admin-workspace-btn.active {
+            background: linear-gradient(135deg, #581a62 0%, #7b2284 100%);
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(88, 26, 98, 0.25);
+        }
+        .admin-workspace-btn.active i {
+            color: #ffffff !important;
+            transform: scale(1.1);
+        }
+        .workspace-badge-count {
+            display: inline-block;
+            font-size: 9px;
+            background: #fbf6fc;
+            color: #581a62;
+            padding: 1px 5px;
+            border-radius: 4px;
+            border: 1px solid #ebddec;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+        #adminToggleAllWorkspaces {
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        #adminToggleAllWorkspaces:hover {
+            color: #581a62 !important;
+        }
+        /* Collapsed Sidebar Adaptation */
+        body.vertical-collpsed .admin-workspace-switcher {
+            padding: 10px 4px 6px;
+        }
+        body.vertical-collpsed .admin-workspace-pill-group {
+            flex-direction: column;
+            border-radius: 12px;
+            padding: 2px;
+        }
+        body.vertical-collpsed .admin-workspace-btn {
+            padding: 8px 0;
+            justify-content: center;
+        }
+        body.vertical-collpsed .admin-workspace-btn span.tab-text {
+            display: none !important;
+        }
+    </style>
+
+    <!-- HugeRTE WYSIWYG Editor (Open-source drop-in replacement for TinyMCE) -->
+    <script src="https://cdn.jsdelivr.net/npm/hugerte@1/hugerte.min.js"></script>
     <script>
-        tinymce.init({
-            selector: 'textarea',
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks | bold italic underline | align | numlist bullist | table | removeformat'
-        });
+        (function() {
+            function initHugeRTE() {
+                var editorLib = window.hugerte || window.tinymce;
+                if (!editorLib) return;
+
+                // Provide tinymce alias for backward compatibility
+                if (!window.tinymce) {
+                    window.tinymce = editorLib;
+                }
+
+                var targetSelector = 'textarea.hugerte-editor, textarea.tinymce-editor, textarea[name="description"]:not(.no-editor):not(#inputDescription), textarea[name="body"], textarea.rich-editor';
+                var elements = document.querySelectorAll(targetSelector);
+                if (elements.length > 0) {
+                    editorLib.init({
+                        selector: targetSelector,
+                        height: 380,
+                        menubar: 'file edit view insert format tools table help',
+                        plugins: [
+                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                            'insertdatetime', 'media', 'table', 'help', 'wordcount', 'emoticons'
+                        ],
+                        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | numlist bullist outdent indent | link image media table | emoticons charmap | removeformat | code fullscreen preview',
+                        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; }',
+                        branding: false,
+                        promotion: false,
+                        setup: function(editor) {
+                            editor.on('change input', function() {
+                                editor.save();
+                            });
+                        }
+                    });
+
+                    // Ensure contents are synchronized back to textareas before form submissions
+                    document.querySelectorAll('form').forEach(function(form) {
+                        form.addEventListener('submit', function() {
+                            if (window.hugerte && window.hugerte.triggerSave) {
+                                window.hugerte.triggerSave();
+                            } else if (window.tinymce && window.tinymce.triggerSave) {
+                                window.tinymce.triggerSave();
+                            }
+                        });
+                    });
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initHugeRTE);
+            } else {
+                initHugeRTE();
+            }
+            window.addEventListener('load', initHugeRTE);
+        })();
     </script>
 </head>
 
@@ -105,108 +239,151 @@
 
     <!-- SIDEBAR -->
     <div class="vertical-menu">
-        <div data-simplebar class="h-100">
-            <div id="sidebar-menu">
-                <ul class="metismenu list-unstyled">
+        <!-- Pinned Workspace Switcher (Admin Only) -->
+        <div class="admin-workspace-switcher" id="adminSidebarSwitcher">
+            <div class="admin-workspace-pill-group" role="tablist">
+                <button type="button" class="admin-workspace-btn active" data-workspace="bakery" title="Bakery & Production Operations">
+                    <i class="mdi mdi-cookie"></i>
+                    <span class="tab-text">Bakery</span>
+                </button>
+                <button type="button" class="admin-workspace-btn" data-workspace="commerce" title="Sales, POS & Storefront Management">
+                    <i class="bx bx-cart"></i>
+                    <span class="tab-text">Sales</span>
+                </button>
+                <button type="button" class="admin-workspace-btn" data-workspace="system" title="System Settings, Governance & Team">
+                    <i class="bx bx-shield-quarter"></i>
+                    <span class="tab-text">Admin</span>
+                </button>
+            </div>
+        </div>
 
-                    <li class="menu-title">Menu</li>
-                    <li>
+        <div data-simplebar style="max-height: calc(100% - 60px);">
+            <div id="sidebar-menu">
+                <ul class="metismenu list-unstyled" id="side-menu">
+
+                    <!-- ========================================== -->
+                    <!-- 1. DASHBOARD / OVERVIEW (System) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="system">Menu</li>
+                    <li data-workspace="system">
                         <a href="{{ url('/admin/home') }}"><i class="bx bx-home-circle"></i><span>Dashboard</span></a>
                     </li>
 
-                    <li class="menu-title">System Configuration</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 2. SYSTEM CONFIGURATION (System) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="system">System Configuration</li>
+                    <li data-workspace="system">
                         <a href="{{ url('/admin/siteSettings') }}"><i class="bx bx-cog"></i><span>System Settings</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="system">
                         <a href="{{ url('/admin/unitManagement') }}"><i class="bx bx-transfer"></i><span>Unit Management</span></a>
                     </li>
 
-                    <li class="menu-title">Inventory Management</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 3. INVENTORY MANAGEMENT (Bakery) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="bakery">Inventory Management</li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/ingredients') }}"><i class="bx bx-box"></i><span>Ingredients</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/openingStock') }}"><i class="bx bx-layer"></i><span>Opening Stock</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/stockIn') }}"><i class="bx bx-download"></i><span>Stock In (Purchases)</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/inventory') }}"><i class="bx bx-bar-chart-alt-2"></i><span>Inventory Overview</span></a>
                     </li>
 
-                    <li class="menu-title">Products & Recipes</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 4. PRODUCTS & RECIPES (Bakery) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="bakery">Products & Recipes</li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/products') }}"><i class="bx bx-food-menu"></i><span>Products</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/recipes') }}"><i class="bx bx-receipt"></i><span>Recipes</span></a>
                     </li>
 
-                    <li class="menu-title">Production</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 5. PRODUCTION (Bakery) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="bakery">Production</li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/production') }}"><i class="bx bx-wrench"></i><span>Record Production</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="bakery">
                         <a href="{{ url('/admin/productionHistory') }}"><i class="bx bx-history"></i><span>Production History</span></a>
                     </li>
 
-                    <li class="menu-title">Sales & POS</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 6. SALES & POS (Commerce) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="commerce">Sales & POS</li>
+                    <li data-workspace="commerce">
                         <a href="{{ url('/admin/pos') }}"><i class="bx bx-cart"></i><span>Point of Sale (POS)</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="commerce">
                         <a href="{{ url('/admin/salesHistory') }}"><i class="bx bx-list-check"></i><span>Sales History</span></a>
                     </li>
 
-                    <br>
-
-                    <!-- Storefront -->
-                    <li class="menu-title">Storefront</li>
-
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 7. STOREFRONT (Commerce) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="commerce">Storefront</li>
+                    <li data-workspace="commerce">
                         <a href="{{ url('/admin/store') }}">
                             <i class="bx bx-store"></i>
                             <span>Store Management</span>
                         </a>
                     </li>
-
-                    <li>
-                        <a href="{{ url('/') }}" target="_blank">
-                            <i class="bx bx-globe"></i>
-                            <span>View Store</span>
-                        </a>
-                    </li>
-
-
-                    <br>
-
-                    <li class="menu-title">Users</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 8. USERS (System) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="system">Users</li>
+                    <li data-workspace="system">
                         <a href="{{ url('/admin/adminList') }}"><i class="bx bx-user"></i><span>Admins</span></a>
                     </li>
-                    <li>
+                    <li data-workspace="system">
                         <a href="{{ url('/admin/staffList') }}"><i class="bx bx-user-check"></i><span>Production Staff</span></a>
                     </li>
-                    <li>
+
+                    <!-- ========================================== -->
+                    <!-- 9. CUSTOMERS (Commerce) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="commerce">Customers</li>
+                    <li data-workspace="commerce">
                         <a href="{{ url('/admin/customers') }}"><i class="bx bxs-user-detail"></i><span>Customers</span></a>
                     </li>
 
-                    <li class="menu-title">Security & Governance</li>
-                    <li>
+                    <!-- ========================================== -->
+                    <!-- 10. SECURITY & GOVERNANCE (System) -->
+                    <!-- ========================================== -->
+                    <li class="menu-title" data-workspace="system">Security & Governance</li>
+                    <li data-workspace="system">
                         <a href="{{ route('admin.auditLogs.index') }}">
                             <i class="bx bx-shield-quarter"></i>
                             <span>Audit Log</span>
                         </a>
                     </li>
 
-                    <br>
+                    <!-- ========================================== -->
+                    <!-- PERSISTENT FOOTER ACTIONS -->
+                    <!-- ========================================== -->
+                    <li data-workspace="all" class="border-top mt-3 pt-2">
+                        <a href="javascript:void(0);" id="adminToggleAllWorkspaces" class="text-muted d-flex align-items-center justify-content-between" style="font-size: 11px;">
+                            <span><i class="bx bx-grid-alt me-1 text-primary"></i><span id="adminToggleAllWorkspacesLabel">Show All Modules</span></span>
+                            <i class="bx bx-chevron-down" id="adminToggleAllWorkspacesIcon"></i>
+                        </a>
+                    </li>
 
-                    <li>
+                    <li data-workspace="all">
                         <a href="{{ url('/admin/logout') }}" 
                         onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
-                            <i class="bx bx-power-off" style="color: red"></i><span style="color: red">Logout</span>
+                            <i class="bx bx-power-off text-danger"></i><span class="text-danger font-weight-bold">Logout</span>
                         </a>
 
                         <form id="logout-form-sidebar" action="{{ url('/admin/logout') }}" method="POST" style="display:none;">
@@ -253,6 +430,15 @@
 <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
 <!-- Required datatable js -->
 <script src="{{ asset('assets/libs/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+<script>
+    // Global DataTables configuration: prevent blocking browser alerts and enforce safe retrieval across all tables
+    if (window.$ && $.fn && $.fn.dataTable) {
+        $.fn.dataTable.ext.errMode = 'none';
+        $.extend(true, $.fn.dataTable.defaults, {
+            retrieve: true
+        });
+    }
+</script>
 <script src="{{ asset('assets/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js') }}"></script>
 <!-- Buttons examples -->
 <script src="{{ asset('assets/libs/datatables.net-buttons/js/dataTables.buttons.min.js') }}"></script>
@@ -267,10 +453,148 @@
 <script src="{{ asset('assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js') }}"></script>
 <script src="{{ asset('assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js') }}"></script>
 
-<!-- Datatable init js -->
-<script src="{{ asset('assets/js/pages/datatables.init.js') }}"></script>    
+<!-- Datatable init js (cache busted) -->
+<script src="{{ asset('assets/js/pages/datatables.init.js') }}?v={{ file_exists(public_path('assets/js/pages/datatables.init.js')) ? filemtime(public_path('assets/js/pages/datatables.init.js')) : '2.0.1' }}"></script>        
 
 <script src="{{ asset('assets/js/app.js') }}"></script>
+
+<!-- Admin Workspace Switcher Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const STORAGE_KEY = 'moshel_admin_active_workspace';
+        const switcher = document.getElementById('adminSidebarSwitcher');
+        if (!switcher) return;
+
+        const buttons = switcher.querySelectorAll('.admin-workspace-btn');
+        const menuItems = document.querySelectorAll('#sidebar-menu ul.metismenu > li[data-workspace]');
+        const toggleAllBtn = document.getElementById('adminToggleAllWorkspaces');
+        const toggleAllLabel = document.getElementById('adminToggleAllWorkspacesLabel');
+        const toggleAllIcon = document.getElementById('adminToggleAllWorkspacesIcon');
+
+        let isAllVisible = false;
+
+        function setWorkspace(workspace, save = true) {
+            isAllVisible = false;
+            if (save) {
+                try { localStorage.setItem(STORAGE_KEY, workspace); } catch (e) {}
+            }
+
+            buttons.forEach(btn => {
+                const btnWs = btn.getAttribute('data-workspace');
+                if (btnWs === workspace) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            menuItems.forEach(li => {
+                const itemWs = li.getAttribute('data-workspace');
+                if (itemWs === workspace || itemWs === 'all') {
+                    li.style.display = '';
+                } else {
+                    li.style.display = 'none';
+                }
+            });
+
+            if (toggleAllLabel) toggleAllLabel.textContent = 'Show All Modules';
+            if (toggleAllIcon) toggleAllIcon.className = 'bx bx-chevron-down';
+
+            // Refresh SimpleBar if present
+            try {
+                const simpleBarContainer = document.querySelector('.vertical-menu [data-simplebar]');
+                if (simpleBarContainer && window.SimpleBar) {
+                    const inst = window.SimpleBar.instances.get(simpleBarContainer);
+                    if (inst) inst.recalculate();
+                }
+            } catch (e) {}
+        }
+
+        function showAllWorkspaces() {
+            isAllVisible = true;
+            buttons.forEach(btn => btn.classList.remove('active'));
+            menuItems.forEach(li => {
+                li.style.display = '';
+            });
+
+            if (toggleAllLabel) toggleAllLabel.textContent = 'Focus Active Module';
+            if (toggleAllIcon) toggleAllIcon.className = 'bx bx-chevron-up';
+
+            try {
+                const simpleBarContainer = document.querySelector('.vertical-menu [data-simplebar]');
+                if (simpleBarContainer && window.SimpleBar) {
+                    const inst = window.SimpleBar.instances.get(simpleBarContainer);
+                    if (inst) inst.recalculate();
+                }
+            } catch (e) {}
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const ws = this.getAttribute('data-workspace');
+                setWorkspace(ws, true);
+            });
+        });
+
+        if (toggleAllBtn) {
+            toggleAllBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (isAllVisible) {
+                    const fallback = detectActiveWorkspace() || 'bakery';
+                    let targetWs = fallback;
+                    try {
+                        targetWs = localStorage.getItem(STORAGE_KEY) || fallback;
+                    } catch (e) {}
+                    setWorkspace(targetWs, true);
+                } else {
+                    showAllWorkspaces();
+                }
+            });
+        }
+
+        function detectActiveWorkspace() {
+            // 1. Look for active menu link
+            const activeLink = document.querySelector('#sidebar-menu a.active, #sidebar-menu li.mm-active a');
+            if (activeLink) {
+                const parentLi = activeLink.closest('li[data-workspace]');
+                if (parentLi) {
+                    const ws = parentLi.getAttribute('data-workspace');
+                    if (ws && ws !== 'all') return ws;
+                }
+            }
+
+            // 2. URL route pattern detection
+            const path = window.location.pathname.toLowerCase();
+            if (path.includes('/pos') || path.includes('/sales') || path.includes('/store') || path.includes('/customer')) {
+                return 'commerce';
+            }
+            if (path.includes('/ingredient') || path.includes('/stock') || path.includes('/product') || path.includes('/recipe') || path.includes('/production')) {
+                return 'bakery';
+            }
+            if (path.includes('/home') || path.includes('/sitesetting') || path.includes('/unit') || path.includes('/admin') || path.includes('/staff') || path.includes('/audit')) {
+                return 'system';
+            }
+            return null;
+        }
+
+        // Initialize view:
+        const detected = detectActiveWorkspace();
+        let currentWorkspace = detected;
+
+        if (!currentWorkspace) {
+            try { currentWorkspace = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+        }
+        if (!currentWorkspace) {
+            currentWorkspace = 'bakery';
+        }
+
+        setWorkspace(currentWorkspace, false);
+    });
+</script>
+
+@yield('script')
+@yield('scripts')
 
 </body>
 </html>

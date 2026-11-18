@@ -1,24 +1,22 @@
 @extends('mail.layout.mail')
 
+@section('preheader', 'Procurement alert: raw materials have fallen below safety thresholds')
+
 @section('content')
-    <div style="text-align: center; margin-bottom: 30px;">
-        <div style="display: inline-block; background-color: #fffaf0; padding: 15px; border-radius: 50%; margin-bottom: 15px;">
-            <span style="font-size: 30px;">🌾</span>
-        </div>
-        <h2 style="color: #dd6b20; font-size: 24px; margin: 0;">Ingredient Reorder Alert</h2>
-        <p style="color: #718096;">Multiple raw materials have fallen below the minimum safety threshold.</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <span class="badge-warning" style="display: inline-block; margin-bottom: 10px;">Procurement Alert</span>
+        <h2 style="margin: 0 0 6px; font-size: 22px; color: #2a172e; font-weight: 700;">Ingredient Reorder Notice</h2>
+        <p style="margin: 0; color: #6c5a70; font-size: 14px;">Raw material inventory levels have fallen below the configured minimum safety buffer.</p>
     </div>
 
-    <div class="alert-box" style="background-color: #fffaf0; border-left: 4px solid #ed8936;">
-        <p style="margin: 0; color: #9c4221; font-size: 14px; font-weight: 600;">
-            ⚠️ Procurement Action Required
-        </p>
-        <p style="margin: 5px 0 0; font-size: 13px; color: #7b341e;">
-            Restock is needed to prevent production downtime. Below are the items requiring immediate replenishment.
+    <div class="alert-box-warning" style="margin-bottom: 24px;">
+        <p style="margin: 0 0 4px; color: #b45309; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Restock Required</p>
+        <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+            Immediate replenishment is advised to avoid interruptions in daily bakery production runs.
         </p>
     </div>
 
-    <table class="data-table">
+    <table class="data-table" style="margin-bottom: 24px;">
         <thead>
             <tr>
                 <th>Ingredient</th>
@@ -33,13 +31,13 @@
                 $unitSymbol = $item->ingredient->baseUnit->symbol ?? '';
             @endphp
             <tr>
-                <td style="color: #2d3748; font-weight: 600;">
+                <td style="color: #2a172e; font-weight: 600;">
                     {{ $item->ingredient->name ?? 'Unnamed Ingredient' }}
                 </td>
-                <td style="text-align: center; font-weight: 800; color: #e53e3e;">
-                    {{ number_format($item->quantity, 2) }} <small style="font-weight: 400; color: #a0aec0;">{{ $unitSymbol }}</small>
+                <td style="text-align: center; font-weight: 800; color: #b91c1c;">
+                    {{ number_format($item->quantity, 2) }} <small style="font-weight: 500; color: #6c5a70;">{{ $unitSymbol }}</small>
                 </td>
-                <td style="text-align: right; color: #718096; font-size: 13px;">
+                <td style="text-align: right; color: #6c5a70; font-size: 13px;">
                     {{ number_format($effectiveThreshold, 2) }} <small>{{ $unitSymbol }}</small>
                 </td>
             </tr>
@@ -47,15 +45,15 @@
         </tbody>
     </table>
 
-    <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin-top: 25px; text-align: center; border: 1px solid #edf2f7;">
-        <p style="margin: 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-            <strong>Pro Tip:</strong> Once you've secured the supplies, click the button below to record the "Stock In" and update the live inventory.
+    <div class="alert-box" style="margin-bottom: 28px; text-align: center;">
+        <p style="margin: 0; font-size: 13px; color: #581a62; line-height: 1.5;">
+            <strong>Next Step:</strong> Once materials arrive, record a <strong>Stock In</strong> to automatically refresh available quantities.
         </p>
     </div>
 
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="{{ url('/admin/stock-in') }}" class="button" style="background-color: #dd6b20;">
-            Record Purchase / Stock In
+    <div style="text-align: center;">
+        <a href="{{ url('/admin/stock-in') }}" class="button">
+            Record Stock In
         </a>
     </div>
 @endsection

@@ -1,58 +1,56 @@
 @extends('mail.layout.mail')
 
+@section('preheader', '[RECIPE UPDATE] Formulation modified for ' . $recipe->product->name)
+
 @section('content')
-    <div style="text-align: center; margin-bottom: 30px;">
-        <div style="display: inline-block; background-color: #fffaf0; padding: 15px; border-radius: 50%; margin-bottom: 15px; border: 2px solid #fbd38d;">
-            <span style="font-size: 30px;">🧪</span>
-        </div>
-        <h2 style="color: #c05621; font-size: 24px; margin: 0;">Recipe Formula Modified</h2>
-        <p style="color: #718096;">The raw material requirements for a product have been updated.</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+        <span class="badge-purple" style="display: inline-block; margin-bottom: 10px;">Recipe Formulation Update</span>
+        <h2 style="margin: 0 0 6px; font-size: 22px; color: #2a172e; font-weight: 700;">Recipe Formula Modified</h2>
+        <p style="margin: 0; color: #6c5a70; font-size: 14px;">The raw material requirements and ratios for a bakery product have been updated.</p>
     </div>
 
-    <div class="alert-box" style="background-color: #fffaf0; border-left: 4px solid #f6ad55;">
-        <p style="margin: 0; color: #9c4221; font-size: 14px; font-weight: 600;">
-            ⚠️ Inventory Impact Notice
-        </p>
-        <p style="margin: 5px 0 0; font-size: 13px; color: #7b341e;">
-            This change affects future ingredient deductions. Please verify that the new ratios align with physical production to prevent stock-on-hand errors.
+    <div class="alert-box-warning" style="margin-bottom: 24px;">
+        <p style="margin: 0 0 4px; color: #b45309; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Inventory Impact Notice</p>
+        <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+            This change alters future ingredient deduction calculations. Please ensure physical baking ratios match this configuration.
         </p>
     </div>
 
-    <table class="data-table">
+    <table class="data-table" style="margin-bottom: 24px;">
         <thead>
             <tr>
-                <th colspan="2">Modification Audit</th>
+                <th colspan="2" style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px;">Modification Audit</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td style="color: #718096; width: 40%;">Product Affected</td>
-                <td style="font-weight: 700; color: #2d3748;">{{ $recipe->product->name }}</td>
+                <td style="color: #6c5a70; width: 40%; font-weight: 500;">Product Affected</td>
+                <td style="font-weight: 700; color: #2a172e; font-size: 15px;">{{ $recipe->product->name }}</td>
             </tr>
             <tr>
-                <td style="color: #718096;">Modified By</td>
-                <td style="font-weight: 600; color: #2d3748;">{{ $user->name }}</td>
+                <td style="color: #6c5a70; font-weight: 500;">Modified By</td>
+                <td style="font-weight: 600; color: #2a172e;">{{ $user->name }}</td>
             </tr>
             <tr>
-                <td style="color: #718096;">Account Email</td>
-                <td style="font-size: 13px; color: #4a5568;">{{ $user->email }}</td>
+                <td style="color: #6c5a70; font-weight: 500;">User Account</td>
+                <td style="font-size: 13px; color: #581a62;">{{ $user->email }}</td>
             </tr>
             <tr>
-                <td style="color: #718096;">Change Timestamp</td>
-                <td style="font-size: 13px; color: #a0aec0;">{{ now()->format('M d, Y | h:i A') }}</td>
+                <td style="color: #6c5a70; font-weight: 500;">Change Timestamp</td>
+                <td style="font-size: 13px; color: #6c5a70;">{{ now()->format('M d, Y | h:i A') }}</td>
             </tr>
         </tbody>
     </table>
 
-    <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #edf2f7; text-align: center;">
-        <p style="margin: 0; font-size: 13px; color: #4a5568; line-height: 1.5;">
-            <strong>Note:</strong> Previous production records will retain their original costs. This update only applies to batches finalized after this timestamp.
+    <div class="alert-box" style="margin-bottom: 28px; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #581a62; line-height: 1.5;">
+            <strong>Note:</strong> Historical production logs retain their original unit costs. This formula update only applies to future batches.
         </p>
     </div>
 
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="{{ url('/admin/recipes') }}" class="button" style="background-color: #f6ad55;">
-            Verify New Ratios
+    <div style="text-align: center;">
+        <a href="{{ url('/admin/recipes') }}" class="button">
+            Verify Recipe Ratios
         </a>
     </div>
 @endsection

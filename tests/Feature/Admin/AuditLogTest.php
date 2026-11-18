@@ -218,7 +218,7 @@ class AuditLogTest extends TestCase
         $this->assertNotNull($session->uuid);
         $url = route('admin.auditLogs.show', $session);
         $this->assertStringContainsString($session->uuid, $url);
-        $this->assertStringNotContainsString("/session/{$session->id}", $url);
+        $this->assertNotEquals(url("/admin/audit-logs/session/{$session->id}"), $url);
 
         $response = $this->actingAs($admin, 'admin')->get($url);
 

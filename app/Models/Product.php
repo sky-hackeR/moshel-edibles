@@ -69,4 +69,12 @@ class Product extends Model
     {
         return $this->hasOne(StoreProduct::class);
     }
+
+    /**
+     * Storefront images linked through storeProduct.
+     */
+    public function images()
+    {
+        return $this->hasManyThrough(StoreProductImage::class, StoreProduct::class);
+    }
 }

@@ -23,7 +23,8 @@ use App\Mail\POS\SaleRecorded;
 class POSController extends Controller
 {
     public function pos() {
-        $products = Product::where('is_active', true)
+        $products = Product::with(['storeProduct.primaryImage'])
+            ->where('is_active', true)
             ->where('stock_on_hand', '>', 0)
             ->orderBy('name', 'asc')
             ->get();
@@ -79,13 +80,24 @@ class POSController extends Controller
                 ]);
             }
 
+            DB::commit();
+
             $this->notifySale($sale, $user);
 
-            DB::commit();
             return response()->json([
                 'success' => true, 
                 'message' => 'Sale Completed Successfully!', 
-                'reference_no' => $sale->reference_no
+                'reference_no' => $sale->reference_no,
+                'sale' => [
+                    'reference_no'    => $sale->reference_no,
+                    'created_at'      => $sale->created_at->format('d M, Y H:i'),
+                    'seller_name'     => $user->name ?? 'Staff',
+                    'total_amount'    => (float) $sale->total_amount,
+                    'discount_amount' => (float) $sale->discount_amount,
+                    'payable_amount'  => (float) $sale->payable_amount,
+                    'payment_method'  => $sale->payment_method,
+                    'notes'           => $sale->notes,
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -116,17 +128,23 @@ class POSController extends Controller
             return response()->json([
                 'success' => true,
                 'sale' => [
-                    'reference_no' => $sale->reference_no,
-                    'total_amount' => $sale->total_amount,
-                        'staff_name'     => $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name,
-                        'merchant_name'  => $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name,
-                    'payable_amount' => $sale->payable_amount,
-                    'payment_method' => $sale->payment_method,
-                    'created_at' => $sale->created_at->format('d M, Y H:i'),
-                    'items' => $sale->items->map(fn($item) => [
+                    'reference_no'    => $sale->reference_no,
+                    'total_amount'    => (float) $sale->total_amount,
+                    'discount_amount' => (float) ($sale->discount_amount ?? 0),
+                    'shipping_fee'    => (float) ($sale->shipping_fee ?? 0),
+                    'payable_amount'  => (float) $sale->payable_amount,
+                    'payment_method'  => $sale->payment_method,
+                    'payment_status'  => $sale->payment_status,
+                    'order_status'    => $sale->order_status,
+                    'notes'           => $sale->notes,
+                    'staff_name'      => $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name,
+                    'merchant_name'   => $sale->user_type === 'customer' ? 'Online Merchant' : $sale->seller_name,
+                    'created_at'      => $sale->created_at->format('d M, Y H:i'),
+                    'items'           => $sale->items->map(fn($item) => [
                         'product_name' => $item->product->name ?? 'Unknown',
-                        'quantity' => $item->quantity,
-                        'unit_price' => $item->unit_price
+                        'quantity'     => $item->quantity,
+                        'unit_price'   => (float) $item->unit_price,
+                        'subtotal'     => (float) ($item->subtotal ?? ($item->quantity * $item->unit_price))
                     ])
                 ]
             ]);
@@ -137,10 +155,17 @@ class POSController extends Controller
 
     private function notifySale($sale, $user) {
         try {
-            $adminEmails = Admin::pluck('email')->toArray();
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new SaleRecorded($sale, $user);
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
             if (!empty($adminEmails)) {
-                Mail::to($adminEmails)->send(new SaleRecorded($sale, $user));
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) { Log::error("Staff Sale mail failed: " . $e->getMessage()); }
+            $mail->send($mailable);
+        } catch (\Throwable $e) { Log::error("Staff Sale mail failed: " . $e->getMessage()); }
     }
 }
