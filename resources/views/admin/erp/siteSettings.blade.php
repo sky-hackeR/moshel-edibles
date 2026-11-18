@@ -494,7 +494,7 @@
                         <div class="bg-white rounded-pill px-3 py-1 border d-flex align-items-center gap-2 w-100 shadow-sm">
                             <i class="bx bx-lock-alt text-success font-size-13 flex-shrink-0"></i>
                             <span class="font-size-11 text-muted font-monospace text-truncate" id="urlDisplayBar">
-                                {{ url('/', [], false) }}
+                                {{ url('/') }}
                             </span>
                             <span id="iframeMiniSpinner" class="spinner-border spinner-border-sm text-primary ms-auto d-none" style="width: 13px; height: 13px;" role="status"></span>
                         </div>
@@ -503,10 +503,10 @@
                     <div class="d-flex align-items-center gap-2">
                         {{-- Page Selector --}}
                         <select class="form-select form-select-sm font-size-11 py-1 rounded-pill shadow-sm" id="routeSelector" style="width: auto; cursor: pointer;">
-                            <option value="{{ url('/', [], false) }}" selected>Home (/)</option>
-                            <option value="{{ url('/products', [], false) }}">Menu / Products (/products)</option>
-                            <option value="{{ url('/about', [], false) }}">About Us (/about)</option>
-                            <option value="{{ url('/contact', [], false) }}">Contact Us (/contact)</option>
+                            <option value="{{ url('/') }}" selected>Home (/)</option>
+                            <option value="{{ url('/products') }}">Menu / Products (/products)</option>
+                            <option value="{{ url('/about') }}">About Us (/about)</option>
+                            <option value="{{ url('/contact') }}">Contact Us (/contact)</option>
                         </select>
 
                         {{-- Reload Frame --}}
@@ -525,7 +525,7 @@
                 <div class="bg-light d-flex align-items-center justify-content-center p-3 position-relative" id="emulatorStageContainer" style="min-height: 700px; height: calc(100vh - 240px); overflow: auto; transition: height 0.3s ease;">
                     {{-- DEVICE FRAME WRAPPER --}}
                     <div id="deviceFrameWrapper" class="w-100 h-100 transition-all position-relative" style="background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06); transition: all 0.3s ease;">
-                        <iframe src="{{ url('/', [], false) }}" 
+                        <iframe src="{{ url('/') }}" 
                                 id="storefrontPreviewIframe"
                                 class="w-100 h-100 border-0" 
                                 style="width: 100%; height: 100%; display: block;"

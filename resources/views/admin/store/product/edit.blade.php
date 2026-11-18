@@ -168,7 +168,8 @@
                             <textarea name="short_description"
                                       id="short_description"
                                       rows="3"
-                                      class="form-control rounded-3 py-2.5 px-3.5 font-size-13 @error('short_description') is-invalid @enderror"
+                                      class="form-control rounded-3 py-2.5 px-3.5 font-size-13 no-editor @error('short_description') is-invalid @enderror"
+                                      data-no-editor="true"
                                       maxlength="500"
                                       placeholder="A crisp, mouthwatering 1-2 sentence hook for catalog cards, search listings, and cart previews...">{{ old('short_description', $storeProduct->short_description) }}</textarea>
                             @error('short_description')
@@ -410,7 +411,8 @@
                                       name="meta_description"
                                       id="meta_description"
                                       rows="2"
-                                      class="form-control rounded-3 py-2 px-3 font-size-12"
+                                      class="form-control rounded-3 py-2 px-3 font-size-12 no-editor"
+                                      data-no-editor="true"
                                       maxlength="500"
                                       placeholder="Summary snippet displayed beneath the title in search engine results...">{{ old('meta_description', $storeProduct->meta_description) }}</textarea>
                             <small class="text-muted font-size-11 d-block mt-1">Recommended length: 120–160 characters</small>

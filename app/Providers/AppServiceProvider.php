@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrap();
 
+        if ($this->app->environment('production') || env('FORCE_HTTPS', false)) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         RateLimiter::for('outbound-mail', function ($job) {
             return Limit::perMinute(max(1, (int) config('mail.outbound_rate_limit_per_minute', 10)))
                 ->by('outbound-mail');
