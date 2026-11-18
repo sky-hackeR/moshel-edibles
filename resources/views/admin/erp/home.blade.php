@@ -45,6 +45,7 @@
 </div>
 
 <div class="row g-3 align-items-stretch kpi-grid">
+    {{-- 1. Today's Revenue --}}
     <div class="col-6 col-xl-3" data-reveal>
         <div class="card mini-stats-wid shadow-sm stat-card theme-revenue h-100">
             <div class="card-body d-flex align-items-center justify-content-between gap-2">
@@ -58,19 +59,7 @@
         </div>
     </div>
 
-    <div class="col-6 col-xl-3" data-reveal>
-        <div class="card mini-stats-wid shadow-sm stat-card theme-expenses h-100" data-bs-toggle="modal" data-bs-target="#expenseBreakdownModal" role="button" tabindex="0" aria-label="Open today's expense breakdown">
-            <div class="card-body d-flex align-items-center justify-content-between gap-2">
-                <div class="stat-copy">
-                    <p class="stat-label">Today's Expenses <button type="button" class="metric-help text-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Production costs recorded today. Stock purchases are shown separately in the breakdown."><i class="bx bx-info-circle"></i><span class="visually-hidden">Expenses metric details</span></button></p>
-                    <h4 class="stat-value">₦<span class="counter" data-target="{{ $todaySpent }}">0</span></h4>
-                    <small class="stat-detail">Production usage</small>
-                </div>
-                <span class="stat-icon"><i class="bx bx-credit-card"></i></span>
-            </div>
-        </div>
-    </div>
-
+    {{-- 2. 7-Day Operating Position (Net Profit / Operating Balance) --}}
     <div class="col-6 col-xl-3" data-reveal>
         <div class="card mini-stats-wid shadow-sm stat-card {{ $profitTheme }} h-100" data-bs-toggle="modal" data-bs-target="#expenseBreakdownModal" role="button" tabindex="0" aria-label="Open today's profit and loss breakdown">
             <div class="card-body d-flex align-items-center justify-content-between gap-2">
@@ -84,6 +73,21 @@
         </div>
     </div>
 
+    {{-- 3. Today's Expenses --}}
+    <div class="col-6 col-xl-3" data-reveal>
+        <div class="card mini-stats-wid shadow-sm stat-card theme-expenses h-100" data-bs-toggle="modal" data-bs-target="#expenseBreakdownModal" role="button" tabindex="0" aria-label="Open today's expense breakdown">
+            <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                <div class="stat-copy">
+                    <p class="stat-label">Today's Expenses <button type="button" class="metric-help text-white" data-bs-toggle="tooltip" data-bs-placement="top" title="Production costs recorded today. Stock purchases are shown separately in the breakdown."><i class="bx bx-info-circle"></i><span class="visually-hidden">Expenses metric details</span></button></p>
+                    <h4 class="stat-value">₦<span class="counter" data-target="{{ $todaySpent }}">0</span></h4>
+                    <small class="stat-detail">Production usage</small>
+                </div>
+                <span class="stat-icon"><i class="bx bx-credit-card"></i></span>
+            </div>
+        </div>
+    </div>
+
+    {{-- 4. Total Transactions --}}
     <div class="col-6 col-xl-3" data-reveal>
         <div class="card mini-stats-wid shadow-sm stat-card theme-orders h-100">
             <div class="card-body d-flex align-items-center justify-content-between gap-2">
@@ -125,6 +129,200 @@
                         <strong>{{ $lowStockCount }} low</strong>
                         <small class="text-danger">{{ $criticalStockCount }} critical</small>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- =====================================================
+     OMNICHANNEL, FULFILLMENT & INVENTORY VALUATION GRID
+     ===================================================== --}}
+<div class="row g-3 mt-1 align-items-stretch" data-reveal>
+    {{-- 1. Bakery Production Intelligence (Kitchen & Manufacturing Core) --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm domain-card h-100 border-0">
+            <div class="card-body p-3.5 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="domain-tag tag-kitchen">
+                            <i class="bx bx-dish me-1"></i> Bakery Production
+                        </span>
+                        @if($weeklyProducedUnits > 0 && $weeklyProductionProfit < 0)
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle font-size-10 px-2 py-0.5"
+                                  data-bs-toggle="tooltip"
+                                  title="Ingredient cost (₦{{ number_format($weeklyProductionCost, 0) }}) exceeded expected retail sales value (₦{{ number_format($weeklyExpectedRevenue, 0) }}). Review recipe quantities or product selling price.">
+                                <i class="bx bx-error-circle me-0.5"></i> Cost &gt; Revenue
+                            </span>
+                        @else
+                            <span class="badge bg-light text-muted border font-size-10">{{ $totalRecipesCount }} Recipes</span>
+                        @endif
+                    </div>
+                    <h5 class="fw-bold mb-1 font-size-16 text-dark">
+                        {{ number_format($weeklyProducedUnits, 0) }} Units
+                    </h5>
+                    <small class="text-muted font-size-11 d-block mb-3">7-day production output ({{ $weeklyProductionBatches }} batches)</small>
+
+                    <div class="d-flex align-items-center justify-content-between font-size-12 mb-1.5">
+                        <span class="text-muted">Today's Batches:</span>
+                        <strong class="text-dark">{{ $todayProductionBatches }} ({{ number_format($todayProducedUnits, 0) }} units)</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between font-size-12 mb-1.5">
+                        <span class="text-muted">Ingredient Cost:</span>
+                        <strong class="text-danger">₦{{ number_format($weeklyProductionCost, 0) }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between font-size-12 mb-1.5">
+                        <span class="text-muted">Expected Output:</span>
+                        <strong class="text-dark">₦{{ number_format($weeklyExpectedRevenue, 0) }}</strong>
+                    </div>
+                </div>
+                <div class="pt-2 mt-2 border-top border-light d-flex align-items-center justify-content-between font-size-11 text-muted">
+                    @if($weeklyProducedUnits == 0)
+                        <span>Est. Gross Margin:</span>
+                        <span class="text-muted">No production this week</span>
+                    @elseif($weeklyProductionProfit >= 0)
+                        <span>Est. Gross Margin:</span>
+                        <strong class="text-success">
+                            <i class="bx bx-trending-up me-0.5"></i> +{{ $productionMarginPercent }}% (+₦{{ number_format($weeklyProductionProfit, 0) }})
+                        </strong>
+                    @else
+                        <span class="text-danger fw-semibold">Est. Production Deficit:</span>
+                        <strong class="text-danger" data-bs-toggle="tooltip" title="Ingredient cost exceeded expected retail sales value. Review ingredient quantities used or product pricing.">
+                            <i class="bx bx-trending-down me-0.5"></i> {{ $productionMarginPercent }}% (-₦{{ number_format(abs($weeklyProductionProfit), 0) }})
+                        </strong>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 2. Sales Channels (Commercial Monetization: POS vs Online) --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm domain-card h-100 border-0">
+            <div class="card-body p-3.5 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="domain-tag tag-commerce">
+                            <i class="bx bx-store-alt me-1"></i> Sales Channels
+                        </span>
+                        <span class="text-muted font-size-11">Last 7 Days</span>
+                    </div>
+                    <h5 class="fw-bold mb-1 font-size-16 text-dark">
+                        ₦{{ number_format($weeklyRevenue, 2) }}
+                    </h5>
+                    <small class="text-muted font-size-11 d-block mb-3">Omnichannel paid revenue</small>
+
+                    <div class="channel-split-bar mb-3">
+                        <div class="split-pos" style="width: {{ max(4, $posRevenueShare) }}%" title="In-Store POS: {{ $posRevenueShare }}%"></div>
+                        <div class="split-online" style="width: {{ max(4, $onlineRevenueShare) }}%" title="Online Store: {{ $onlineRevenueShare }}%"></div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between font-size-12 mb-1.5">
+                        <span class="text-muted d-flex align-items-center gap-1">
+                            <span class="channel-dot" style="background: #4f46e5;"></span> In-Store (POS)
+                        </span>
+                        <span class="fw-bold text-dark">₦{{ number_format($posPaidRevenue, 0) }} <small class="text-muted fw-normal">({{ $posPaidOrdersCount }})</small></span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between font-size-12">
+                        <span class="text-muted d-flex align-items-center gap-1">
+                            <span class="channel-dot" style="background: #06b6d4;"></span> Online Store
+                        </span>
+                        <span class="fw-bold text-dark">₦{{ number_format($onlinePaidRevenue, 0) }} <small class="text-muted fw-normal">({{ $onlinePaidOrdersCount }})</small></span>
+                    </div>
+                </div>
+                <div class="pt-2 mt-2 border-top border-light d-flex align-items-center justify-content-between font-size-11 text-muted">
+                    <span>POS Share: <strong class="text-primary">{{ $posRevenueShare }}%</strong></span>
+                    <span>Online: <strong class="text-info">{{ $onlineRevenueShare }}%</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 3. Order Fulfillment Pipeline (Live Order Workflow) --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm domain-card h-100 border-0">
+            <div class="card-body p-3.5 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="domain-tag tag-fulfillment">
+                            <i class="bx bx-package me-1"></i> Order Pipeline
+                        </span>
+                        <span class="badge bg-light text-muted border font-size-10">Live Status</span>
+                    </div>
+                    <h5 class="fw-bold mb-1 font-size-16 text-dark">
+                        {{ number_format($completedOrdersCount + $processingOrdersCount + $pendingOrdersCount) }} Orders
+                    </h5>
+                    <small class="text-muted font-size-11 d-block mb-3">All-time fulfillment tracking</small>
+
+                    <div class="pipeline-list d-flex flex-column gap-2 mb-2">
+                        <div class="d-flex align-items-center justify-content-between font-size-12">
+                            <span class="text-muted d-flex align-items-center gap-1">
+                                <i class="bx bx-check-circle text-success font-size-14"></i> Completed / Delivered
+                            </span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill font-size-11 px-2">
+                                {{ $completedOrdersCount }}
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between font-size-12">
+                            <span class="text-muted d-flex align-items-center gap-1">
+                                <i class="bx bx-loader-alt text-warning font-size-14"></i> In Kitchen / Processing
+                            </span>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill font-size-11 px-2">
+                                {{ $processingOrdersCount }}
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between font-size-12">
+                            <span class="text-muted d-flex align-items-center gap-1">
+                                <i class="bx bx-time-five text-secondary font-size-14"></i> Pending Payment / Review
+                            </span>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill font-size-11 px-2">
+                                {{ $pendingOrdersCount }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-2 mt-2 border-top border-light d-flex align-items-center justify-content-between font-size-11 text-muted">
+                    <span>Payment Failures (7D):</span>
+                    <strong class="{{ $failedOrdersCount > 0 ? 'text-danger' : 'text-success' }}">{{ $failedOrdersCount }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 4. Total Inventory Asset Valuation (Balance Sheet Capital) --}}
+    <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm domain-card h-100 border-0">
+            <div class="card-body p-3.5 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="domain-tag tag-valuation">
+                            <i class="bx bx-shield-quarter me-1"></i> Inventory Assets
+                        </span>
+                        <span class="badge bg-light text-muted border font-size-10">Balance Sheet</span>
+                    </div>
+                    <h5 class="fw-bold mb-1 font-size-16 text-dark">
+                        ₦{{ number_format($totalInventoryValuation, 2) }}
+                    </h5>
+                    <small class="text-muted font-size-11 d-block mb-3">Combined stock asset valuation</small>
+
+                    <div class="d-flex align-items-center justify-content-between font-size-12 mb-1.5">
+                        <span class="text-muted">Raw Ingredients:</span>
+                        <strong class="text-dark">₦{{ number_format($rawMaterialsValuation, 0) }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between font-size-12 mb-1.5">
+                        <span class="text-muted">Finished Goods (Retail):</span>
+                        <strong class="text-dark">₦{{ number_format($finishedGoodsValuation, 0) }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between font-size-12">
+                        <span class="text-muted">Procurement Spend (7D):</span>
+                        <strong class="text-primary">₦{{ number_format($weeklyPurchases, 0) }}</strong>
+                    </div>
+                </div>
+                <div class="pt-2 mt-2 border-top border-light d-flex align-items-center justify-content-between font-size-11 text-muted">
+                    <span>Raw Stock Alerts:</span>
+                    <strong class="{{ $lowStockIngredientsCount > 0 ? 'text-danger' : 'text-success' }}">
+                        {{ $lowStockIngredientsCount }} need reorder
+                    </strong>
                 </div>
             </div>
         </div>
@@ -230,6 +428,204 @@
     </div>
 </div>
 
+{{-- =====================================================
+     SUPPLY CHAIN, STOREFRONT CATALOG & CUSTOMER HEALTH ROW
+     ===================================================== --}}
+<div class="row g-3 mt-1 align-items-stretch" data-reveal>
+    {{-- LEFT: RAW INGREDIENTS REORDER WATCH (BAKERY SUPPLY CHAIN) --}}
+    <div class="col-xl-6 d-flex">
+        <div class="card shadow-sm analytics-panel bottom-panel ingredients-panel flex-fill">
+            <div class="card-body">
+                <div class="section-heading d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <span class="section-eyebrow">Bakery Supply Chain</span>
+                        <h4 class="card-title mb-1">Raw Ingredients Reorder Watch</h4>
+                        <small class="text-muted">{{ $lowStockIngredientsCount }} raw baking ingredients at or below reorder threshold</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="stock-summary {{ $lowStockIngredientsCount > 0 ? 'stock-summary-alert' : '' }}" title="{{ $lowStockIngredientsCount }} ingredients require procurement restocking">
+                            <strong>{{ $lowStockIngredientsCount }}</strong><small>reorder</small>
+                        </span>
+                        <a href="{{ url('/admin/stockIn') }}" class="btn btn-outline-primary btn-sm rounded-pill font-size-11 px-2.5 py-1" title="Purchase & Restock Ingredients">
+                            <i class="bx bx-plus me-1"></i> Stock In
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle insight-table stock-table">
+                        <thead>
+                            <tr>
+                                <th>Ingredient</th>
+                                <th>Stock on Hand</th>
+                                <th>Reorder Threshold</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topLowIngredients as $inv)
+                                @php
+                                    $ing = $inv->ingredient;
+                                    $unitSymbol = $ing->baseUnit->symbol ?? '';
+                                    $threshold = $ing ? (float) $ing->effective_reorder_level : 0;
+                                    $isCritical = $inv->quantity <= ($threshold * 0.4);
+                                @endphp
+                                <tr>
+                                    <td class="product-name">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="ingredient-dot {{ $isCritical ? 'bg-danger' : 'bg-warning' }}"></span>
+                                            <div>
+                                                <strong class="text-dark">{{ $ing->name ?? 'Unknown' }}</strong>
+                                                <small class="text-muted d-block font-size-11">Avg Cost: ₦{{ number_format($inv->average_cost, 2) }}/{{ $unitSymbol }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong class="{{ $isCritical ? 'text-danger' : 'text-warning' }}">
+                                            {{ number_format($inv->quantity, 2) }} {{ $unitSymbol }}
+                                        </strong>
+                                        <span class="stock-meter d-block mt-1">
+                                            <span class="{{ $isCritical ? 'meter-critical' : 'meter-low' }}"
+                                                  style="width: {{ $threshold > 0 ? min(100, max(6, ((float) $inv->quantity / $threshold) * 100)) : 10 }}%"></span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted font-size-12">{{ number_format($threshold, 2) }} {{ $unitSymbol }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="stock-badge {{ $isCritical ? 'critical' : 'low' }}">
+                                            {{ $isCritical ? 'Critical Low' : 'Reorder Now' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4">
+                                        <div class="empty-insight stock-healthy">
+                                            <i class="bx bx-check-double text-success"></i>
+                                            <span>Raw Material Stocks Are Healthy</span>
+                                            <small>All pantry and bakery ingredients currently meet or exceed minimum reorder buffers.</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- RIGHT: STOREFRONT CATALOG & CUSTOMER RELATIONSHIP INTELLIGENCE --}}
+    <div class="col-xl-6 d-flex">
+        <div class="card shadow-sm analytics-panel bottom-panel storefront-panel flex-fill">
+            <div class="card-body">
+                <div class="section-heading d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <span class="section-eyebrow">Commerce &amp; Audience</span>
+                        <h4 class="card-title mb-1">Storefront &amp; Customer Intelligence</h4>
+                        <small class="text-muted">Public digital storefront status and customer engagement metrics</small>
+                    </div>
+                    <a href="{{ url('/admin/customers') }}" class="btn btn-outline-secondary btn-sm rounded-pill font-size-11 px-2.5 py-1" title="View Customer Directory">
+                        <i class="bx bx-user me-1"></i> Customers
+                    </a>
+                </div>
+
+                {{-- STOREFRONT CATALOG SUMMARY ROW --}}
+                <div class="row g-2 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2.5 rounded-3 bg-light border text-center">
+                            <small class="text-muted font-size-11 d-block mb-1">Catalog Listed</small>
+                            <h5 class="mb-0 fw-bold text-dark font-size-15">{{ $totalStoreProducts }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2.5 rounded-3 bg-success-subtle border border-success-subtle text-center">
+                            <small class="text-success font-size-11 d-block mb-1">Published Live</small>
+                            <h5 class="mb-0 fw-bold text-success font-size-15">{{ $publishedStoreProducts }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2.5 rounded-3 bg-warning-subtle border border-warning-subtle text-center">
+                            <small class="text-warning font-size-11 d-block mb-1">Draft Mode</small>
+                            <h5 class="mb-0 fw-bold text-warning font-size-15">{{ $draftStoreProducts }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2.5 rounded-3 bg-danger-subtle border border-danger-subtle text-center">
+                            <small class="text-danger font-size-11 d-block mb-1">Out of Stock</small>
+                            <h5 class="mb-0 fw-bold text-danger font-size-15">{{ $outOfStockStoreProducts }}</h5>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- CUSTOMER METRICS & TEAM PILL --}}
+                <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-light border mb-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-xs rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                            <i class="bx bx-group font-size-16"></i>
+                        </div>
+                        <div>
+                            <span class="fw-bold text-dark font-size-13">{{ number_format($totalCustomersCount) }} Registered Customers</span>
+                            <small class="text-muted d-block font-size-11">+{{ $weeklyNewCustomersCount }} joined this week · {{ $customerVerificationRate }}% verified accounts</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-white text-muted border font-size-11 px-2.5 py-1">
+                        {{ $staffCount }} Staff Cashiers · {{ $adminsCount }} Admins
+                    </span>
+                </div>
+
+                {{-- TOP VALUED CUSTOMERS TABLE --}}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle insight-table">
+                        <thead>
+                            <tr>
+                                <th>Top Customer</th>
+                                <th class="text-center">Paid Orders</th>
+                                <th class="text-end">Confirmed Spend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topCustomers as $cust)
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="customer-avatar-sm">{{ $cust->initials ?: 'CU' }}</span>
+                                            <div>
+                                                <strong class="text-dark">{{ $cust->name }}</strong>
+                                                <small class="text-muted d-block font-size-11">{{ $cust->email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-secondary border font-size-11 px-2">
+                                            {{ $cust->paid_orders_count ?? 0 }} orders
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold text-dark">
+                                        ₦{{ number_format($cust->total_spent ?? 0, 2) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="empty-insight" style="min-height: 120px;">
+                                            <i class="bx bx-user-x"></i>
+                                            <span>No Customer Purchase History Yet</span>
+                                            <small>Customer ranking will populate after customers complete store orders.</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="expenseBreakdownModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -282,6 +678,21 @@
                     <p class="mt-2 text-muted small italic" style="font-size: 0.75rem;">
                         * Purchases are considered inventory assets and are only deducted from profit as they are <b>produced/used</b>.
                     </p>
+                </div>
+
+                <div class="border rounded p-3 mt-3 bg-light-subtle">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="font-size-13 text-dark">Total Inventory Asset Valuation</strong>
+                        <span class="fw-bold text-success font-size-14">₦{{ number_format($totalInventoryValuation, 2) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted font-size-12">
+                        <span>Raw Bakery Materials:</span>
+                        <span>₦{{ number_format($rawMaterialsValuation, 2) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted font-size-12">
+                        <span>Commercial Finished Goods:</span>
+                        <span>₦{{ number_format($finishedGoodsValuation, 2) }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -363,6 +774,21 @@
         .stock-meter { width: 54px; }
         .insight-table tbody td { padding: 0.65rem 0.35rem; font-size: 0.76rem; }
     }
+    .domain-card { border: 1px solid var(--analytics-line) !important; border-radius: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease; background: #fff; }
+    .domain-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(27, 45, 57, 0.08) !important; }
+    .domain-tag { display: inline-flex; align-items: center; padding: 0.2rem 0.55rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-commerce { background: #e0f2fe; color: #0284c7; }
+    .tag-fulfillment { background: #fef3c7; color: #b45309; }
+    .tag-kitchen { background: #f3e8ff; color: #7e22ce; }
+    .tag-valuation { background: #dcfce7; color: #15803d; }
+    .channel-split-bar { display: flex; height: 6px; border-radius: 99px; overflow: hidden; background: #f1f5f9; gap: 2px; }
+    .split-pos { background: #4f46e5; border-radius: 99px 0 0 99px; transition: width 0.4s ease; }
+    .split-online { background: #06b6d4; border-radius: 0 99px 99px 0; transition: width 0.4s ease; }
+    .channel-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+    .ingredients-panel { border-top: 3px solid #059669 !important; }
+    .storefront-panel { border-top: 3px solid #6366f1 !important; }
+    .ingredient-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .customer-avatar-sm { display: inline-grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: #e0e7ff; color: #4338ca; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

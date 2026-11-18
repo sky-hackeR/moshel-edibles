@@ -2,15 +2,11 @@
 
 namespace App\Notifications;
 
-use App\Notifications\Concerns\QueuesOutboundMail;
-use Illuminate\Contracts\Queue\ShouldBeEncrypted;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class CustomerOrderConfirmed extends Notification implements ShouldQueue, ShouldBeEncrypted
+class CustomerOrderConfirmed extends Notification
 {
-    use QueuesOutboundMail;
 
     public $sale;
 

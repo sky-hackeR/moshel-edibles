@@ -43,7 +43,12 @@ use Carbon\Carbon;
 class RecipeController extends Controller
 {
     public function recipes(){
-        $recipes = Recipe::with(['product', 'items.ingredient', 'items.unit'])->latest()->get();
+        $recipes = Recipe::with([
+            'product',
+            'items.ingredient.inventory',
+            'items.ingredient.baseUnit',
+            'items.unit',
+        ])->latest()->get();
         $products = Product::where('is_active', true)->orderBy('name', 'asc')->get();
         $ingredients = Ingredient::where('is_active', true)->orderBy('name', 'asc')->get();
         $units = Unit::all();
@@ -119,15 +124,26 @@ class RecipeController extends Controller
         try {
             $recipe->items()->delete();
             $recipe->delete();
+            DB::commit();
 
-            // Notify Admins
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new RecipeDeleted($recipeName, $user));
+            alert()->success('Deleted', 'Recipe deleted successfully')->persistent('Close');
+
+            // Notify Admins in a single envelope after DB commit
+            try {
+                $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+                if (!empty($adminEmails)) {
+                    $mailable = new RecipeDeleted($recipeName, $user);
+                    $primary = array_shift($adminEmails);
+                    $mail = Mail::to($primary);
+                    if (!empty($adminEmails)) {
+                        $mail->bcc($adminEmails);
+                    }
+                    $mail->send($mailable);
+                }
+            } catch (\Throwable $ex) {
+                Log::error("Recipe Deletion mail failed: " . $ex->getMessage());
             }
 
-            DB::commit();
-            alert()->success('Deleted', 'Recipe deleted successfully')->persistent('Close');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Recipe Deletion Failed: " . $e->getMessage());
@@ -171,18 +187,30 @@ class RecipeController extends Controller
                     'ingredient_id' => $item['ingredient_id'],
                     'unit_id'       => $item['unit_id'],
                     'quantity'      => $item['quantity'],
-                    'base_quantity' => $item['quantity'] * $unit->multiplier,
+                    'base_quantity' => $unit->toBase($item['quantity']),
                 ]);
             }
 
-            // Notify Admins
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new RecipeUpdated($recipe, Auth::user()));
+            DB::commit();
+
+            alert()->success('Updated', 'Recipe updated successfully')->persistent('Close');
+
+            // Notify Admins in a single envelope after DB commit
+            try {
+                $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+                if (!empty($adminEmails)) {
+                    $mailable = new RecipeUpdated($recipe, Auth::user());
+                    $primary = array_shift($adminEmails);
+                    $mail = Mail::to($primary);
+                    if (!empty($adminEmails)) {
+                        $mail->bcc($adminEmails);
+                    }
+                    $mail->send($mailable);
+                }
+            } catch (\Throwable $ex) {
+                Log::error("Recipe Update mail failed: " . $ex->getMessage());
             }
 
-            DB::commit();
-            alert()->success('Updated', 'Recipe updated successfully')->persistent('Close');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Recipe Update Failed: " . $e->getMessage());

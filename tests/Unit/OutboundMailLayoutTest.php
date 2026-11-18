@@ -73,8 +73,15 @@ class OutboundMailLayoutTest extends TestCase
             $messages[3]->viewData,
             ['message' => $inlineMessage]
         ))->render();
-        $this->assertStringContainsString('src="cid:site-logo"', $verificationHtml);
-        $this->assertSame(public_path('uploads/siteInfo/logo.png'), $inlineMessage->embeddedFile);
+        // Validates logo is loaded via public URL (prevents Gmail attachment chip [logo.png] and prevents broken localhost images)
+        $this->assertTrue(
+            str_contains($verificationHtml, 'uploads/siteInfo/logo.png'),
+            'Failed asserting that email template includes a valid logo source.'
+        );
+        $this->assertFalse(
+            str_contains($verificationHtml, 'src="cid:'),
+            'Failed asserting that email logo is not embedded as a MIME attachment chip.'
+        );
 
         $reviewSale = new Sale([
             'reference_no' => 'MOS-REVIEW123456',

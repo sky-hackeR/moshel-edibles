@@ -25,7 +25,10 @@ use App\Mail\POS\SaleVoided;
 class POSController extends Controller
 {
     public function pos(){
-        $products = Product::where('is_active', true)->orderBy('name', 'asc')->get();
+        $products = Product::with(['storeProduct.primaryImage'])
+            ->where('is_active', true)
+            ->orderBy('name', 'asc')
+            ->get();
         return view('admin.erp.pos', [
             'products' => $products
         ]);
@@ -85,13 +88,24 @@ class POSController extends Controller
                 ]);
             }
 
+            DB::commit();
+
             $this->notifySale($sale, $user);
 
-            DB::commit();
             return response()->json([
                 'success' => true,
                 'message' => 'Sale Completed Successfully!',
-                'reference_no' => $sale->reference_no
+                'reference_no' => $sale->reference_no,
+                'sale' => [
+                    'reference_no'    => $sale->reference_no,
+                    'created_at'      => $sale->created_at->format('d M, Y H:i'),
+                    'seller_name'     => $user->name ?? 'Admin',
+                    'total_amount'    => (float) $sale->total_amount,
+                    'discount_amount' => (float) $sale->discount_amount,
+                    'payable_amount'  => (float) $sale->payable_amount,
+                    'payment_method'  => $sale->payment_method,
+                    'notes'           => $sale->notes,
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -209,11 +223,11 @@ class POSController extends Controller
 
             $sale->delete();
 
+            \DB::commit();
+
             if (method_exists($this, 'notifyVoid')) {
                 $this->notifyVoid($ref, $amt, $user, $reason);
             }
-
-            \DB::commit();
 
             alert()->success('Voided Successfully', 'Transaction has been voided and stock restored.')->persistent('Close');
 
@@ -229,18 +243,33 @@ class POSController extends Controller
 
     private function notifySale($sale, $user) {
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new SaleRecorded($sale, $user));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new SaleRecorded($sale, $user);
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
+            if (!empty($adminEmails)) {
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) { Log::error("Sale mail failed: " . $e->getMessage()); }
+            $mail->send($mailable);
+        } catch (\Throwable $e) { Log::error("Sale mail failed: " . $e->getMessage()); }
     }
+
     private function notifyVoid($ref, $amt, $user, $reason) {
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new SaleVoided($ref, $amt, $user, $reason));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new SaleVoided($ref, $amt, $user, $reason);
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
+            if (!empty($adminEmails)) {
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) { Log::error("Void mail failed: " . $e->getMessage()); }
+            $mail->send($mailable);
+        } catch (\Throwable $e) { Log::error("Void mail failed: " . $e->getMessage()); }
     }
 }

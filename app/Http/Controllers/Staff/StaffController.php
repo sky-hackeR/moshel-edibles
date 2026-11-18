@@ -78,15 +78,59 @@ class StaffController extends Controller
             ->take(5)
             ->get();
 
+        $myUnitsProducedToday = (float) Production::where('staff_id', $staffId)
+            ->whereDate('produced_at', $today)
+            ->sum('quantity');
+
+        $myRecentSales = Sale::where('user_id', $staffId)
+            ->where('user_type', 'staff')
+            ->whereDate('created_at', $today)
+            ->with(['items.product'])
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $myPaymentBreakdown = Sale::where('user_id', $staffId)
+            ->where('user_type', 'staff')
+            ->whereDate('created_at', $today)
+            ->select('payment_method', DB::raw('SUM(payable_amount) as total'), DB::raw('count(*) as count'))
+            ->groupBy('payment_method')
+            ->get();
+
+        $lowStockIngredients = Inventory::with(['ingredient.baseUnit'])
+            ->get()
+            ->filter(function($inventory) {
+                $ingredient = $inventory->ingredient;
+                return $ingredient && $inventory->quantity <= $ingredient->effective_reorder_level;
+            })
+            ->take(4)
+            ->values();
+
+        $availableProducts = Product::where('is_active', true)
+            ->where('stock_on_hand', '>', 0)
+            ->orderBy('stock_on_hand', 'desc')
+            ->take(5)
+            ->get();
+
+        $outOfStockProductsCount = Product::where('is_active', true)
+            ->where('stock_on_hand', '<=', 0)
+            ->count();
+
         return view('staff.home', [
-            'myProductionCount'      => $myProductionCount,
-            'mySalesCount'           => $mySalesCount,
-            'mySalesTotal'           => $mySalesTotal,
-            'overallProductionCount' => $overallProductionCount,
-            'overallSalesCount'      => $overallSalesCount,
-            'overallSalesTotal'      => $overallSalesTotal,
-            'lowStockCount'          => $lowStockCount,
-            'recentProductions'      => $recentProductions,
+            'myProductionCount'       => $myProductionCount,
+            'myUnitsProducedToday'    => $myUnitsProducedToday,
+            'mySalesCount'            => $mySalesCount,
+            'mySalesTotal'            => $mySalesTotal,
+            'overallProductionCount'  => $overallProductionCount,
+            'overallSalesCount'       => $overallSalesCount,
+            'overallSalesTotal'       => $overallSalesTotal,
+            'lowStockCount'           => $lowStockCount,
+            'recentProductions'       => $recentProductions,
+            'myRecentSales'           => $myRecentSales,
+            'myPaymentBreakdown'      => $myPaymentBreakdown,
+            'lowStockIngredients'     => $lowStockIngredients,
+            'availableProducts'       => $availableProducts,
+            'outOfStockProductsCount' => $outOfStockProductsCount,
         ]);
     }
     
@@ -94,7 +138,7 @@ class StaffController extends Controller
 
     public function profile()
     {
-        $staff = Auth::user();
+        $staff = Auth::guard('staff')->user() ?? Auth::user();
         return view('staff.profile', [
             'staff' => $staff
         ]);
@@ -102,11 +146,11 @@ class StaffController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $staff = Auth::user();
+        $staff = Auth::guard('staff')->user() ?? Auth::user();
         
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:staffs,email,' . $staff->id,
+            'email' => 'required|email|unique:staff,email,' . $staff->id,
         ]);
 
         $staff->update([
@@ -119,20 +163,22 @@ class StaffController extends Controller
 
     public function updatePassword(Request $request)
     {
+        $staff = Auth::guard('staff')->user() ?? Auth::user();
+
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:8|confirmed',
         ]);
 
-        if (!Hash::check($request->current_password, Auth::user()->password)) {
+        if (!Hash::check($request->current_password, $staff->password)) {
             return back()->withErrors(['current_password' => 'Current password does not match.']);
         }
 
-        Auth::user()->update([
+        $staff->update([
             'password' => Hash::make($request->new_password)
         ]);
 
-        return back()->with('success', 'Password changed successfully!');
+        return back()->with('success', 'Password updated successfully!');
     }
 
 }

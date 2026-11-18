@@ -43,7 +43,7 @@ use Carbon\Carbon;
 class IngredientController extends Controller
 {
     public function ingredients(){
-        $ingredients = Ingredient::with('baseUnit')->get();
+        $ingredients = Ingredient::with(['baseUnit', 'inventory', 'recipeItems'])->get();
         $units = Unit::active()->whereColumn('symbol', 'base_unit')->get();
 
         return view('admin.erp.ingredients', [
@@ -81,13 +81,19 @@ class IngredientController extends Controller
             'average_cost' => 0,
         ]);
 
-        // Notify Admins/Procurement about new ingredient (Action Required)
+        // Notify Admins/Procurement about new ingredient in a single envelope
         try {
-            $admins = Admin::all();
-            foreach ($admins as $admin) {
-                Mail::to($admin->email)->send(new IngredientCreated($ingredient, Auth::user()));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (!empty($adminEmails)) {
+                $mailable = new IngredientCreated($ingredient, Auth::user());
+                $primary = array_shift($adminEmails);
+                $mail = Mail::to($primary);
+                if (!empty($adminEmails)) {
+                    $mail->bcc($adminEmails);
+                }
+                $mail->send($mailable);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Ingredient Created Mail failed: " . $e->getMessage());
         }
 
@@ -168,11 +174,17 @@ class IngredientController extends Controller
      */
     private function sendDeletionAlert($ingredient, $user, $reason) {
         try {
-            $superAdmin = Admin::first(); // Or notify all admins
-            if($superAdmin) {
-                Mail::to($superAdmin->email)->send(new DeletionAttempt($ingredient, $user, $reason));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (!empty($adminEmails)) {
+                $mailable = new DeletionAttempt($ingredient, $user, $reason);
+                $primary = array_shift($adminEmails);
+                $mail = Mail::to($primary);
+                if (!empty($adminEmails)) {
+                    $mail->bcc($adminEmails);
+                }
+                $mail->send($mailable);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Deletion Alert Mail failed: " . $e->getMessage());
         }
     }

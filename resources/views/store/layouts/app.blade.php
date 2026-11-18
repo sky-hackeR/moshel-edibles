@@ -169,7 +169,7 @@
                     @elseif(session('customer_not_found'))
                         <div class="alert alert-info">No customer account was found for this email. You can create one now.</div>
                         <p><a href="#" class="store-text-link" data-bs-toggle="modal" data-bs-target="#customerRegisterModal" data-bs-dismiss="modal">Create an account</a></p>
-                    @elseif($errors->has('email'))
+                    @elseif(isset($errors) && $errors->has('email'))
                         <div class="alert alert-danger">{{ $errors->first('email') }}</div>
                     @endif
                     <form method="POST" action="{{ route('customer.login.submit') }}">@csrf

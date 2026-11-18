@@ -2,15 +2,11 @@
 
 namespace App\Notifications;
 
-use App\Notifications\Concerns\QueuesOutboundMail;
-use Illuminate\Contracts\Queue\ShouldBeEncrypted;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class StaffResetPassword extends Notification implements ShouldQueue, ShouldBeEncrypted
+class StaffResetPassword extends Notification
 {
-    use QueuesOutboundMail;
 
     /**
      * The password reset token.

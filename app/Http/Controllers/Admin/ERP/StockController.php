@@ -47,6 +47,7 @@ class StockController extends Controller
                 'items',
                 'items.ingredient',
                 'items.unit',
+                'admin',
             ])
             ->latest()
             ->get();
@@ -141,14 +142,15 @@ class StockController extends Controller
                 ]);
             }
 
-            // 1. Notify Admins of the new purchase
+            DB::commit();
+            alert()->success('Success', 'Stock added successfully');
+
+            // 1. Notify Admins of the new purchase in a single envelope
             $this->notifyPurchase($stockIn, $totalSpent);
 
             // 2. Perform low stock check across all ingredients
             $this->checkLowStock();
 
-            DB::commit();
-            alert()->success('Success', 'Stock added successfully');
             return back();
 
         } catch (\Exception $e) {
@@ -160,21 +162,28 @@ class StockController extends Controller
     }
 
     /**
-     * Send email notification for a completed Stock In purchase
+     * Send email notification for a completed Stock In purchase via single SMTP envelope
      */
     private function notifyPurchase($stockIn, $totalSpent) {
         try {
-            $adminEmails = Admin::pluck('email')->toArray();
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (empty($adminEmails)) return;
+
+            $mailable = new StockInRecorded($stockIn, $totalSpent, Auth::user());
+            $primary = array_shift($adminEmails);
+
+            $mail = Mail::to($primary);
             if (!empty($adminEmails)) {
-                Mail::to($adminEmails)->send(new StockInRecorded($stockIn, $totalSpent, Auth::user()));
+                $mail->bcc($adminEmails);
             }
-        } catch (\Exception $e) {
+            $mail->send($mailable);
+        } catch (\Throwable $e) {
             Log::error("Stock In Mail notification failed: " . $e->getMessage());
         }
     }
 
     /**
-     * Scan inventory for items below reorder levels (Base Truth aware)
+     * Scan inventory for items below reorder levels via single SMTP envelope
      */
     private function checkLowStock() {
         try {
@@ -188,12 +197,19 @@ class StockController extends Controller
                 });
 
             if ($lowStockItems->isNotEmpty()) {
-                $adminEmails = Admin::pluck('email')->toArray();
+                $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+                if (empty($adminEmails)) return;
+
+                $mailable = new LowStockAlert($lowStockItems);
+                $primary = array_shift($adminEmails);
+
+                $mail = Mail::to($primary);
                 if (!empty($adminEmails)) {
-                    Mail::to($adminEmails)->send(new LowStockAlert($lowStockItems));
+                    $mail->bcc($adminEmails);
                 }
+                $mail->send($mailable);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Low Stock Check Error: " . $e->getMessage());
         }
     }

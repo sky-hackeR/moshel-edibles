@@ -43,7 +43,7 @@ use Carbon\Carbon;
 class ProductController extends Controller
 {
     public function products(){
-        $products = Product::latest()->get();
+        $products = Product::with(['recipe', 'storeProduct'])->latest()->get();
         return view('admin.erp.products', [
             'products' => $products,
         ]);
@@ -100,11 +100,17 @@ class ProductController extends Controller
         // Notify if price changed
         if ($oldPrice != $request->selling_price) {
             try {
-                $recipients = Admin::all(); // Could also include Staff/Sales managers
-                foreach($recipients as $recipient) {
-                    Mail::to($recipient->email)->send(new PriceUpdated($product, $oldPrice, Auth::user()));
+                $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+                if (!empty($adminEmails)) {
+                    $mailable = new PriceUpdated($product, $oldPrice, Auth::user());
+                    $primary = array_shift($adminEmails);
+                    $mail = Mail::to($primary);
+                    if (!empty($adminEmails)) {
+                        $mail->bcc($adminEmails);
+                    }
+                    $mail->send($mailable);
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Log::error("Price update mail failed: " . $e->getMessage());
             }
         }
@@ -140,12 +146,17 @@ class ProductController extends Controller
 
     private function sendSecurityAlert($product, $user, $reason) {
         try {
-            $admin = Admin::first();
-            if ($admin) {
-                // You can reuse the logic of DeletionAttempt here
-                Mail::to($admin->email)->send(new ProductDeletionMail($product, $user, $reason));
+            $adminEmails = Admin::pluck('email')->filter()->unique()->values()->all();
+            if (!empty($adminEmails)) {
+                $mailable = new ProductDeletionMail($product, $user, $reason);
+                $primary = array_shift($adminEmails);
+                $mail = Mail::to($primary);
+                if (!empty($adminEmails)) {
+                    $mail->bcc($adminEmails);
+                }
+                $mail->send($mailable);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Security Alert Mail failed: " . $e->getMessage());
         }
     }

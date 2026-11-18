@@ -17,6 +17,8 @@ return [
 
     'outbound_rate_limit_per_minute' => env('MAIL_RATE_LIMIT_PER_MINUTE', 10),
 
+    'asset_url' => env('MAIL_ASSET_URL', 'https://moshedibles.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Mailer Configurations
@@ -39,7 +41,7 @@ return [
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME', env('ADMIN_MAIL_USERNAME', 'moshedib@moshedibles.com')),
             'password' => env('MAIL_PASSWORD', env('ADMIN_MAIL_PASSWORD')),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT', 4),
             'auth_mode' => null,
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', env('ADMIN_MAIL_FROM_ADDRESS', 'moshedib@moshedibles.com')),
@@ -55,7 +57,7 @@ return [
             'encryption' => env('ADMIN_MAIL_ENCRYPTION', env('MAIL_ENCRYPTION', 'tls')),
             'username' => env('ADMIN_MAIL_USERNAME', 'moshedib@moshedibles.com'),
             'password' => env('ADMIN_MAIL_PASSWORD', env('MAIL_PASSWORD')),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT', 4),
             'auth_mode' => null,
             'from' => [
                 'address' => env('ADMIN_MAIL_FROM_ADDRESS', 'moshedib@moshedibles.com'),
@@ -71,7 +73,7 @@ return [
             'encryption' => env('INFO_MAIL_ENCRYPTION', env('MAIL_ENCRYPTION', 'tls')),
             'username' => env('INFO_MAIL_USERNAME', 'info@moshedibles.com'),
             'password' => env('INFO_MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT', 4),
             'auth_mode' => null,
             'from' => [
                 'address' => env('INFO_MAIL_FROM_ADDRESS', 'info@moshedibles.com'),
@@ -87,7 +89,7 @@ return [
             'encryption' => env('ORDER_MAIL_ENCRYPTION', env('MAIL_ENCRYPTION', 'tls')),
             'username' => env('ORDER_MAIL_USERNAME', 'order@moshedibles.com'),
             'password' => env('ORDER_MAIL_PASSWORD'),
-            'timeout' => null,
+            'timeout' => env('MAIL_TIMEOUT', 4),
             'auth_mode' => null,
             'from' => [
                 'address' => env('ORDER_MAIL_FROM_ADDRESS', 'order@moshedibles.com'),
