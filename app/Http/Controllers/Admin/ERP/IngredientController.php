@@ -46,7 +46,7 @@ class IngredientController extends Controller
         $ingredients = Ingredient::with(['baseUnit', 'inventory', 'recipeItems'])->get();
         $units = Unit::active()->whereColumn('symbol', 'base_unit')->get();
 
-        return view('admin.erp.ingredients', [
+        return view('admin.erp.ingredients.index', [
             'ingredients' => $ingredients,
             'units' => $units,
         ]);

@@ -29,7 +29,7 @@ class POSController extends Controller
             ->where('is_active', true)
             ->orderBy('name', 'asc')
             ->get();
-        return view('admin.erp.pos', [
+        return view('admin.erp.sales.pos', [
             'products' => $products
         ]);
     }
@@ -118,7 +118,7 @@ class POSController extends Controller
 
     public function salesHistory(){
         $sales = Sale::with(['items.product'])->latest()->get();
-        return view('admin.erp.salesHistory', ['sales' => $sales]);
+        return view('admin.erp.sales.history', ['sales' => $sales]);
     }
 
 

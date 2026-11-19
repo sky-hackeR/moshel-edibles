@@ -93,7 +93,7 @@ class ProductionController extends Controller
                                         ->count()
         ];
 
-        return view('admin.erp.production', [
+        return view('admin.erp.production.index', [
             'products' => $products,
             'stats' => $stats,
             'productionMatrix' => $productionMatrix,
@@ -114,7 +114,7 @@ class ProductionController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.erp.productionHistory', [
+        return view('admin.erp.production.history', [
             'history' => $history,
         ]);
     }

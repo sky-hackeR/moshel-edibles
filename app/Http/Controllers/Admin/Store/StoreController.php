@@ -41,7 +41,7 @@ class StoreController extends Controller
         $featuredProducts = StoreProduct::where('is_featured', true)
             ->count();
 
-        return view('admin.store.home', [
+        return view('admin.store.product.index', [
             'products' => $products,
             'totalErpProducts' => $totalErpProducts,
             'totalStoreProducts' => $totalStoreProducts,

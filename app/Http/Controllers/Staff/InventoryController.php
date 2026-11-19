@@ -32,7 +32,7 @@ class InventoryController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('staff.inventory', [
+        return view('staff.inventory.index', [
             'inventories' => $inventories,
         ]);
     }

@@ -40,7 +40,7 @@ class OpeningStockController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.erp.openingStock', [
+        return view('admin.erp.inventory.opening', [
             'products'      => $products,
             'ingredients'   => $ingredients,
             'openingStocks' => $openingStocks,

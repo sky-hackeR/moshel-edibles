@@ -52,7 +52,7 @@ class RecipeController extends Controller
         $products = Product::where('is_active', true)->orderBy('name', 'asc')->get();
         $ingredients = Ingredient::where('is_active', true)->orderBy('name', 'asc')->get();
         $units = Unit::all();
-        return view('admin.erp.recipes', [
+        return view('admin.erp.recipes.index', [
             'recipes'     => $recipes,
             'products'    => $products,
             'ingredients' => $ingredients,

@@ -29,7 +29,7 @@ class POSController extends Controller
             ->orderBy('name', 'asc')
             ->get();
             
-        return view('staff.pos', ['products' => $products]);
+        return view('staff.sales.pos', ['products' => $products]);
     }
 
     public function processSale(Request $request) {
@@ -114,7 +114,7 @@ class POSController extends Controller
                     ->with(['items.product'])
                     ->latest()
                     ->get();
-        return view('staff.salesHistory', ['sales' => $sales]);
+        return view('staff.sales.history', ['sales' => $sales]);
     }
 
     public function getSaleDetails(string $reference) {

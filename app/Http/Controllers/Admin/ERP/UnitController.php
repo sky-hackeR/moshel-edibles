@@ -40,7 +40,7 @@ class UnitController extends Controller
             ->orderBy('base_multiplier', 'asc')
             ->get();
 
-        return view('admin.erp.unitManagement', [
+        return view('admin.erp.settings.units', [
             'units' => $units
         ]);
     }
