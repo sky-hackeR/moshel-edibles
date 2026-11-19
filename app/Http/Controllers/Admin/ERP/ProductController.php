@@ -44,7 +44,7 @@ class ProductController extends Controller
 {
     public function products(){
         $products = Product::with(['recipe', 'storeProduct'])->latest()->get();
-        return view('admin.erp.products', [
+        return view('admin.erp.products.index', [
             'products' => $products,
         ]);
     }

@@ -34,7 +34,7 @@ class StockController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('admin.erp.inventory', [
+        return view('admin.erp.inventory.index', [
             'inventories' => $inventories,
         ]);
     }
@@ -61,7 +61,7 @@ class StockController extends Controller
             'last'  => StockIn::latest()->value('purchase_date'),
         ];
 
-        return view('admin.erp.stockIn', [
+        return view('admin.erp.inventory.stock-in', [
             'ingredients' => Ingredient::where('is_active', true)->get(),
             'units'       => Unit::where('use_for_purchase', true)->where('is_active', true)->get(),
             'stockIns'    => $stockIns,

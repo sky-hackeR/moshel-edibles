@@ -57,7 +57,7 @@ class IngredientStockDangerController extends Controller
             'total_valuation'   => $totalValuation,
         ];
 
-        return view('admin.erp.ingredientStockDanger', compact('ingredients', 'stats'));
+        return view('admin.erp.ingredients.danger', compact('ingredients', 'stats'));
     }
 
     /**

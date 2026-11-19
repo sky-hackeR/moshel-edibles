@@ -1,0 +1,163 @@
+/* ==========================================================================
+   MOSHEL EXECUTIVE ERP SHARED DESIGN SYSTEM
+   Centralized reusable styling for KPI cards, avatars, badges, and controls.
+   ========================================================================== */
+
+/* 1. Executive KPI Cards with Left Accent Borders */
+.erp-kpi-card,
+.product-kpi-card,
+.ingredient-kpi-card,
+.inventory-kpi-card,
+.danger-kpi-card,
+.sales-kpi-card,
+.opening-kpi-card,
+.stockin-kpi-card,
+.recipe-kpi-card,
+.staff-kpi-card,
+.store-kpi-card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.erp-kpi-card:hover,
+.product-kpi-card:hover,
+.ingredient-kpi-card:hover,
+.inventory-kpi-card:hover,
+.danger-kpi-card:hover,
+.sales-kpi-card:hover,
+.opening-kpi-card:hover,
+.stockin-kpi-card:hover,
+.recipe-kpi-card:hover,
+.staff-kpi-card:hover,
+.store-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 2. Standard Entity & Unit Avatars */
+.erp-icon-avatar,
+.product-icon-avatar,
+.ingredient-icon-avatar,
+.inventory-icon-avatar,
+.entity-icon-avatar {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: #eef2ff;
+    color: #4338ca;
+}
+
+/* 3. Header Badges & Danger Zone Elements */
+.danger-header-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 20px;
+}
+
+.accounting-radio-card {
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.accounting-radio-card:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* 4. Status Indicators */
+.status-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+/* 5. Directory Card Wrapper Defaults */
+.erp-directory-card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* 6. Unit Management & Floating Calculator Styles */
+.bg-purple-soft {
+    background-color: #f7eef8 !important;
+}
+.text-purple {
+    color: #581a62 !important;
+}
+.text-pink {
+    color: #ce278c !important;
+}
+.unit-filter-btn {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+    border: none;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+.unit-filter-btn:hover {
+    color: #581a62;
+    background: rgba(88, 26, 98, 0.06);
+}
+.unit-filter-btn.active {
+    background: #581a62 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(88, 26, 98, 0.25);
+}
+
+.floating-calc-widget {
+    position: fixed;
+    top: 95px;
+    right: 28px;
+    width: 395px;
+    max-width: calc(100vw - 30px);
+    z-index: 1060;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.24), 0 4px 14px rgba(15, 23, 42, 0.08);
+    transition: box-shadow 0.2s ease;
+}
+.calc-drag-handle {
+    background: #0f172a;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.calc-drag-handle:active {
+    cursor: grabbing;
+}
+.calc-screen {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+.calc-preset-btn {
+    font-size: 11px;
+    font-weight: 600;
+    color: #334155;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 2px 8px;
+    border-radius: 20px;
+    transition: all 0.15s ease;
+}
+.calc-preset-btn:hover {
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+}

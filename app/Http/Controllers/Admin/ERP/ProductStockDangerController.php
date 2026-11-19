@@ -40,7 +40,7 @@ class ProductStockDangerController extends Controller
             }),
         ];
 
-        return view('admin.erp.productStockDanger', compact('products', 'stats'));
+        return view('admin.erp.products.danger', compact('products', 'stats'));
     }
 
     /**

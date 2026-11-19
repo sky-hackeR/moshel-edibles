@@ -219,7 +219,7 @@ class AdminController extends Controller
         $staffCount = Staff::count();
         $todayAuditLogsCount = AuditLog::whereDate('created_at', $today)->count();
 
-        return view('admin.erp.home', [
+        return view('admin.erp.dashboard.index', [
             'todayRevenue'        => $todayRevenue,
             'todayPurchases'      => $todayPurchases,
             'todayProductionCost' => $todayProductionCost,
@@ -404,7 +404,7 @@ class AdminController extends Controller
     //GLOBAL SITE SETTINGS LOGIC
     public function siteSettings(){
         $setting = Setting::first();
-        return view('admin.erp.siteSettings', [
+        return view('admin.erp.settings.site', [
             'setting' => $setting,
         ]);
     }
@@ -412,7 +412,7 @@ class AdminController extends Controller
     public function adminList() {
         $admins = Admin::orderBy('name', 'asc')->get();
 
-        return view('admin.erp.admins', [
+        return view('admin.erp.users.admins', [
             'admins' => $admins,
         ]);
     }
@@ -420,7 +420,7 @@ class AdminController extends Controller
     public function staffList() {
         $staffs = Staff::orderBy('name', 'asc')->get();
 
-        return view('admin.erp.staffs', [
+        return view('admin.erp.users.staffs', [
             'staffs' => $staffs,
         ]);
     }
@@ -513,7 +513,7 @@ class AdminController extends Controller
     public function profile()
     {
         $admin = Auth::user();
-        return view('admin.erp.profile', [
+        return view('admin.erp.users.profile', [
             'admin' => $admin
         ]);
     }
@@ -662,7 +662,7 @@ class AdminController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        return view('admin.erp.customers', [
+        return view('admin.store.customers.index', [
             'customers' => $customers,
         ]);
     }
@@ -675,7 +675,7 @@ class AdminController extends Controller
             ->latest('id')
             ->get();
 
-        return view('admin.erp.customerOrders', compact('customer', 'orders'));
+        return view('admin.store.customers.orders', compact('customer', 'orders'));
     }
 
     public function deleteCustomer(Request $request)

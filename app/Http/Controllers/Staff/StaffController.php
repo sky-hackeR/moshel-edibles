@@ -116,7 +116,7 @@ class StaffController extends Controller
             ->where('stock_on_hand', '<=', 0)
             ->count();
 
-        return view('staff.home', [
+        return view('staff.dashboard.index', [
             'myProductionCount'       => $myProductionCount,
             'myUnitsProducedToday'    => $myUnitsProducedToday,
             'mySalesCount'            => $mySalesCount,
@@ -139,7 +139,7 @@ class StaffController extends Controller
     public function profile()
     {
         $staff = Auth::guard('staff')->user() ?? Auth::user();
-        return view('staff.profile', [
+        return view('staff.users.profile', [
             'staff' => $staff
         ]);
     }
